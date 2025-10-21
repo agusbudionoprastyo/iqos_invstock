@@ -2,7 +2,4 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/dafm5634/public_html/iqos
-    - npm run build
-    - cp public/.htaccess dist/.htaccess
-    - cp public/_redirects dist/_redirects
     - /bin/cp -R dist/* $DEPLOYPATH
