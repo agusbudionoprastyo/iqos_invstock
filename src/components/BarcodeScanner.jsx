@@ -237,23 +237,23 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
         )}
 
         {/* Instructions for iOS */}
-        <div style={{
+        {/* <div style={{
           backgroundColor: '#f8fafc',
           border: '1px solid #e2e8f0',
           borderRadius: '0.5rem',
           padding: '1rem',
           marginBottom: '1rem'
-        }}>
+        }}> */}
           {/* <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem', margin: 0 }}>
             Tips untuk iPhone:
           </h4> */}
-          <ul style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0, paddingLeft: '1rem' }}>
+          {/* <ul style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0, paddingLeft: '1rem' }}>
             <li>Pastikan barcode dalam kondisi baik dan tidak rusak</li>
             <li>Jaga jarak yang tepat antara kamera dan barcode</li>
             <li>Pastikan pencahayaan cukup terang</li>
             <li>Jika tidak berhasil, coba refresh halaman</li>
           </ul>
-        </div>
+        </div> */}
 
         {/* Manual Input Fallback */}
         <div style={{ marginBottom: '1rem' }}>

@@ -80,30 +80,26 @@ export const productService = {
     try {
       const productRef = ref(database, 'products');
       const newProductRef = push(productRef);
+      
+      // Remove stock from productData since it will be calculated from units
+      const { stock, ...productDataWithoutStock } = productData;
+      
       const product = {
         id: newProductRef.key,
-        ...productData,
+        ...productDataWithoutStock,
+        stock: 0, // Always start with 0, will be calculated from units
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
       await set(newProductRef, product);
 
-      // Create unit records equal to initial stock for unique item tracking (only if useBarcode is true)
-      const initialStock = Number(productData.stock || 0);
+      // Initialize empty productUnits collection for barcode tracking
       const useBarcode = productData.useBarcode !== false; // Default to true if not specified
       
-      if (initialStock > 0 && useBarcode) {
+      if (useBarcode) {
+        // Create empty productUnits collection - units will be added when barcodes are assigned
         const unitsBaseRef = ref(database, `productUnits/${newProductRef.key}`);
-        for (let i = 0; i < initialStock; i++) {
-          const unitRef = push(unitsBaseRef);
-          await set(unitRef, {
-            unitId: unitRef.key,
-            productId: newProductRef.key,
-            barcode: null, // to be assigned later via scanning
-            status: 'in_stock',
-            createdAt: Date.now()
-          });
-        }
+        await set(unitsBaseRef, {});
       }
       return product;
     } catch (error) {
@@ -138,6 +134,31 @@ export const productService = {
       return 0;
     } catch (error) {
       throw new Error(`Error getting ready stock: ${error.message}`);
+    }
+  },
+
+  // Update product stock to match actual units count
+  updateProductStockFromUnits: async (productId) => {
+    try {
+      const unitsRef = ref(database, `productUnits/${productId}`);
+      const snapshot = await get(unitsRef);
+      let totalUnits = 0;
+      
+      if (snapshot.exists()) {
+        const units = Object.values(snapshot.val());
+        totalUnits = units.filter(unit => unit && unit.status === 'in_stock').length;
+      }
+
+      // Update product stock to match units count
+      const productRef = ref(database, `products/${productId}`);
+      await update(productRef, { 
+        stock: totalUnits, 
+        updatedAt: Date.now() 
+      });
+      
+      return totalUnits;
+    } catch (error) {
+      throw new Error(`Error updating product stock: ${error.message}`);
     }
   },
 
@@ -216,7 +237,7 @@ export const productService = {
         }
       }
 
-      // If no available unit, create a new unit and increment product stock
+      // If no available unit, create a new unit
       if (!targetUnitRef) {
         const newUnitRef = push(unitsRef);
         await set(newUnitRef, {
@@ -226,17 +247,15 @@ export const productService = {
           status: 'in_stock',
           createdAt: Date.now()
         });
-        // increment product stock
-        const prodRef = ref(database, `products/${productId}`);
-        const prodSnap = await get(prodRef);
-        if (prodSnap.exists()) {
-          const prod = prodSnap.val();
-          await update(prodRef, { stock: (Number(prod.stock || 0) + 1), updatedAt: Date.now() });
-        }
         targetUnitRef = newUnitRef;
       }
 
+      // Assign the barcode to the unit
       await update(targetUnitRef, { barcode, updatedAt: Date.now() });
+
+      // Update product stock to reflect total units count
+      await productService.updateProductStockFromUnits(productId);
+      
       return true;
     } catch (error) {
       throw new Error(`Error adding barcode: ${error.message}`);

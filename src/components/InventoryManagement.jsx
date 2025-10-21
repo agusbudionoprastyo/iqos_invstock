@@ -25,7 +25,6 @@ const InventoryManagement = () => {
     name: '',
     category: '',
     price: '',
-    stock: '',
     minStock: '',
     useBarcode: true
   });
@@ -74,7 +73,6 @@ const InventoryManagement = () => {
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
         minStock: parseInt(formData.minStock)
       };
 
@@ -90,7 +88,6 @@ const InventoryManagement = () => {
         name: '',
         category: '',
         price: '',
-        stock: '',
         minStock: '',
         useBarcode: true
       });
@@ -106,7 +103,6 @@ const InventoryManagement = () => {
       name: product.name,
       category: product.category,
       price: product.price.toString(),
-      stock: product.stock.toString(),
       minStock: product.minStock.toString(),
       useBarcode: true
     });
@@ -461,6 +457,9 @@ const InventoryManagement = () => {
                         / {product.minStock} min
                       </span>
                     </div>
+                    <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                      {product.useBarcode !== false ? 'Dihitung dari unit' : 'Manual'}
+                    </div>
                   </td>
                   <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: '#111827' }}>
                     Rp {product.price.toLocaleString('id-ID')}
@@ -691,37 +690,33 @@ const InventoryManagement = () => {
                       Centang jika produk menggunakan barcode untuk tracking unit
                     </span>
                   </div>
+                  <div style={{
+                    marginTop: '0.5rem',
+                    padding: '0.75rem',
+                    backgroundColor: '#f0f9ff',
+                    border: '1px solid #bae6fd',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.75rem',
+                    color: '#0369a1'
+                  }}>
+                    <strong>Info:</strong> Stok akan dihitung otomatis dari jumlah unit yang memiliki barcode. Tidak perlu input stok awal secara manual.
+                  </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <label className="form-label">
-                      Stok Awal
-                    </label>
-                    <input
-                      type="number"
-                      name="stock"
-                      value={formData.stock}
-                      onChange={handleInputChange}
-                      required
-                      min="0"
-                      className="form-input"
-                    />
-                  </div>
-                  <div>
-                    <label className="form-label">
-                      Stok Minimum
-                    </label>
-                    <input
-                      type="number"
-                      name="minStock"
-                      value={formData.minStock}
-                      onChange={handleInputChange}
-                      required
-                      min="0"
-                      className="form-input"
-                    />
-                  </div>
+                <div>
+                  <label className="form-label">
+                    Stok Minimum
+                  </label>
+                  <input
+                    type="number"
+                    name="minStock"
+                    value={formData.minStock}
+                    onChange={handleInputChange}
+                    required
+                    min="0"
+                    className="form-input"
+                    placeholder="Minimum stock untuk alert"
+                  />
                 </div>
               </div>
 
@@ -735,7 +730,6 @@ const InventoryManagement = () => {
                       name: '',
                       category: '',
                       price: '',
-                      stock: '',
                       minStock: '',
                       useBarcode: true
                     });
