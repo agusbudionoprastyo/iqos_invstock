@@ -1,0 +1,15 @@
+node_modules
+.netlify
+.netlify.toml
+.netlify/state.json
+.netlify/config.toml
+.netlify/config.json
+.netlify/config.yaml
+.netlify/config.yml
+.netlify/config.xml
+.netlify/config.html
+.netlify/config.css
+.netlify/config.js
+.netlify/config.json
+.netlify/config.yaml
+.netlify/config.yml
