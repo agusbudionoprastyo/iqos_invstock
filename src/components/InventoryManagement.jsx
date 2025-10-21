@@ -704,7 +704,7 @@ const InventoryManagement = () => {
                       fontSize: '0.75rem',
                       color: '#0369a1'
                     }}>
-                      <strong>Info:</strong> Stok akan dihitung otomatis dari jumlah unit yang memiliki barcode. Tidak perlu input stok awal secara manual.
+                      <strong>Info:</strong> Stok akan dihitung otomatis dari jumlah unit yang memiliki barcode. Field "Stok Awal" akan di-disable.
                     </div>
                   )}
                   {!formData.useBarcode && (
@@ -717,12 +717,12 @@ const InventoryManagement = () => {
                       fontSize: '0.75rem',
                       color: '#92400e'
                     }}>
-                      <strong>Info:</strong> Produk tanpa barcode menggunakan input stok manual. Anda perlu mengatur stok secara manual.
+                      <strong>Info:</strong> Produk tanpa barcode menggunakan input stok manual. Field "Stok Awal" akan di-enable untuk input manual.
                     </div>
                   )}
                 </div>
 
-                {!formData.useBarcode && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label className="form-label">
                       Stok Awal
@@ -732,28 +732,33 @@ const InventoryManagement = () => {
                       name="stock"
                       value={formData.stock}
                       onChange={handleInputChange}
+                      required={!formData.useBarcode}
+                      disabled={formData.useBarcode}
+                      min="0"
+                      className="form-input"
+                      placeholder={formData.useBarcode ? "Dihitung otomatis" : "Jumlah stok awal"}
+                      style={{
+                        opacity: formData.useBarcode ? 0.6 : 1,
+                        backgroundColor: formData.useBarcode ? '#f9fafb' : 'white',
+                        cursor: formData.useBarcode ? 'not-allowed' : 'text'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">
+                      Stok Minimum
+                    </label>
+                    <input
+                      type="number"
+                      name="minStock"
+                      value={formData.minStock}
+                      onChange={handleInputChange}
                       required
                       min="0"
                       className="form-input"
-                      placeholder="Jumlah stok awal"
+                      placeholder="Minimum stock untuk alert"
                     />
                   </div>
-                )}
-
-                <div>
-                  <label className="form-label">
-                    Stok Minimum
-                  </label>
-                  <input
-                    type="number"
-                    name="minStock"
-                    value={formData.minStock}
-                    onChange={handleInputChange}
-                    required
-                    min="0"
-                    className="form-input"
-                    placeholder="Minimum stock untuk alert"
-                  />
                 </div>
               </div>
 
