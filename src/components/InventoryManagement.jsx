@@ -512,20 +512,21 @@ const InventoryManagement = () => {
       const title = `Laporan Stock Audit - ${auditDate} ${auditTime}`;
       const printableRows = auditResults.map((r) => {
         const dbVsFisik = r.physicalStock !== null ? (r.physicalStock - r.databaseStock) : null;
-        const readyVsFisik = r.physicalStock !== null ? (r.physicalStock - r.readyStock) : null;
-        const dbVsFisikText = dbVsFisik !== null ? (dbVsFisik > 0 ? `+${dbVsFisik}` : `${dbVsFisik}`) : '-';
-        const readyVsFisikText = readyVsFisik !== null ? (readyVsFisik > 0 ? `+${readyVsFisik}` : `${readyVsFisik}`) : '-';
+        const statusText = r.status === 'completed' ? (dbVsFisik === 0 ? 'Balance' : `${dbVsFisik > 0 ? '+' : ''}${dbVsFisik}`) : 'Pending';
+        const statusColor = r.status === 'completed' ? (dbVsFisik === 0 ? '#10b981' : (dbVsFisik > 0 ? '#10b981' : '#ef4444')) : '#f59e0b';
+        const statusBg = r.status === 'completed' ? (dbVsFisik === 0 ? '#10b98120' : (dbVsFisik > 0 ? '#10b98120' : '#ef444420')) : '#f59e0b20';
         
         return `
           <tr>
             <td>${r.name || '-'}</td>
             <td style="text-align:center;">${r.useBarcode !== false ? 'Barcode' : 'Manual'}</td>
             <td style="text-align:right;">${r.databaseStock ?? '-'}</td>
-            <td style="text-align:right;">${r.readyStock ?? '-'}</td>
             <td style="text-align:right;">${r.physicalStock ?? '-'}</td>
-            <td style="text-align:right;">${dbVsFisikText}</td>
-            <td style="text-align:right;">${readyVsFisikText}</td>
-            <td style="text-align:center;">${r.status}</td>
+            <td style="text-align:center;">
+              <span style="background-color: ${statusBg}; color: ${statusColor}; padding: 4px 8px; border-radius: 4px; font-weight: 500;">
+                ${statusText}
+              </span>
+            </td>
           </tr>
         `;
       }).join('');
@@ -557,11 +558,8 @@ const InventoryManagement = () => {
                 <tr>
                   <th>Produk</th>
                   <th style="text-align:center;">Mode</th>
-                  <th style="text-align:right;">DB</th>
-                  <th style="text-align:right;">Ready</th>
-                  <th style="text-align:right;">Fisik</th>
-                  <th style="text-align:right;">DB vs Fisik</th>
-                  <th style="text-align:right;">Ready vs Fisik</th>
+                  <th style="text-align:right;">Database Stock</th>
+                  <th style="text-align:right;">Fisik Stock</th>
                   <th style="text-align:center;">Status</th>
                 </tr>
               </thead>
@@ -1418,6 +1416,7 @@ const InventoryManagement = () => {
                   value={auditDate}
                   onChange={(e) => setAuditDate(e.target.value)}
                   className="form-input"
+                  style={{ fontSize: '0.875rem', padding: '0.5rem' }}
                 />
               </div>
               <div style={{ flex: 1 }}>
@@ -1427,6 +1426,7 @@ const InventoryManagement = () => {
                   value={auditTime}
                   onChange={(e) => setAuditTime(e.target.value)}
                   className="form-input"
+                  style={{ fontSize: '0.875rem', padding: '0.5rem' }}
                 />
               </div>
             </div>
