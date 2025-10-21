@@ -552,7 +552,7 @@ const InventoryManagement = () => {
                           }}
                           title="Assign barcode via scan"
                         >
-                          Assign Barcode
+                          <Camera size={14} />
                         </button>
                       )}
                       <button

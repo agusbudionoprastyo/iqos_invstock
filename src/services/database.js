@@ -353,6 +353,82 @@ export const productService = {
     } catch (error) {
       throw new Error(`Error updating stock: ${error.message}`);
     }
+  },
+
+  // Update stock and mark units as sold for barcode products
+  updateStockAndMarkUnitsSold: async (productId, quantitySold, saleId) => {
+    try {
+      const productRef = ref(database, `products/${productId}`);
+      const snapshot = await get(productRef);
+      
+      if (!snapshot.exists()) {
+        throw new Error('Product not found');
+      }
+
+      const product = snapshot.val();
+      
+      if (product.useBarcode !== false) {
+        // For barcode products, mark specific units as sold
+        const unitsRef = ref(database, `productUnits/${productId}`);
+        const unitsSnap = await get(unitsRef);
+        
+        if (unitsSnap.exists()) {
+          const units = unitsSnap.val();
+          const availableUnits = Object.values(units).filter(unit => unit.status === 'in_stock');
+          
+          if (availableUnits.length < quantitySold) {
+            throw new Error(`Insufficient units available. Available: ${availableUnits.length}, Requested: ${quantitySold}`);
+          }
+          
+          // Mark first N units as sold
+          let soldCount = 0;
+          for (const [unitId, unit] of Object.entries(units)) {
+            if (unit.status === 'in_stock' && soldCount < quantitySold) {
+              await update(ref(database, `productUnits/${productId}/${unitId}`), {
+                status: 'sold',
+                soldAt: Date.now(),
+                saleId: saleId,
+                updatedAt: Date.now()
+              });
+              soldCount++;
+            }
+          }
+          
+          // Update product stock from units
+          await productService.updateProductStockFromUnits(productId);
+        }
+      } else {
+        // For manual products, just update stock
+        const newStock = product.stock - quantitySold;
+        if (newStock < 0) {
+          throw new Error('Insufficient stock');
+        }
+        
+        await update(productRef, {
+          stock: newStock,
+          updatedAt: Date.now()
+        });
+      }
+
+      // Create stock movement record
+      const movementRef = ref(database, 'stockMovements');
+      const newMovementRef = push(movementRef);
+      const movement = {
+        id: newMovementRef.key,
+        productId,
+        productName: product.name,
+        type: 'out',
+        quantity: quantitySold,
+        reason: 'sale',
+        referenceId: saleId,
+        createdAt: Date.now()
+      };
+      await set(newMovementRef, movement);
+
+      return true;
+    } catch (error) {
+      throw new Error(`Error updating stock: ${error.message}`);
+    }
   }
 };
 
@@ -373,10 +449,9 @@ export const salesService = {
 
       // Update stock for each item
       for (const item of saleData.items) {
-        await productService.updateStock(
+        await productService.updateStockAndMarkUnitsSold(
           item.productId,
-          -item.quantity,
-          'sale',
+          item.quantity,
           newSaleRef.key
         );
       }

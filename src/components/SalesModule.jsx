@@ -13,6 +13,7 @@ const SalesModule = () => {
   const [scanningMode, setScanningMode] = useState(null); // 'add' | 'increase' | null
   const [scanningProductId, setScanningProductId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [barcodeFilter, setBarcodeFilter] = useState('all'); // 'all' | 'barcode' | 'manual'
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: ''
@@ -229,11 +230,25 @@ const SalesModule = () => {
     }
   };
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.barcode.includes(searchTerm) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products.filter(product => {
+    const term = searchTerm.toLowerCase();
+    const inName = product.name.toLowerCase().includes(term);
+    const inCategory = product.category.toLowerCase().includes(term);
+    const inBarcode = product.barcode.toLowerCase().includes(term);
+    
+    // Apply search filter
+    const matchesSearch = inName || inCategory || inBarcode;
+    
+    // Apply barcode filter
+    let matchesBarcodeFilter = true;
+    if (barcodeFilter === 'barcode') {
+      matchesBarcodeFilter = product.useBarcode !== false;
+    } else if (barcodeFilter === 'manual') {
+      matchesBarcodeFilter = product.useBarcode === false;
+    }
+    
+    return matchesSearch && matchesBarcodeFilter;
+  });
 
   if (loading) {
     return (
@@ -299,7 +314,7 @@ const SalesModule = () => {
             
             {/* Search Bar */}
             <div style={{ marginBottom: '1rem' }}>
-              <div style={{ position: 'relative' }}>
+              <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
                 <Search size={20} style={{
                   position: 'absolute',
                   left: '0.75rem',
@@ -323,6 +338,55 @@ const SalesModule = () => {
                     fontSize: '0.875rem'
                   }}
                 />
+              </div>
+              
+              {/* Barcode Filter */}
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  onClick={() => setBarcodeFilter('all')}
+                  style={{
+                    backgroundColor: barcodeFilter === 'all' ? '#3b82f6' : '#f3f4f6',
+                    color: barcodeFilter === 'all' ? 'white' : '#374151',
+                    padding: '0.375rem 0.75rem',
+                    borderRadius: '0.375rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: '500'
+                  }}
+                >
+                  Semua
+                </button>
+                <button
+                  onClick={() => setBarcodeFilter('barcode')}
+                  style={{
+                    backgroundColor: barcodeFilter === 'barcode' ? '#3b82f6' : '#f3f4f6',
+                    color: barcodeFilter === 'barcode' ? 'white' : '#374151',
+                    padding: '0.375rem 0.75rem',
+                    borderRadius: '0.375rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: '500'
+                  }}
+                >
+                  Dengan Barcode
+                </button>
+                <button
+                  onClick={() => setBarcodeFilter('manual')}
+                  style={{
+                    backgroundColor: barcodeFilter === 'manual' ? '#3b82f6' : '#f3f4f6',
+                    color: barcodeFilter === 'manual' ? 'white' : '#374151',
+                    padding: '0.375rem 0.75rem',
+                    borderRadius: '0.375rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: '500'
+                  }}
+                >
+                  Manual
+                </button>
               </div>
             </div>
 
@@ -354,9 +418,21 @@ const SalesModule = () => {
                       {product.category}
                     </span>
                   </div>
-                  <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem', margin: 0 }}>
-                    Barcode: {product.barcode}
-                  </p>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                      Barcode: {product.barcode}
+                    </p>
+                    <span style={{
+                      fontSize: '0.625rem',
+                      padding: '0.125rem 0.375rem',
+                      borderRadius: '0.25rem',
+                      backgroundColor: product.useBarcode !== false ? '#dbeafe' : '#f3f4f6',
+                      color: product.useBarcode !== false ? '#1e40af' : '#6b7280',
+                      fontWeight: '500'
+                    }}>
+                      {product.useBarcode !== false ? 'Dengan Barcode' : 'Manual'}
+                    </span>
+                  </div>
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
