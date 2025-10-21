@@ -269,7 +269,7 @@ const SalesModule = () => {
 
   return (
     <div style={{ padding: '1.5rem' }}>
-      <div style={{
+      {/* <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -297,7 +297,7 @@ const SalesModule = () => {
           <Camera size={20} />
           Scan Barcode
         </button>
-      </div>
+      </div> */}
 
       <div style={{
         display: 'grid',
@@ -312,10 +312,35 @@ const SalesModule = () => {
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem'
           }}>
-            <h2 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
-              Daftar Produk
-            </h2>
-            
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.5rem'
+            }}>
+              <h2 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
+                Daftar Produk
+              </h2>
+              <button
+                onClick={() => setShowScanner(true)}
+                style={{
+                  backgroundColor: '#10b981',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}
+              >
+                <Camera size={20} />
+                Scan Barcode
+              </button>
+            </div>
             {/* Search Bar */}
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
@@ -634,7 +659,7 @@ const SalesModule = () => {
                 alignItems: 'center',
                 marginBottom: '1rem'
               }}>
-                <span style={{ fontSize: '1.125rem', fontWeight: '600' }}>Total:</span>
+                <span style={{ fontSize: '1.125rem', fontWeight: '600' }}>Total</span>
                 <span style={{ fontSize: '1.125rem', fontWeight: '700', color: '#2563eb' }}>
                   Rp {getTotalAmount().toLocaleString('id-ID')}
                 </span>

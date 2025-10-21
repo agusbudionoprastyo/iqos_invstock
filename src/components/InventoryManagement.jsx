@@ -279,52 +279,11 @@ const InventoryManagement = () => {
         flexWrap: 'wrap',
         gap: '1rem'
       }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827', margin: 0 }}>
+        {/* <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827', margin: 0 }}>
           Manajemen Inventory
-        </h1>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button
-            onClick={() => {
-              setScanningMode('check');
-              setCheckedProduct(null);
-              setShowScanner(true);
-            }}
-            style={{
-              backgroundColor: '#10b981',
-              color: 'white',
-              padding: '0.5rem 1rem',
-              borderRadius: '0.5rem',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.875rem',
-              fontWeight: '500'
-            }}
-          >
-            <CheckCircle size={20} />
-            Check Stock
-          </button>
-          <button
-            onClick={() => setShowAddModal(true)}
-            style={{
-              backgroundColor: '#3b82f6',
-              color: 'white',
-              padding: '0.5rem 1rem',
-              borderRadius: '0.5rem',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.875rem',
-              fontWeight: '500'
-            }}
-          >
-            <Plus size={20} />
-          </button>
-        </div>
+        </h1> */}
+        {/* <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}> */}
+        {/* </div> */}
       </div>
 
       {/* Low Stock Alert */}
@@ -350,34 +309,6 @@ const InventoryManagement = () => {
         </div>
       )}
 
-      {/* Search Bar */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ position: 'relative' }}>
-          <Search size={20} style={{
-            position: 'absolute',
-            left: '0.75rem',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: '#9ca3af'
-          }} />
-          <input
-            type="text"
-            placeholder="Cari produk..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              paddingLeft: '2.5rem',
-              paddingRight: '1rem',
-              paddingTop: '0.5rem',
-              paddingBottom: '0.5rem',
-              border: '1px solid #d1d5db',
-              borderRadius: '0.5rem',
-              fontSize: '0.875rem'
-            }}
-          />
-        </div>
-      </div>
 
       {/* Products Table */}
       <div style={{
@@ -386,6 +317,101 @@ const InventoryManagement = () => {
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
         overflow: 'hidden'
       }}>
+        {/* Table Header with Search and Actions */}
+        <div style={{
+          backgroundColor: '#f9fafb',
+          padding: '1rem 1.5rem',
+          borderBottom: '1px solid #e5e7eb',
+          display: 'flex',
+          flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+          alignItems: window.innerWidth <= 768 ? 'stretch' : 'center',
+          justifyContent: 'space-between',
+          gap: '1rem'
+        }}>
+          {/* Search Bar */}
+          <div style={{ 
+            position: 'relative',
+            flex: window.innerWidth <= 768 ? 'none' : '1',
+            maxWidth: window.innerWidth <= 768 ? 'none' : '300px'
+          }}>
+            <Search size={20} style={{
+              position: 'absolute',
+              left: '0.75rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#9ca3af'
+            }} />
+            <input
+              type="text"
+              placeholder="Cari produk..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                paddingLeft: '2.5rem',
+                paddingRight: '1rem',
+                paddingTop: '0.5rem',
+                paddingBottom: '0.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem'
+              }}
+            />
+          </div>
+          
+          {/* Action Buttons */}
+          <div style={{
+            display: 'flex',
+            gap: '0.5rem',
+            flexWrap: 'wrap',
+            width: window.innerWidth <= 768 ? '100%' : 'auto'
+          }}>
+            <button
+              onClick={() => setScanningMode('stock_check')}
+              style={{
+                backgroundColor: '#10b981',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                flex: window.innerWidth <= 768 ? '1' : 'none',
+                minWidth: window.innerWidth <= 768 ? '0' : 'auto'
+              }}
+            >
+              <CheckCircle size={20} />
+              Check Stock
+            </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              style={{
+                backgroundColor: 'transparent',
+                color: '#111827',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem',
+                border: '1px solid #d1d5db',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                flex: window.innerWidth <= 768 ? '1' : 'none',
+                minWidth: window.innerWidth <= 768 ? '0' : 'auto'
+              }}
+            >
+              <Plus size={20} />
+              Produk
+            </button>
+          </div>
+        </div>
         {/* Desktop Table */}
         <div style={{ 
           overflowX: 'auto',

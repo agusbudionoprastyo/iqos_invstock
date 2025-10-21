@@ -96,14 +96,14 @@ const Dashboard = () => {
 
   return (
     <div style={{ padding: '1.5rem' }}>
-      <div style={{ marginBottom: '1.5rem' }}>
+      {/* <div style={{ marginBottom: '1.5rem' }}>
         <h1 style={{ fontSize: '1.875rem', fontWeight: '700', color: '#111827', margin: 0 }}>
           Dashboard
         </h1>
         <p style={{ color: '#6b7280', marginTop: '0.5rem', margin: 0 }}>
           Ringkasan sistem inventory IQOS
         </p>
-      </div>
+      </div> */}
 
       {/* Stats Grid */}
       <div style={{
