@@ -122,6 +122,21 @@ export const productService = {
   // Get ready stock (units with barcode) for a product
   getReadyStock: async (productId) => {
     try {
+      // First check if product uses barcode
+      const productRef = ref(database, `products/${productId}`);
+      const productSnap = await get(productRef);
+      if (!productSnap.exists()) {
+        return 0;
+      }
+      
+      const product = productSnap.val();
+      
+      // If product doesn't use barcode, ready stock = total stock
+      if (product.useBarcode === false) {
+        return product.stock || 0;
+      }
+      
+      // If product uses barcode, count units with barcode
       const unitsRef = ref(database, `productUnits/${productId}`);
       const snapshot = await get(unitsRef);
       if (snapshot.exists()) {

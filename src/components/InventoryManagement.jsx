@@ -433,9 +433,9 @@ const InventoryManagement = () => {
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <span style={{
                         fontWeight: '600',
-                        color: (readyStockCount[product.id] || 0) > 0 ? '#059669' : '#dc2626'
+                        color: (product.useBarcode === false ? product.stock : (readyStockCount[product.id] || 0)) > 0 ? '#059669' : '#dc2626'
                       }}>
-                        {readyStockCount[product.id] || 0}
+                        {product.useBarcode === false ? product.stock : (readyStockCount[product.id] || 0)}
                       </span>
                       <span style={{ color: '#6b7280', marginLeft: '0.25rem' }}>
                         / {product.stock} unit
@@ -549,9 +549,9 @@ const InventoryManagement = () => {
                     <span style={{
                       fontSize: '0.75rem',
                       fontWeight: '600',
-                      color: (readyStockCount[product.id] || 0) > 0 ? '#059669' : '#dc2626'
+                      color: (product.useBarcode === false ? product.stock : (readyStockCount[product.id] || 0)) > 0 ? '#059669' : '#dc2626'
                     }}>
-                      Ready {readyStockCount[product.id] || 0}
+                      Ready {product.useBarcode === false ? product.stock : (readyStockCount[product.id] || 0)}
                     </span>
                     <span style={{ fontSize: '0.75rem', color: '#6b7280', marginLeft: '0.25rem' }}>
                       / {product.stock}
