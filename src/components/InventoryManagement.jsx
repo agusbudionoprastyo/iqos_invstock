@@ -300,53 +300,73 @@ const InventoryManagement = () => {
   const handleAuditBarcodeScan = async (barcode) => {
     try {
       const product = await productService.getProductByBarcode(barcode);
-      if (product && currentAuditProduct && product.id === currentAuditProduct.id) {
-        const unitsRef = ref(database, `productUnits/${product.id}`);
-        const unitsSnap = await get(unitsRef);
-        let physicalCount = 0;
-        if (unitsSnap.exists()) {
-          const units = Object.values(unitsSnap.val());
-          physicalCount = units.filter((unit) => unit.barcode === barcode && unit.status === 'in_stock').length;
-        }
-
-        // persist per-item result
-        const resultPayload = {
-          productId: product.id,
-          name: product.name,
-          useBarcode: product.useBarcode !== false,
-          databaseStock: currentAuditProduct.databaseStock,
-          readyStock: currentAuditProduct.readyStock,
-          physicalStock: physicalCount,
-          status: 'completed',
-          updatedAt: Date.now()
-        };
-        await set(ref(database, `stockAuditsByDate/${auditDate}/results/${product.id}`), resultPayload);
-
-        // update local state
-        const updatedResults = auditResults.map((r) =>
-          r.id === currentAuditProduct.id ? { ...r, physicalStock: physicalCount, status: 'completed' } : r
-        );
-        setAuditResults(updatedResults);
-
-        const nextProduct = updatedResults.find((r) => r.status === 'pending');
-        if (nextProduct) {
-          setCurrentAuditProduct(nextProduct);
-          setAuditMode(nextProduct.useBarcode !== false ? 'barcode' : 'manual');
-        } else {
-          setCurrentAuditProduct(null);
-          setAuditMode(null);
-        }
-
-        await Swal.fire({
-          title: 'Berhasil!',
-          text: `Stock fisik: ${physicalCount}, Database: ${product.stock}`,
-          icon: 'success',
-          timer: 2000,
-          showConfirmButton: false
-        });
-      } else {
+      if (!(product && currentAuditProduct && product.id === currentAuditProduct.id)) {
         await Swal.fire({ title: 'Barcode Salah', text: 'Barcode tidak sesuai produk yang diaudit.', icon: 'warning' });
+        setShowScanner(false);
+        return;
       }
+
+      // Fetch units for current product
+      const unitsRef = ref(database, `productUnits/${product.id}`);
+      const unitsSnap = await get(unitsRef);
+      if (!unitsSnap.exists()) {
+        await Swal.fire({ title: 'Tidak Ada Unit', text: 'Tidak ada unit untuk produk ini.', icon: 'warning' });
+        setShowScanner(false);
+        return;
+      }
+
+      const unitsObj = unitsSnap.val();
+      const targetEntry = Object.entries(unitsObj).find(([unitId, unit]) => unit.barcode === barcode && unit.status === 'in_stock');
+      if (!targetEntry) {
+        await Swal.fire({ title: 'Unit Tidak Ditemukan', text: 'Unit barcode tidak tersedia/in-stock.', icon: 'warning' });
+        setShowScanner(false);
+        return;
+      }
+
+      const [unitId] = targetEntry;
+      // Get existing scanned units from local state (persisted in result)
+      const existing = auditResults.find((r) => r.id === currentAuditProduct.id);
+      const scannedUnits = Array.isArray(existing?.scannedUnits) ? existing.scannedUnits.slice() : [];
+
+      if (scannedUnits.includes(unitId)) {
+        await Swal.fire({ title: 'Duplikat Scan', text: 'Unit ini sudah discan untuk produk ini.', icon: 'info' });
+        setShowScanner(false);
+        return;
+      }
+
+      scannedUnits.push(unitId);
+      const physicalCount = scannedUnits.length;
+
+      // Persist in-progress result (status pending until user finishes item)
+      const resultPayload = {
+        productId: product.id,
+        name: product.name,
+        useBarcode: product.useBarcode !== false,
+        databaseStock: currentAuditProduct.databaseStock,
+        readyStock: currentAuditProduct.readyStock,
+        physicalStock: physicalCount,
+        scannedUnits,
+        status: 'pending',
+        updatedAt: Date.now()
+      };
+      await set(ref(database, `stockAuditsByDate/${auditDate}/results/${product.id}`), resultPayload);
+
+      // Update local state, keep item active for more scans
+      const updatedResults = auditResults.map((r) =>
+        r.id === currentAuditProduct.id ? { ...r, physicalStock: physicalCount, scannedUnits, status: 'pending' } : r
+      );
+      setAuditResults(updatedResults);
+
+      // Keep currentAuditProduct in sync for UI counters
+      setCurrentAuditProduct((prev) => prev && prev.id === product.id ? { ...prev, physicalStock: physicalCount, scannedUnits } : prev);
+
+      await Swal.fire({
+        title: 'Tersimpan',
+        text: `Ter-scan: ${physicalCount} unit`,
+        icon: 'success',
+        timer: 1200,
+        showConfirmButton: false
+      });
     } catch (error) {
       console.error('Error scanning barcode:', error);
       await Swal.fire({ title: 'Error!', text: 'Gagal memindai barcode.', icon: 'error' });
@@ -386,6 +406,43 @@ const InventoryManagement = () => {
       }
     } catch (e) {
       await Swal.fire({ title: 'Error!', text: e.message || 'Gagal menyimpan hasil item.', icon: 'error' });
+    }
+  };
+
+  const handleFinalizeBarcodeAudit = async () => {
+    try {
+      if (!currentAuditProduct) return;
+      const target = auditResults.find((r) => r.id === currentAuditProduct.id);
+      const physicalCount = Array.isArray(target?.scannedUnits) ? target.scannedUnits.length : (target?.physicalStock ?? 0);
+
+      const resultPayload = {
+        productId: currentAuditProduct.id,
+        name: currentAuditProduct.name,
+        useBarcode: currentAuditProduct.useBarcode !== false,
+        databaseStock: currentAuditProduct.databaseStock,
+        readyStock: currentAuditProduct.readyStock,
+        physicalStock: physicalCount,
+        scannedUnits: Array.isArray(target?.scannedUnits) ? target.scannedUnits : [],
+        status: 'completed',
+        updatedAt: Date.now()
+      };
+      await set(ref(database, `stockAuditsByDate/${auditDate}/results/${currentAuditProduct.id}`), resultPayload);
+
+      const updatedResults = auditResults.map((r) =>
+        r.id === currentAuditProduct.id ? { ...r, physicalStock: physicalCount, status: 'completed' } : r
+      );
+      setAuditResults(updatedResults);
+
+      const nextProduct = updatedResults.find((r) => r.status === 'pending');
+      if (nextProduct) {
+        setCurrentAuditProduct(nextProduct);
+        setAuditMode(nextProduct.useBarcode !== false ? 'barcode' : 'manual');
+      } else {
+        setCurrentAuditProduct(null);
+        setAuditMode(null);
+      }
+    } catch (e) {
+      await Swal.fire({ title: 'Error!', text: e.message || 'Gagal menyelesaikan item.', icon: 'error' });
     }
   };
 
@@ -453,16 +510,25 @@ const InventoryManagement = () => {
   const exportAuditPDF = () => {
     try {
       const title = `Laporan Stock Audit - ${auditDate} ${auditTime}`;
-      const printableRows = auditResults.map((r) => `
-        <tr>
-          <td>${r.name || '-'}</td>
-          <td style="text-align:center;">${r.useBarcode !== false ? 'Barcode' : 'Manual'}</td>
-          <td style="text-align:right;">${r.databaseStock ?? '-'}</td>
-          <td style="text-align:right;">${r.readyStock ?? '-'}</td>
-          <td style="text-align:right;">${r.physicalStock ?? '-'}</td>
-          <td style="text-align:center;">${r.status}</td>
-        </tr>
-      `).join('');
+      const printableRows = auditResults.map((r) => {
+        const dbVsFisik = r.physicalStock !== null ? (r.physicalStock - r.databaseStock) : null;
+        const readyVsFisik = r.physicalStock !== null ? (r.physicalStock - r.readyStock) : null;
+        const dbVsFisikText = dbVsFisik !== null ? (dbVsFisik > 0 ? `+${dbVsFisik}` : `${dbVsFisik}`) : '-';
+        const readyVsFisikText = readyVsFisik !== null ? (readyVsFisik > 0 ? `+${readyVsFisik}` : `${readyVsFisik}`) : '-';
+        
+        return `
+          <tr>
+            <td>${r.name || '-'}</td>
+            <td style="text-align:center;">${r.useBarcode !== false ? 'Barcode' : 'Manual'}</td>
+            <td style="text-align:right;">${r.databaseStock ?? '-'}</td>
+            <td style="text-align:right;">${r.readyStock ?? '-'}</td>
+            <td style="text-align:right;">${r.physicalStock ?? '-'}</td>
+            <td style="text-align:right;">${dbVsFisikText}</td>
+            <td style="text-align:right;">${readyVsFisikText}</td>
+            <td style="text-align:center;">${r.status}</td>
+          </tr>
+        `;
+      }).join('');
 
       const html = `
         <html>
@@ -494,6 +560,8 @@ const InventoryManagement = () => {
                   <th style="text-align:right;">DB</th>
                   <th style="text-align:right;">Ready</th>
                   <th style="text-align:right;">Fisik</th>
+                  <th style="text-align:right;">DB vs Fisik</th>
+                  <th style="text-align:right;">Ready vs Fisik</th>
                   <th style="text-align:center;">Status</th>
                 </tr>
               </thead>
@@ -1446,6 +1514,23 @@ const InventoryManagement = () => {
                       <Camera size={20} style={{ marginRight: '0.5rem' }} />
                       Scan Barcode
                     </button>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.75rem', color: '#6b7280' }}>
+                      <span>Ter-scan: {Array.isArray(currentAuditProduct.scannedUnits) ? currentAuditProduct.scannedUnits.length : (currentAuditProduct.physicalStock ?? 0)} unit</span>
+                      <span>
+                        Var: {(() => {
+                          const count = Array.isArray(currentAuditProduct.scannedUnits) ? currentAuditProduct.scannedUnits.length : (currentAuditProduct.physicalStock ?? 0);
+                          const diff = count - (currentAuditProduct.databaseStock ?? 0);
+                          return `${diff > 0 ? '+' : ''}${diff}`;
+                        })()}
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleFinalizeBarcodeAudit}
+                      className="btn btn-secondary"
+                      style={{ width: '100%', marginTop: '0.5rem' }}
+                    >
+                      Selesaikan Item
+                    </button>
                   </div>
                 )}
               </div>
@@ -1458,40 +1543,71 @@ const InventoryManagement = () => {
                   Hasil Audit ({auditResults.filter(r => r.status === 'completed').length}/{auditResults.length})
                 </h4>
                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                  {auditResults.map((result) => (
-                    <div key={result.id} style={{
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '0.5rem',
-                      padding: '0.75rem',
-                      marginBottom: '0.5rem',
-                      backgroundColor: result.status === 'completed' ? '#f0fdf4' : '#fefce8'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <h5 style={{ fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>
-                            {result.name}
-                          </h5>
-                          <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
-                            {result.useBarcode !== false ? 'Barcode' : 'Manual'}
-                          </p>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                            DB: {result.databaseStock} | Ready: {result.readyStock}
+                  {auditResults.map((result) => {
+                    const dbVsFisik = result.physicalStock !== null ? (result.physicalStock - result.databaseStock) : null;
+                    const readyVsFisik = result.physicalStock !== null ? (result.physicalStock - result.readyStock) : null;
+                    const hasDbDiscrepancy = dbVsFisik !== null && dbVsFisik !== 0;
+                    const hasReadyDiscrepancy = readyVsFisik !== null && readyVsFisik !== 0;
+                    
+                    return (
+                      <div key={result.id} style={{
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '0.5rem',
+                        padding: '0.75rem',
+                        marginBottom: '0.5rem',
+                        backgroundColor: result.status === 'completed' ? '#f0fdf4' : '#fefce8',
+                        borderLeft: hasDbDiscrepancy || hasReadyDiscrepancy ? '4px solid #ef4444' : '4px solid #10b981'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <h5 style={{ fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>
+                              {result.name}
+                            </h5>
+                            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                              {result.useBarcode !== false ? 'Barcode' : 'Manual'}
+                            </p>
                           </div>
-                          {result.status === 'completed' ? (
-                            <div style={{ fontSize: '0.75rem', fontWeight: '500', color: '#059669' }}>
-                              Fisik: {result.physicalStock}
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                              DB: {result.databaseStock} | Ready: {result.readyStock}
                             </div>
-                          ) : (
-                            <div style={{ fontSize: '0.75rem', fontWeight: '500', color: '#f59e0b' }}>
-                              Pending
-                            </div>
-                          )}
+                            {result.status === 'completed' ? (
+                              <div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: '500', color: '#059669' }}>
+                                  Fisik: {result.physicalStock}
+                                </div>
+                                {(hasDbDiscrepancy || hasReadyDiscrepancy) && (
+                                  <div style={{ fontSize: '0.7rem', marginTop: '0.25rem' }}>
+                                    {hasDbDiscrepancy && (
+                                      <span style={{ 
+                                        color: dbVsFisik > 0 ? '#059669' : '#ef4444',
+                                        fontWeight: '500'
+                                      }}>
+                                        DB: {dbVsFisik > 0 ? '+' : ''}{dbVsFisik}
+                                      </span>
+                                    )}
+                                    {hasDbDiscrepancy && hasReadyDiscrepancy && <span style={{ margin: '0 0.25rem' }}>|</span>}
+                                    {hasReadyDiscrepancy && (
+                                      <span style={{ 
+                                        color: readyVsFisik > 0 ? '#059669' : '#ef4444',
+                                        fontWeight: '500'
+                                      }}>
+                                        Ready: {readyVsFisik > 0 ? '+' : ''}{readyVsFisik}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div style={{ fontSize: '0.75rem', fontWeight: '500', color: '#f59e0b' }}>
+                                Pending
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
