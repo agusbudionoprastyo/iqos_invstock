@@ -62,13 +62,13 @@ const Dashboard = () => {
         width: '48px',
         height: '48px',
         borderRadius: '50%',
-        backgroundColor: color,
+        backgroundColor: color + '20', // Adding transparency (20 = ~12% opacity)
         marginRight: '1rem',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        <Icon size={24} style={{ color: 'white' }} />
+        <Icon size={24} style={{ color: color }} />
       </div>
       <div>
         <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#6b7280', margin: 0 }}>
