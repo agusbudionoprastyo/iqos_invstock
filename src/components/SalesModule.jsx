@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus, Trash2, Camera, Search, Receipt } from 'lucide-react';
 import { productService, salesService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
+import Swal from 'sweetalert2';
 
 const SalesModule = () => {
   const [products, setProducts] = useState([]);
@@ -9,6 +10,8 @@ const SalesModule = () => {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showScanner, setShowScanner] = useState(false);
+  const [scanningMode, setScanningMode] = useState(null); // 'add' | 'increase' | null
+  const [scanningProductId, setScanningProductId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -48,33 +51,50 @@ const SalesModule = () => {
     try {
       const product = await productService.getProductByBarcode(barcode);
       if (product) {
-        // Prevent duplicate (one item per barcode)
-        if (cart.some((item) => item.productId === product.id)) {
-          alert('Item dengan barcode ini sudah ada di keranjang (maksimal 1 qty).');
+        if (scanningMode === 'add') {
+          // Mode add to cart
+          addToCart(product);
+        } else if (scanningMode === 'increase' && scanningProductId) {
+          // Mode increase quantity
+          increaseQuantity(scanningProductId);
         } else {
+          // Default mode - add to cart
           addToCart(product);
         }
       } else {
-        alert('Produk tidak ditemukan');
+        await Swal.fire({
+          title: 'Produk Tidak Ditemukan',
+          text: 'Barcode tidak terdaftar dalam sistem.',
+          icon: 'warning'
+        });
       }
     } catch (error) {
       console.error('Error scanning barcode:', error);
-      alert('Error memindai barcode');
+      await Swal.fire({
+        title: 'Error!',
+        text: 'Gagal memindai barcode.',
+        icon: 'error'
+      });
     }
     setShowScanner(false);
+    setScanningMode(null);
+    setScanningProductId(null);
   };
 
   const addToCart = (product) => {
     const existingItem = cart.find(item => item.productId === product.id);
     
     if (existingItem) {
-      // Enforce max 1 qty per barcode
-      alert('Satu barcode hanya boleh 1 qty di keranjang.');
-      return;
+      // If product already in cart, increase quantity
+      increaseQuantity(product.id);
     } else {
       const readyStock = readyStockData[product.id] || 0;
       if (readyStock <= 0) {
-        alert('Stok siap jual habis');
+        Swal.fire({
+          title: 'Stok Habis',
+          text: 'Stok siap jual untuk produk ini habis.',
+          icon: 'warning'
+        });
         return;
       }
       setCart([...cart, {
@@ -91,16 +111,51 @@ const SalesModule = () => {
     setCart(cart.filter(item => item.productId !== productId));
   };
 
+  const increaseQuantity = (productId) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    const readyStock = readyStockData[productId] || 0;
+    const existingItem = cart.find(item => item.productId === productId);
+    
+    if (existingItem) {
+      if (existingItem.quantity >= readyStock) {
+        Swal.fire({
+          title: 'Stok Tidak Cukup',
+          text: `Maksimal quantity: ${readyStock}`,
+          icon: 'warning'
+        });
+        return;
+      }
+      
+      const newQuantity = existingItem.quantity + 1;
+      setCart(cart.map(item =>
+        item.productId === productId
+          ? { ...item, quantity: newQuantity, total: newQuantity * item.price }
+          : item
+      ));
+    }
+  };
+
   const updateQuantity = (productId, newQuantity) => {
-    // Enforce fixed quantity = 1; allow remove when <= 0
     if (newQuantity <= 0) {
       removeFromCart(productId);
       return;
     }
-    // Ignore attempts to set quantity > 1
+    
+    const readyStock = readyStockData[productId] || 0;
+    if (newQuantity > readyStock) {
+      Swal.fire({
+        title: 'Stok Tidak Cukup',
+        text: `Maksimal quantity: ${readyStock}`,
+        icon: 'warning'
+      });
+      return;
+    }
+    
     setCart(cart.map(item =>
       item.productId === productId
-        ? { ...item, quantity: 1, total: 1 * item.price }
+        ? { ...item, quantity: newQuantity, total: newQuantity * item.price }
         : item
     ));
   };
@@ -109,9 +164,38 @@ const SalesModule = () => {
     return cart.reduce((total, item) => total + item.total, 0);
   };
 
+  const handleAddToCart = (product) => {
+    if (product.useBarcode !== false) {
+      // Product uses barcode - require scanning
+      setScanningMode('add');
+      setScanningProductId(product.id);
+      setShowScanner(true);
+    } else {
+      // Product doesn't use barcode - direct add
+      addToCart(product);
+    }
+  };
+
+  const handleIncreaseQuantity = (productId) => {
+    const product = products.find(p => p.id === productId);
+    if (product && product.useBarcode !== false) {
+      // Product uses barcode - require scanning
+      setScanningMode('increase');
+      setScanningProductId(productId);
+      setShowScanner(true);
+    } else {
+      // Product doesn't use barcode - direct increase
+      increaseQuantity(productId);
+    }
+  };
+
   const handleCheckout = async () => {
     if (cart.length === 0) {
-      alert('Keranjang kosong');
+      await Swal.fire({
+        title: 'Keranjang Kosong',
+        text: 'Tambahkan produk ke keranjang terlebih dahulu.',
+        icon: 'warning'
+      });
       return;
     }
 
@@ -137,7 +221,11 @@ const SalesModule = () => {
       loadProducts();
     } catch (error) {
       console.error('Error creating sale:', error);
-      alert('Error melakukan penjualan');
+      await Swal.fire({
+        title: 'Error!',
+        text: 'Gagal melakukan penjualan.',
+        icon: 'error'
+      });
     }
   };
 
@@ -169,7 +257,7 @@ const SalesModule = () => {
         marginBottom: '1.5rem'
       }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827', margin: 0 }}>
-          Modul Penjualan
+          Penjualan
         </h1>
         <button
           onClick={() => setShowScanner(true)}
@@ -285,18 +373,18 @@ const SalesModule = () => {
                         Ready: {readyStockData[product.id] || 0}
                       </span>
                       <button
-                        onClick={() => addToCart(product)}
-                        disabled={(readyStockData[product.id] || 0) <= 0 || cart.some((c) => c.productId === product.id)}
+                        onClick={() => handleAddToCart(product)}
+                        disabled={(readyStockData[product.id] || 0) <= 0}
                         style={{
-                          backgroundColor: ((readyStockData[product.id] || 0) <= 0 || cart.some((c) => c.productId === product.id)) ? '#d1d5db' : '#3b82f6',
+                          backgroundColor: (readyStockData[product.id] || 0) <= 0 ? '#d1d5db' : '#3b82f6',
                           color: 'white',
                           padding: '0.25rem',
                           borderRadius: '0.25rem',
                           border: 'none',
-                          cursor: ((readyStockData[product.id] || 0) <= 0 || cart.some((c) => c.productId === product.id)) ? 'not-allowed' : 'pointer',
+                          cursor: (readyStockData[product.id] || 0) <= 0 ? 'not-allowed' : 'pointer',
                           fontSize: '0.75rem'
                         }}
-                        title={cart.some((c) => c.productId === product.id) ? 'Sudah di keranjang (maks 1)' : ''}
+                        title={(readyStockData[product.id] || 0) <= 0 ? 'Stok habis' : (product.useBarcode !== false ? 'Scan barcode untuk menambah' : 'Tambah ke keranjang')}
                       >
                         <Plus size={16} />
                       </button>
@@ -390,18 +478,18 @@ const SalesModule = () => {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => {}}
-                        disabled
+                        onClick={() => handleIncreaseQuantity(item.productId)}
+                        disabled={item.quantity >= (readyStockData[item.productId] || 0)}
                         style={{
-                          backgroundColor: '#e5e7eb',
-                          color: '#9ca3af',
+                          backgroundColor: item.quantity >= (readyStockData[item.productId] || 0) ? '#e5e7eb' : '#3b82f6',
+                          color: item.quantity >= (readyStockData[item.productId] || 0) ? '#9ca3af' : 'white',
                           padding: '0.25rem',
                           borderRadius: '0.25rem',
                           border: 'none',
-                          cursor: 'not-allowed',
+                          cursor: item.quantity >= (readyStockData[item.productId] || 0) ? 'not-allowed' : 'pointer',
                           fontSize: '0.75rem'
                         }}
-                        title="Qty maksimum 1 per barcode"
+                        title={item.quantity >= (readyStockData[item.productId] || 0) ? 'Stok tidak cukup' : 'Tambah quantity'}
                       >
                         <Plus size={12} />
                       </button>
@@ -418,7 +506,7 @@ const SalesModule = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
               <div>
                 <label className="form-label">
-                  Nama Pelanggan
+                  Nama
                 </label>
                 <input
                   type="text"
@@ -430,7 +518,7 @@ const SalesModule = () => {
               </div>
               <div>
                 <label className="form-label">
-                  No. Telepon
+                  No. HP
                 </label>
                 <input
                   type="text"
@@ -451,6 +539,7 @@ const SalesModule = () => {
                   style={{ fontSize: '0.75rem' }}
                 >
                   <option value="cash">Tunai</option>
+                  <option value="qris">QRIS</option>
                   <option value="card">Kartu</option>
                   <option value="transfer">Transfer</option>
                 </select>
@@ -501,7 +590,11 @@ const SalesModule = () => {
       <BarcodeScanner
         isOpen={showScanner}
         onScan={handleBarcodeScan}
-        onClose={() => setShowScanner(false)}
+        onClose={() => { 
+          setShowScanner(false); 
+          setScanningMode(null); 
+          setScanningProductId(null); 
+        }}
       />
 
       {/* Receipt Modal */}
