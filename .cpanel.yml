@@ -2,4 +2,4 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/dafm5634/public_html/iqos
-    - /bin/cp -R dist $DEPLOYPATH
+    - /bin/cp -R dist/* $DEPLOYPATH
