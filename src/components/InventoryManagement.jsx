@@ -1408,9 +1408,13 @@ const InventoryManagement = () => {
             </h3>
             
             {/* Date and Time Input */}
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div className="audit-inputs" style={{ 
+              display: 'flex', 
+              gap: '1rem', 
+              marginBottom: '1.5rem'
+            }}>
               <div style={{ flex: 1 }}>
-                <label className="form-label">Tanggal Audit</label>
+                <label className="form-label">Tanggal</label>
                 <input
                   type="date"
                   value={auditDate}
@@ -1420,7 +1424,7 @@ const InventoryManagement = () => {
                 />
               </div>
               <div style={{ flex: 1 }}>
-                <label className="form-label">Waktu Audit</label>
+                <label className="form-label">Waktu</label>
                 <input
                   type="time"
                   value={auditTime}
@@ -1461,20 +1465,20 @@ const InventoryManagement = () => {
                 marginBottom: '1.5rem'
               }}>
                 <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem', margin: 0 }}>
-                  Sedang Audit: {currentAuditProduct.name}
+                  {currentAuditProduct.name}
                 </h4>
                 <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem', margin: 0 }}>
-                  Database Stock: {currentAuditProduct.databaseStock} | Ready Stock: {currentAuditProduct.readyStock}
+                  Stock : {currentAuditProduct.databaseStock}
                 </p>
                 
                 {auditMode === 'manual' ? (
                   <div>
-                    <label className="form-label">Stock Fisik:</label>
+                    {/* <label className="form-label">Stock Fisik</label> */}
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <input
                         type="number"
                         min="0"
-                        placeholder="Masukkan jumlah fisik"
+                        placeholder="Jumlah stock fisik"
                         className="form-input"
                         style={{ flex: 1 }}
                         onKeyPress={(e) => {
@@ -1548,6 +1552,7 @@ const InventoryManagement = () => {
                     const readyVsFisik = result.physicalStock !== null ? (result.physicalStock - result.readyStock) : null;
                     const hasDbDiscrepancy = dbVsFisik !== null && dbVsFisik !== 0;
                     const hasReadyDiscrepancy = readyVsFisik !== null && readyVsFisik !== 0;
+                    const hasMinusVariance = (dbVsFisik !== null && dbVsFisik < 0) || (readyVsFisik !== null && readyVsFisik < 0);
                     
                     return (
                       <div key={result.id} style={{
@@ -1555,7 +1560,9 @@ const InventoryManagement = () => {
                         borderRadius: '0.5rem',
                         padding: '0.75rem',
                         marginBottom: '0.5rem',
-                        backgroundColor: result.status === 'completed' ? '#f0fdf4' : '#fefce8',
+                        backgroundColor: result.status === 'completed' 
+                          ? (hasMinusVariance ? '#fef2f2' : '#f0fdf4') 
+                          : '#fefce8',
                         borderLeft: hasDbDiscrepancy || hasReadyDiscrepancy ? '4px solid #ef4444' : '4px solid #10b981'
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1569,7 +1576,7 @@ const InventoryManagement = () => {
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                              DB: {result.databaseStock} | Ready: {result.readyStock}
+                              Stock : {result.databaseStock}
                             </div>
                             {result.status === 'completed' ? (
                               <div>
@@ -1578,21 +1585,12 @@ const InventoryManagement = () => {
                                 </div>
                                 {(hasDbDiscrepancy || hasReadyDiscrepancy) && (
                                   <div style={{ fontSize: '0.7rem', marginTop: '0.25rem' }}>
-                                    {hasDbDiscrepancy && (
-                                      <span style={{ 
-                                        color: dbVsFisik > 0 ? '#059669' : '#ef4444',
-                                        fontWeight: '500'
-                                      }}>
-                                        DB: {dbVsFisik > 0 ? '+' : ''}{dbVsFisik}
-                                      </span>
-                                    )}
-                                    {hasDbDiscrepancy && hasReadyDiscrepancy && <span style={{ margin: '0 0.25rem' }}>|</span>}
                                     {hasReadyDiscrepancy && (
                                       <span style={{ 
                                         color: readyVsFisik > 0 ? '#059669' : '#ef4444',
                                         fontWeight: '500'
                                       }}>
-                                        Ready: {readyVsFisik > 0 ? '+' : ''}{readyVsFisik}
+                                      {readyVsFisik > 0 ? '+' : ''}{readyVsFisik}
                                       </span>
                                     )}
                                   </div>
