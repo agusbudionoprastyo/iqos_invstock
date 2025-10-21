@@ -3,6 +3,8 @@ import { Plus, Edit, Trash2, Package, AlertTriangle, Search, Camera, CheckCircle
 import { productService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
 import Swal from 'sweetalert2';
+import { ref, get, push, set } from 'firebase/database';
+import { database } from '../firebase/config';
 
 const InventoryManagement = () => {
   const [products, setProducts] = useState([]);
@@ -21,6 +23,14 @@ const InventoryManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [checkedProduct, setCheckedProduct] = useState(null);
+  
+  // Stock Audit states
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [auditDate, setAuditDate] = useState(new Date().toISOString().split('T')[0]);
+  const [auditTime, setAuditTime] = useState(new Date().toTimeString().slice(0, 5));
+  const [auditResults, setAuditResults] = useState([]);
+  const [currentAuditProduct, setCurrentAuditProduct] = useState(null);
+  const [auditMode, setAuditMode] = useState(null); // 'manual' | 'barcode' | null
 
   const [formData, setFormData] = useState({
     name: '',
@@ -239,8 +249,143 @@ const InventoryManagement = () => {
       await Swal.fire({
         title: 'Error!',
         text: e.message || 'Gagal assign barcode',
-        icon: 'error'
       });
+    }
+  };
+
+  const startStockAudit = async () => {
+    try {
+      const sessionRef = ref(database, `stockAuditsByDate/${auditDate}`);
+      const snap = await get(sessionRef);
+      let initialResults = [];
+
+      if (snap.exists()) {
+        const data = snap.val() || {};
+        const existingResults = data.results || {};
+        initialResults = products.map((product) => {
+          const existing = existingResults[product.id];
+          const isCompleted = !!existing;
+          return {
+            ...product,
+            physicalStock: existing?.physicalStock ?? null,
+            databaseStock: product.stock,
+            readyStock: readyStockCount[product.id] || 0,
+            status: isCompleted ? 'completed' : 'pending'
+          };
+        });
+      } else {
+        // create meta for new session
+        await set(ref(database, `stockAuditsByDate/${auditDate}/meta`), {
+          date: auditDate,
+          createdAt: Date.now()
+        });
+        initialResults = products.map((product) => ({
+          ...product,
+          physicalStock: null,
+          databaseStock: product.stock,
+          readyStock: readyStockCount[product.id] || 0,
+          status: 'pending'
+        }));
+      }
+
+      setAuditResults(initialResults);
+      const next = initialResults.find((r) => r.status === 'pending') || null;
+      setCurrentAuditProduct(next);
+      setAuditMode(next ? (next.useBarcode !== false ? 'barcode' : 'manual') : null);
+    } catch (e) {
+      await Swal.fire({ title: 'Error!', text: e.message || 'Gagal memulai audit.', icon: 'error' });
+    }
+  };
+
+  const handleAuditBarcodeScan = async (barcode) => {
+    try {
+      const product = await productService.getProductByBarcode(barcode);
+      if (product && currentAuditProduct && product.id === currentAuditProduct.id) {
+        const unitsRef = ref(database, `productUnits/${product.id}`);
+        const unitsSnap = await get(unitsRef);
+        let physicalCount = 0;
+        if (unitsSnap.exists()) {
+          const units = Object.values(unitsSnap.val());
+          physicalCount = units.filter((unit) => unit.barcode === barcode && unit.status === 'in_stock').length;
+        }
+
+        // persist per-item result
+        const resultPayload = {
+          productId: product.id,
+          name: product.name,
+          useBarcode: product.useBarcode !== false,
+          databaseStock: currentAuditProduct.databaseStock,
+          readyStock: currentAuditProduct.readyStock,
+          physicalStock: physicalCount,
+          status: 'completed',
+          updatedAt: Date.now()
+        };
+        await set(ref(database, `stockAuditsByDate/${auditDate}/results/${product.id}`), resultPayload);
+
+        // update local state
+        const updatedResults = auditResults.map((r) =>
+          r.id === currentAuditProduct.id ? { ...r, physicalStock: physicalCount, status: 'completed' } : r
+        );
+        setAuditResults(updatedResults);
+
+        const nextProduct = updatedResults.find((r) => r.status === 'pending');
+        if (nextProduct) {
+          setCurrentAuditProduct(nextProduct);
+          setAuditMode(nextProduct.useBarcode !== false ? 'barcode' : 'manual');
+        } else {
+          setCurrentAuditProduct(null);
+          setAuditMode(null);
+        }
+
+        await Swal.fire({
+          title: 'Berhasil!',
+          text: `Stock fisik: ${physicalCount}, Database: ${product.stock}`,
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        await Swal.fire({ title: 'Barcode Salah', text: 'Barcode tidak sesuai produk yang diaudit.', icon: 'warning' });
+      }
+    } catch (error) {
+      console.error('Error scanning barcode:', error);
+      await Swal.fire({ title: 'Error!', text: 'Gagal memindai barcode.', icon: 'error' });
+    }
+    setShowScanner(false);
+  };
+
+  const handleManualStockInput = async (productId, physicalStock) => {
+    try {
+      const target = auditResults.find((r) => r.id === productId);
+      if (!target) return;
+
+      const resultPayload = {
+        productId,
+        name: target.name,
+        useBarcode: target.useBarcode !== false,
+        databaseStock: target.databaseStock,
+        readyStock: target.readyStock,
+        physicalStock: parseInt(physicalStock),
+        status: 'completed',
+        updatedAt: Date.now()
+      };
+      await set(ref(database, `stockAuditsByDate/${auditDate}/results/${productId}`), resultPayload);
+
+      const updatedResults = auditResults.map((r) =>
+        r.id === productId ? { ...r, physicalStock: parseInt(physicalStock), status: 'completed' } : r
+      );
+      setAuditResults(updatedResults);
+
+      const nextProduct = updatedResults.find((r) => r.status === 'pending');
+      if (nextProduct) {
+        setCurrentAuditProduct(nextProduct);
+        setAuditMode(nextProduct.useBarcode !== false ? 'barcode' : 'manual');
+      } else {
+        setCurrentAuditProduct(null);
+        setAuditMode(null);
+      }
+    } catch (e) {
+      await Swal.fire({ title: 'Error!', text: e.message || 'Gagal menyimpan hasil item.', icon: 'error' });
     }
   };
 
@@ -268,6 +413,112 @@ const InventoryManagement = () => {
       </div>
     );
   }
+
+  const saveAuditReport = async () => {
+    try {
+      const auditsRef = ref(database, 'stockAudits');
+      const newAuditRef = push(auditsRef);
+      const payload = {
+        id: newAuditRef.key,
+        date: auditDate,
+        time: auditTime,
+        createdAt: Date.now(),
+        results: auditResults.map(r => ({
+          productId: r.id,
+          name: r.name,
+          useBarcode: r.useBarcode !== false,
+          databaseStock: r.databaseStock,
+          readyStock: r.readyStock,
+          physicalStock: r.physicalStock,
+          status: r.status
+        }))
+      };
+      await set(newAuditRef, payload);
+      await Swal.fire({
+        title: 'Tersimpan!',
+        text: 'Laporan audit berhasil disimpan.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (e) {
+      await Swal.fire({
+        title: 'Error!',
+        text: e.message || 'Gagal menyimpan laporan audit.',
+        icon: 'error'
+      });
+    }
+  };
+
+  const exportAuditPDF = () => {
+    try {
+      const title = `Laporan Stock Audit - ${auditDate} ${auditTime}`;
+      const printableRows = auditResults.map((r) => `
+        <tr>
+          <td>${r.name || '-'}</td>
+          <td style="text-align:center;">${r.useBarcode !== false ? 'Barcode' : 'Manual'}</td>
+          <td style="text-align:right;">${r.databaseStock ?? '-'}</td>
+          <td style="text-align:right;">${r.readyStock ?? '-'}</td>
+          <td style="text-align:right;">${r.physicalStock ?? '-'}</td>
+          <td style="text-align:center;">${r.status}</td>
+        </tr>
+      `).join('');
+
+      const html = `
+        <html>
+          <head>
+            <meta charset="utf-8" />
+            <title>${title}</title>
+            <style>
+              body { font-family: Arial, Helvetica, sans-serif; color: #111827; padding: 24px; }
+              h1 { font-size: 18px; margin: 0 0 4px 0; }
+              p { margin: 0 0 16px 0; color: #6b7280; }
+              table { width: 100%; border-collapse: collapse; }
+              th, td { border: 1px solid #e5e7eb; padding: 8px; font-size: 12px; }
+              th { background: #f3f4f6; text-align: left; }
+              tfoot td { font-weight: 600; }
+              .meta { margin-bottom: 16px; }
+              @media print {
+                @page { size: A4; margin: 16mm; }
+              }
+            </style>
+          </head>
+          <body>
+            <h1>${title}</h1>
+            <p class="meta">Total item selesai: ${auditResults.filter(r => r.status === 'completed').length}/${auditResults.length}</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Produk</th>
+                  <th style="text-align:center;">Mode</th>
+                  <th style="text-align:right;">DB</th>
+                  <th style="text-align:right;">Ready</th>
+                  <th style="text-align:right;">Fisik</th>
+                  <th style="text-align:center;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${printableRows}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `;
+
+      const printWindow = window.open('', '_blank', 'width=1024,height=768');
+      if (!printWindow) return;
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      // Delay print to ensure styles render
+      setTimeout(() => {
+        printWindow.print();
+      }, 300);
+    } catch (e) {
+      Swal.fire({ title: 'Error!', text: e.message || 'Gagal mengekspor PDF.', icon: 'error' });
+    }
+  };
 
   return (
     <div style={{ padding: '1.5rem' }}>
@@ -328,46 +579,46 @@ const InventoryManagement = () => {
           justifyContent: 'space-between',
           gap: '1rem'
         }}>
-          {/* Search Bar */}
+      {/* Search Bar */}
           <div style={{ 
             position: 'relative',
             flex: window.innerWidth <= 768 ? 'none' : '1',
             maxWidth: window.innerWidth <= 768 ? 'none' : '300px'
           }}>
-            <Search size={20} style={{
-              position: 'absolute',
-              left: '0.75rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: '#9ca3af'
-            }} />
-            <input
-              type="text"
-              placeholder="Cari produk..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                paddingLeft: '2.5rem',
-                paddingRight: '1rem',
-                paddingTop: '0.5rem',
-                paddingBottom: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.5rem',
-                fontSize: '0.875rem'
-              }}
-            />
-          </div>
-          
+          <Search size={20} style={{
+            position: 'absolute',
+            left: '0.75rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: '#9ca3af'
+          }} />
+          <input
+            type="text"
+            placeholder="Cari produk..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              paddingLeft: '2.5rem',
+              paddingRight: '1rem',
+              paddingTop: '0.5rem',
+              paddingBottom: '0.5rem',
+              border: '1px solid #d1d5db',
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem'
+            }}
+          />
+      </div>
+
           {/* Action Buttons */}
-          <div style={{
+      <div style={{
             display: 'flex',
             gap: '0.5rem',
             flexWrap: 'wrap',
             width: window.innerWidth <= 768 ? '100%' : 'auto'
           }}>
             <button
-              onClick={() => setScanningMode('stock_check')}
+              onClick={() => setShowAuditModal(true)}
               style={{
                 backgroundColor: '#10b981',
                 color: 'white',
@@ -386,7 +637,7 @@ const InventoryManagement = () => {
               }}
             >
               <CheckCircle size={20} />
-              Check Stock
+              Stock Audit
             </button>
             <button
               onClick={() => setShowAddModal(true)}
@@ -1082,10 +1333,214 @@ const InventoryManagement = () => {
         </div>
       )}
 
+      {/* Stock Audit Modal */}
+      {showAuditModal && (
+        <div className="modal-overlay">
+          <div className="modal" style={{ maxWidth: '600px', maxHeight: '80vh', overflow: 'auto' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
+              Stock Audit Report
+            </h3>
+            
+            {/* Date and Time Input */}
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ flex: 1 }}>
+                <label className="form-label">Tanggal Audit</label>
+                <input
+                  type="date"
+                  value={auditDate}
+                  onChange={(e) => setAuditDate(e.target.value)}
+                  className="form-input"
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label className="form-label">Waktu Audit</label>
+                <input
+                  type="time"
+                  value={auditTime}
+                  onChange={(e) => setAuditTime(e.target.value)}
+                  className="form-input"
+                />
+              </div>
+            </div>
+
+            {/* Start Audit Button */}
+            {auditResults.length === 0 && (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  onClick={() => setShowAuditModal(false)}
+                  className="btn btn-secondary"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  Tutup
+                </button>
+                <button
+                  onClick={startStockAudit}
+                  className="btn btn-primary"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  Mulai Stock Audit
+                </button>
+              </div>
+            )}
+
+            {/* Current Product Being Audited */}
+            {currentAuditProduct && (
+              <div style={{
+                backgroundColor: '#f0f9ff',
+                border: '1px solid #0ea5e9',
+                borderRadius: '0.5rem',
+                padding: '1rem',
+                marginBottom: '1.5rem'
+              }}>
+                <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem', margin: 0 }}>
+                  Sedang Audit: {currentAuditProduct.name}
+                </h4>
+                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem', margin: 0 }}>
+                  Database Stock: {currentAuditProduct.databaseStock} | Ready Stock: {currentAuditProduct.readyStock}
+                </p>
+                
+                {auditMode === 'manual' ? (
+                  <div>
+                    <label className="form-label">Stock Fisik:</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="Masukkan jumlah fisik"
+                        className="form-input"
+                        style={{ flex: 1 }}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            const value = e.target.value;
+                            if (value) {
+                              handleManualStockInput(currentAuditProduct.id, value);
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                      />
+                      <button
+                        onClick={(e) => {
+                          const input = e.target.previousElementSibling;
+                          if (input.value) {
+                            handleManualStockInput(currentAuditProduct.id, input.value);
+                            input.value = '';
+                          }
+                        }}
+                        className="btn btn-primary"
+                      >
+                        Submit
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem', margin: 0 }}>
+                      Scan barcode untuk menghitung stock fisik
+                    </p>
+                    <button
+                      onClick={() => setShowScanner(true)}
+                      className="btn btn-primary"
+                      style={{ width: '100%' }}
+                    >
+                      <Camera size={20} style={{ marginRight: '0.5rem' }} />
+                      Scan Barcode
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Audit Results */}
+            {auditResults.length > 0 && (
+              <div>
+                <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
+                  Hasil Audit ({auditResults.filter(r => r.status === 'completed').length}/{auditResults.length})
+                </h4>
+                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  {auditResults.map((result) => (
+                    <div key={result.id} style={{
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.5rem',
+                      padding: '0.75rem',
+                      marginBottom: '0.5rem',
+                      backgroundColor: result.status === 'completed' ? '#f0fdf4' : '#fefce8'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <h5 style={{ fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>
+                            {result.name}
+                          </h5>
+                          <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                            {result.useBarcode !== false ? 'Barcode' : 'Manual'}
+                          </p>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                            DB: {result.databaseStock} | Ready: {result.readyStock}
+                          </div>
+                          {result.status === 'completed' ? (
+                            <div style={{ fontSize: '0.75rem', fontWeight: '500', color: '#059669' }}>
+                              Fisik: {result.physicalStock}
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: '0.75rem', fontWeight: '500', color: '#f59e0b' }}>
+                              Pending
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Footer Buttons */}
+            {auditResults.length > 0 && (
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                <button
+                  onClick={() => {
+                    setShowAuditModal(false);
+                    setAuditResults([]);
+                    setCurrentAuditProduct(null);
+                    setAuditMode(null);
+                  }}
+                  className="btn btn-secondary"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  Tutup
+                </button>
+                <button
+                  onClick={exportAuditPDF}
+                  className="btn btn-secondary"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  Export PDF
+                </button>
+                <button
+                  onClick={async () => {
+                    await set(ref(database, `stockAuditsByDate/${auditDate}/meta/`), {
+                      date: auditDate,
+                      updatedAt: Date.now()
+                    });
+                    await saveAuditReport();
+                  }}
+                  className="btn btn-primary"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  Simpan Laporan
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Barcode Scanner */}
       <BarcodeScanner
         isOpen={showScanner}
-        onScan={scanningMode === 'assign' ? handleAssignScan : (scanningMode === 'check' ? handleStockCheckScan : handleBarcodeScan)}
+        onScan={scanningMode === 'assign' ? handleAssignScan : (scanningMode === 'check' ? handleStockCheckScan : handleAuditBarcodeScan)}
         onClose={() => { setShowScanner(false); setScanningMode(null); setAssigningProductId(null); }}
       />
     </div>
