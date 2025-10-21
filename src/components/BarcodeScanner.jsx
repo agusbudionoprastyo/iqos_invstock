@@ -154,7 +154,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
           </button>
         </div>
 
-        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+        {/* <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
           <Camera size={48} style={{ color: '#3b82f6', marginBottom: '0.5rem' }} />
           <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: 0 }}>
             Arahkan kamera ke barcode untuk memindai
@@ -164,7 +164,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
               ✓ Kamera aktif - {isScanning ? 'Memindai...' : 'Siap'}
             </p>
           )}
-        </div>
+        </div> */}
 
         {/* Scanner Container (html5-qrcode mounts here) */}
         <div style={{
