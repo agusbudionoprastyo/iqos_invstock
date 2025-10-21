@@ -120,7 +120,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 50,
+      zIndex: 1000,
       padding: '1rem'
     }}>
       <div style={{
