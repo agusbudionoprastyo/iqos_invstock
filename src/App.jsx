@@ -25,8 +25,8 @@ const Navigation = () => {
     <nav className="nav">
       <div className="nav-container">
         <Link to="/" className="nav-brand">
-          <Package size={24} />
-          <span className="mobile-hidden">IQOS Inventory</span>
+          {/* <Package size={24} /> */}
+          <span className="mobile-hidden">IQOS</span>
         </Link>
         <ul className="nav-menu">
           {menuItems.map((item) => {
