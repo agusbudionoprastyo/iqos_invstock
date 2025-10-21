@@ -25,6 +25,7 @@ const InventoryManagement = () => {
     name: '',
     category: '',
     price: '',
+    stock: '',
     minStock: '',
     useBarcode: true
   });
@@ -73,6 +74,7 @@ const InventoryManagement = () => {
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
+        stock: formData.useBarcode ? 0 : parseInt(formData.stock), // Only use manual stock if barcode is disabled
         minStock: parseInt(formData.minStock)
       };
 
@@ -88,6 +90,7 @@ const InventoryManagement = () => {
         name: '',
         category: '',
         price: '',
+        stock: '',
         minStock: '',
         useBarcode: true
       });
@@ -103,8 +106,9 @@ const InventoryManagement = () => {
       name: product.name,
       category: product.category,
       price: product.price.toString(),
+      stock: product.stock.toString(),
       minStock: product.minStock.toString(),
-      useBarcode: true
+      useBarcode: product.useBarcode !== false
     });
     setShowEditModal(true);
   };
@@ -690,18 +694,51 @@ const InventoryManagement = () => {
                       Centang jika produk menggunakan barcode untuk tracking unit
                     </span>
                   </div>
-                  <div style={{
-                    marginTop: '0.5rem',
-                    padding: '0.75rem',
-                    backgroundColor: '#f0f9ff',
-                    border: '1px solid #bae6fd',
-                    borderRadius: '0.375rem',
-                    fontSize: '0.75rem',
-                    color: '#0369a1'
-                  }}>
-                    <strong>Info:</strong> Stok akan dihitung otomatis dari jumlah unit yang memiliki barcode. Tidak perlu input stok awal secara manual.
-                  </div>
+                  {formData.useBarcode && (
+                    <div style={{
+                      marginTop: '0.5rem',
+                      padding: '0.75rem',
+                      backgroundColor: '#f0f9ff',
+                      border: '1px solid #bae6fd',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.75rem',
+                      color: '#0369a1'
+                    }}>
+                      <strong>Info:</strong> Stok akan dihitung otomatis dari jumlah unit yang memiliki barcode. Tidak perlu input stok awal secara manual.
+                    </div>
+                  )}
+                  {!formData.useBarcode && (
+                    <div style={{
+                      marginTop: '0.5rem',
+                      padding: '0.75rem',
+                      backgroundColor: '#fef3c7',
+                      border: '1px solid #fbbf24',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.75rem',
+                      color: '#92400e'
+                    }}>
+                      <strong>Info:</strong> Produk tanpa barcode menggunakan input stok manual. Anda perlu mengatur stok secara manual.
+                    </div>
+                  )}
                 </div>
+
+                {!formData.useBarcode && (
+                  <div>
+                    <label className="form-label">
+                      Stok Awal
+                    </label>
+                    <input
+                      type="number"
+                      name="stock"
+                      value={formData.stock}
+                      onChange={handleInputChange}
+                      required
+                      min="0"
+                      className="form-input"
+                      placeholder="Jumlah stok awal"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="form-label">
@@ -730,6 +767,7 @@ const InventoryManagement = () => {
                       name: '',
                       category: '',
                       price: '',
+                      stock: '',
                       minStock: '',
                       useBarcode: true
                     });

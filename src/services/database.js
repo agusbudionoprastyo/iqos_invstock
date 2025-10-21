@@ -81,21 +81,18 @@ export const productService = {
       const productRef = ref(database, 'products');
       const newProductRef = push(productRef);
       
-      // Remove stock from productData since it will be calculated from units
-      const { stock, ...productDataWithoutStock } = productData;
+      const useBarcode = productData.useBarcode !== false; // Default to true if not specified
       
       const product = {
         id: newProductRef.key,
-        ...productDataWithoutStock,
-        stock: 0, // Always start with 0, will be calculated from units
+        ...productData,
+        stock: useBarcode ? 0 : productData.stock, // Use manual stock if barcode disabled, otherwise start with 0
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
       await set(newProductRef, product);
 
-      // Initialize empty productUnits collection for barcode tracking
-      const useBarcode = productData.useBarcode !== false; // Default to true if not specified
-      
+      // Initialize productUnits collection only if using barcode
       if (useBarcode) {
         // Create empty productUnits collection - units will be added when barcodes are assigned
         const unitsBaseRef = ref(database, `productUnits/${newProductRef.key}`);
@@ -212,6 +209,17 @@ export const productService = {
   addBarcodeToProduct: async (productId, barcode) => {
     try {
       if (!barcode) throw new Error('Barcode is required');
+
+      // Check if product uses barcode
+      const productRef = ref(database, `products/${productId}`);
+      const productSnap = await get(productRef);
+      if (!productSnap.exists()) {
+        throw new Error('Product not found');
+      }
+      const product = productSnap.val();
+      if (product.useBarcode === false) {
+        throw new Error('Product tidak menggunakan barcode');
+      }
 
       // Ensure barcode is not used in any unit (global uniqueness)
       const allUnitsSnap = await get(ref(database, 'productUnits'));
