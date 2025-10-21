@@ -33,8 +33,9 @@ code {
   background: white;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   padding: 1rem 0;
-  position: relative;
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .nav-container {
@@ -565,21 +566,32 @@ code {
 /* Mobile navigation */
 @media (max-width: 768px) {
   .nav-container {
-    flex-direction: row;
-    gap: 0.5rem;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
+  
+  .nav-brand {
+    display: none;
   }
   
   .nav-menu {
-    gap: 0.5rem;
+    gap: 2rem;
+    justify-content: center;
+    width: 100%;
   }
   
   .nav-link {
-    padding: 0.5rem;
+    padding: 0.75rem;
     font-size: 0.75rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 60px;
   }
   
   .nav-link svg {
-    margin-right: 0.25rem;
+    margin-right: 0;
+    margin-bottom: 0.25rem;
   }
   
   

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Package, AlertTriangle, Search, Camera, CheckCircle } from 'lucide-react';
 import { productService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
+import Swal from 'sweetalert2';
 
 const InventoryManagement = () => {
   const [products, setProducts] = useState([]);
@@ -114,12 +115,35 @@ const InventoryManagement = () => {
   };
 
   const handleDelete = async (productId) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+    const result = await Swal.fire({
+      title: 'Hapus Produk?',
+      text: 'Apakah Anda yakin ingin menghapus produk ini?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Ya, Hapus!',
+      cancelButtonText: 'Batal'
+    });
+
+    if (result.isConfirmed) {
       try {
         await productService.deleteProduct(productId);
+        await Swal.fire({
+          title: 'Berhasil!',
+          text: 'Produk berhasil dihapus.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
         loadProducts();
       } catch (error) {
         console.error('Error deleting product:', error);
+        await Swal.fire({
+          title: 'Error!',
+          text: 'Gagal menghapus produk.',
+          icon: 'error'
+        });
       }
     }
   };
@@ -137,11 +161,19 @@ const InventoryManagement = () => {
         setCheckedProduct(product);
         setShowStockCheckModal(true);
       } else {
-        alert('Produk tidak ditemukan');
+        await Swal.fire({
+          title: 'Produk Tidak Ditemukan',
+          text: 'Barcode tidak terdaftar dalam sistem.',
+          icon: 'warning'
+        });
       }
     } catch (error) {
       console.error('Error checking stock:', error);
-      alert('Error memeriksa stok');
+      await Swal.fire({
+        title: 'Error!',
+        text: 'Gagal memeriksa stok.',
+        icon: 'error'
+      });
     }
     setShowScanner(false);
     setScanningMode(null);
@@ -157,13 +189,23 @@ const InventoryManagement = () => {
     try {
       if (!assigningProductId) return;
       await productService.addBarcodeToProduct(assigningProductId, barcode);
-      alert('Barcode berhasil di-assign');
+      await Swal.fire({
+        title: 'Berhasil!',
+        text: 'Barcode berhasil di-assign.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
       setAssigningProductId(null);
       setScanningMode(null);
       setShowScanner(false);
       loadProducts();
     } catch (e) {
-      alert(e.message || 'Gagal assign barcode');
+      await Swal.fire({
+        title: 'Error!',
+        text: e.message || 'Gagal assign barcode',
+        icon: 'error'
+      });
       setAssigningProductId(null);
       setScanningMode(null);
       setShowScanner(false);
@@ -172,19 +214,33 @@ const InventoryManagement = () => {
 
   const handleManualAssign = async () => {
     if (!manualBarcode.trim()) {
-      alert('Masukkan barcode');
+      await Swal.fire({
+        title: 'Perhatian!',
+        text: 'Masukkan barcode terlebih dahulu.',
+        icon: 'warning'
+      });
       return;
     }
     
     try {
       await productService.addBarcodeToProduct(assigningProductId, manualBarcode.trim());
-      alert('Barcode berhasil di-assign');
+      await Swal.fire({
+        title: 'Berhasil!',
+        text: 'Barcode berhasil di-assign.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
       setShowAssignBarcodeModal(false);
       setAssigningProductId(null);
       setManualBarcode('');
       loadProducts();
     } catch (e) {
-      alert(e.message || 'Gagal assign barcode');
+      await Swal.fire({
+        title: 'Error!',
+        text: e.message || 'Gagal assign barcode',
+        icon: 'error'
+      });
     }
   };
 
