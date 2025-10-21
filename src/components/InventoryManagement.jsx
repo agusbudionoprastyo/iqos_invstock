@@ -245,6 +245,11 @@ const InventoryManagement = () => {
   };
 
   const filteredProducts = products.filter(product => {
+    // Safety checks for undefined/null values
+    if (!product || !product.name || !product.category) {
+      return false;
+    }
+    
     const term = searchTerm.toLowerCase();
     const inName = product.name.toLowerCase().includes(term);
     const inCategory = product.category.toLowerCase().includes(term);
@@ -318,7 +323,6 @@ const InventoryManagement = () => {
             }}
           >
             <Plus size={20} />
-            Tambah Produk
           </button>
         </div>
       </div>

@@ -231,13 +231,17 @@ const SalesModule = () => {
   };
 
   const filteredProducts = products.filter(product => {
+    // Safety checks for undefined/null values
+    if (!product || !product.name || !product.category) {
+      return false;
+    }
+    
     const term = searchTerm.toLowerCase();
     const inName = product.name.toLowerCase().includes(term);
     const inCategory = product.category.toLowerCase().includes(term);
-    const inBarcode = product.barcode.toLowerCase().includes(term);
     
     // Apply search filter
-    const matchesSearch = inName || inCategory || inBarcode;
+    const matchesSearch = inName || inCategory;
     
     // Apply barcode filter
     let matchesBarcodeFilter = true;
@@ -420,7 +424,7 @@ const SalesModule = () => {
                   </div>
                   <div style={{ marginBottom: '0.5rem' }}>
                     <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
-                      Barcode: {product.barcode}
+                      Barcode: {product.useBarcode !== false ? 'Per unit' : (product.barcode || '-')}
                     </p>
                     <span style={{
                       fontSize: '0.625rem',
@@ -654,8 +658,8 @@ const SalesModule = () => {
                   fontWeight: '500'
                 }}
               >
-                <Receipt size={20} />
-                Proses Penjualan
+                {/* <Receipt size={20} /> */}
+               Checkout
               </button>
             </div>
           </div>
