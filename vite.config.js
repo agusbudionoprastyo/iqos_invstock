@@ -12,8 +12,9 @@ export default defineConfig({
       writeBundle() {
         try {
           copyFileSync('public/_redirects', 'dist/_redirects')
+          copyFileSync('public/.htaccess', 'dist/.htaccess')
         } catch (err) {
-          console.log('No _redirects file found in public folder')
+          console.log('No redirect files found in public folder')
         }
       }
     }
