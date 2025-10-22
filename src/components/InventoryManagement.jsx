@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Package, AlertTriangle, Search, Camera, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { productService } from '../services/database';
+import { productService, categoryService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
 import Swal from 'sweetalert2';
 import { ref, get, push, set } from 'firebase/database';
@@ -24,6 +24,8 @@ const InventoryManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [checkedProduct, setCheckedProduct] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [customCategory, setCustomCategory] = useState('');
   
   // Stock Audit states
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -54,6 +56,7 @@ const InventoryManagement = () => {
 
   useEffect(() => {
     loadProducts();
+    loadCategories();
   }, []);
 
   const loadProducts = async () => {
@@ -82,6 +85,29 @@ const InventoryManagement = () => {
     }
   };
 
+  const loadCategories = async () => {
+    try {
+      // Load categories from Firebase
+      const firebaseCategories = await categoryService.getAllCategories();
+      
+      // Also get categories from existing products
+      const productCategories = await categoryService.getCategoriesFromProducts();
+      
+      // Combine and deduplicate categories
+      const allCategories = [...firebaseCategories, ...productCategories];
+      const uniqueCategories = allCategories.reduce((acc, category) => {
+        if (!acc.find(c => c.name === category.name)) {
+          acc.push(category);
+        }
+        return acc;
+      }, []);
+      
+      setCategories(uniqueCategories);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -93,8 +119,25 @@ const InventoryManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      let categoryName = formData.category;
+      
+      // If custom category is provided, use it
+      if (customCategory.trim()) {
+        categoryName = customCategory.trim();
+        
+        // Check if this category already exists
+        const existingCategory = categories.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase());
+        if (!existingCategory) {
+          // Create new category in Firebase
+          await categoryService.createCategory({ name: categoryName });
+          // Reload categories to include the new one
+          await loadCategories();
+        }
+      }
+
       const productData = {
         ...formData,
+        category: categoryName,
         price: parseFloat(formData.price),
         stock: formData.useBarcode ? 0 : parseInt(formData.stock), // Only use manual stock if barcode is disabled
         minStock: parseInt(formData.minStock)
@@ -108,6 +151,7 @@ const InventoryManagement = () => {
 
       setShowAddModal(false);
       setShowEditModal(false);
+      setCustomCategory('');
       setFormData({
         name: '',
         category: '',
@@ -631,9 +675,11 @@ const InventoryManagement = () => {
         const products = jsonData.slice(1).map((row, index) => {
           if (!row[0] || !row[1] || !row[2]) return null; // Skip empty rows
           
+          const categoryName = row[1]?.toString().trim() || '';
+          
           return {
             name: row[0]?.toString().trim() || '',
-            category: row[1]?.toString().trim() || '',
+            category: categoryName,
             price: parseFloat(row[2]) || 0,
             stock: parseInt(row[3]) || 0,
             minStock: parseInt(row[4]) || 0,
@@ -675,6 +721,18 @@ const InventoryManagement = () => {
       }
 
       setImportProgress({ current: 0, total: importData.length });
+      
+      // First, create any new categories that don't exist
+      const uniqueCategories = [...new Set(importData.map(p => p.category))];
+      for (const categoryName of uniqueCategories) {
+        const existingCategory = categories.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase());
+        if (!existingCategory) {
+          await categoryService.createCategory({ name: categoryName });
+        }
+      }
+      
+      // Reload categories after creating new ones
+      await loadCategories();
       
       for (let i = 0; i < importData.length; i++) {
         const product = importData[i];
@@ -1316,11 +1374,26 @@ const InventoryManagement = () => {
                     className="form-select"
                   >
                     <option value="">Pilih Kategori</option>
-                    <option value="IQOS Device">IQOS Device</option>
-                    <option value="HEETS">HEETS</option>
-                    <option value="Aksesoris">Aksesoris</option>
-                    <option value="Lainnya">Lainnya</option>
+                    {categories.map((category) => (
+                      <option key={category.name} value={category.name}>
+                        {category.name}
+                      </option>
+                    ))}
+                    <option value="custom">+ Tambah Kategori Baru</option>
                   </select>
+                  
+                  {formData.category === 'custom' && (
+                    <div style={{ marginTop: '0.5rem' }}>
+                      <input
+                        type="text"
+                        placeholder="Masukkan nama kategori baru..."
+                        value={customCategory}
+                        onChange={(e) => setCustomCategory(e.target.value)}
+                        className="form-input"
+                        style={{ marginTop: '0.5rem' }}
+                      />
+                    </div>
+                  )}
                 </div>
 
 
@@ -1431,6 +1504,7 @@ const InventoryManagement = () => {
                   onClick={() => {
                     setShowAddModal(false);
                     setShowEditModal(false);
+                    setCustomCategory('');
                     setFormData({
                       name: '',
                       category: '',

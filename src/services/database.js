@@ -591,6 +591,80 @@ export const stockMovementService = {
   }
 };
 
+// Categories CRUD operations
+export const categoryService = {
+  // Get all categories
+  getAllCategories: async () => {
+    try {
+      const categoriesRef = ref(database, 'categories');
+      const snapshot = await get(categoriesRef);
+      return snapshot.exists() ? Object.values(snapshot.val()) : [];
+    } catch (error) {
+      throw new Error(`Error fetching categories: ${error.message}`);
+    }
+  },
+
+  // Create new category
+  createCategory: async (categoryData) => {
+    try {
+      const categoriesRef = ref(database, 'categories');
+      const newCategoryRef = push(categoriesRef);
+      const category = {
+        id: newCategoryRef.key,
+        name: categoryData.name,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      await set(newCategoryRef, category);
+      return category;
+    } catch (error) {
+      throw new Error(`Error creating category: ${error.message}`);
+    }
+  },
+
+  // Update category
+  updateCategory: async (categoryId, updateData) => {
+    try {
+      const categoryRef = ref(database, `categories/${categoryId}`);
+      const updates = {
+        ...updateData,
+        updatedAt: Date.now()
+      };
+      await update(categoryRef, updates);
+      return true;
+    } catch (error) {
+      throw new Error(`Error updating category: ${error.message}`);
+    }
+  },
+
+  // Delete category
+  deleteCategory: async (categoryId) => {
+    try {
+      const categoryRef = ref(database, `categories/${categoryId}`);
+      await remove(categoryRef);
+      return true;
+    } catch (error) {
+      throw new Error(`Error deleting category: ${error.message}`);
+    }
+  },
+
+  // Get unique categories from existing products
+  getCategoriesFromProducts: async () => {
+    try {
+      const productsRef = ref(database, 'products');
+      const snapshot = await get(productsRef);
+      if (snapshot.exists()) {
+        const products = Object.values(snapshot.val());
+        const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
+        return uniqueCategories.map(category => ({ name: category }));
+      }
+      return [];
+    } catch (error) {
+      throw new Error(`Error fetching categories from products: ${error.message}`);
+    }
+  }
+};
+
 // Real-time listeners
 export const realtimeService = {
   // Listen to products changes
