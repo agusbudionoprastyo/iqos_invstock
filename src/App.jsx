@@ -20,8 +20,8 @@ const Navigation = () => {
   const menuItems = [
     { path: '/', icon: Home, label: 'Dashboard' },
     { path: '/inventory', icon: Package, label: 'Inventory' },
-    { path: '/sales', icon: ShoppingCart, label: 'Penjualan' },
-    { path: '/export', icon: FileText, label: 'Report' }
+    { path: '/export', icon: FileText, label: 'Report' },
+    { path: '/sales', icon: ShoppingCart, label: 'Penjualan' }
   ];
 
   return (
