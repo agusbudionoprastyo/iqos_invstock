@@ -1875,6 +1875,9 @@ const InventoryManagement = () => {
                     Ada Selisih
                   </button>
                 </div>
+                <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                  Menampilkan maksimal 2 per halaman ({getFilteredAuditResults().length} total)
+                </div>
               </div>
             )}
 
@@ -1976,21 +1979,10 @@ const InventoryManagement = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
                   <button
                     onClick={() => setAuditPage((p) => Math.max(1, p - 1))}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '0.5rem',
-                      borderRadius: '0.5rem',
-                      border: '1px solid #d1d5db',
-                      backgroundColor: auditPage === 1 ? '#f9fafb' : 'white',
-                      color: auditPage === 1 ? '#9ca3af' : '#374151',
-                      cursor: auditPage === 1 ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.2s'
-                    }}
+                    className="btn btn-secondary"
+                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
                   >
-                    <ChevronLeft size={20} />
-  
+                    Prev
                   </button>
                   <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
                     Halaman {auditPage} / {Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))}
@@ -2000,20 +1992,10 @@ const InventoryManagement = () => {
                       const total = Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage));
                       return Math.min(total, p + 1);
                     })}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '0.5rem',
-                      borderRadius: '0.5rem',
-                      border: '1px solid #d1d5db',
-                      backgroundColor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? '#f9fafb' : 'white',
-                      color: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? '#9ca3af' : '#374151',
-                      cursor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.2s'
-                    }}
+                    className="btn btn-secondary"
+                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
                   >
-                    <ChevronRight size={20} />
+                    Next
                   </button>
                 </div>
               </div>
