@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Plus, Minus, Trash2, Camera, Search, Receipt } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Camera, Search, Receipt, ChevronLeft, ChevronRight } from 'lucide-react';
 import { productService, salesService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
 import Swal from 'sweetalert2';
@@ -14,6 +14,8 @@ const SalesModule = () => {
   const [scanningProductId, setScanningProductId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all'); // 'all' | category name
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = window.innerWidth <= 768 ? 2 : 999; // 2 items for mobile, unlimited for desktop
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: ''
@@ -256,6 +258,17 @@ const SalesModule = () => {
     return matchesSearch && matchesCategoryFilter;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // Reset to first page when search term or category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter]);
+
   if (loading) {
     return (
       <div style={{
@@ -433,7 +446,7 @@ const SalesModule = () => {
               maxHeight: window.innerWidth <= 768 ? '30rem' : '35rem',
               overflowY: 'auto'
             }}>
-              {filteredProducts.map((product) => (
+              {paginatedProducts.map((product) => (
                 <div key={product.id} style={{
                   border: '1px solid #e5e7eb',
                   borderRadius: '0.5rem',
@@ -508,6 +521,65 @@ const SalesModule = () => {
                 </div>
               ))}
             </div>
+            
+            {/* Pagination Controls - Mobile Only */}
+            {window.innerWidth <= 768 && totalPages > 1 && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '1rem',
+                marginTop: '1rem',
+                padding: '1rem'
+              }}>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.5rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: currentPage === 1 ? '#f9fafb' : 'white',
+                    color: currentPage === 1 ? '#9ca3af' : '#374151',
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                
+                <span style={{
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  minWidth: '100px',
+                  textAlign: 'center'
+                }}>
+                  {currentPage} / {totalPages}
+                </span>
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.5rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: currentPage === totalPages ? '#f9fafb' : 'white',
+                    color: currentPage === totalPages ? '#9ca3af' : '#374151',
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -730,8 +802,8 @@ const SalesModule = () => {
             <button
               onClick={() => setShowCartPage(false)}
               style={{
-                backgroundColor: '#6b7280',
-                color: 'white',
+                backgroundColor: 'transparent',
+                color: '#6b7280',
                 padding: '0.5rem',
                 borderRadius: '0.5rem',
                 border: 'none',
@@ -747,83 +819,82 @@ const SalesModule = () => {
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.75rem',
+            gap: '0.5rem',
             marginBottom: '1rem',
             maxHeight: '20rem',
             overflowY: 'auto'
           }}>
             {cart.map((item) => (
               <div key={item.productId} style={{
-                border: '1px solid #e5e7eb',
-                borderRadius: '0.5rem',
-                padding: '0.75rem'
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0.5rem 0',
+                borderBottom: '1px solid #f3f4f6'
               }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '0.5rem'
-                }}>
-                  <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: '#111827', margin: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '600', minWidth: '60px' }}>
+                    Rp {item.total.toLocaleString('id-ID')}
+                  </span>
+                  <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: '#111827', margin: 0, flex: 1 }}>
                     {item.productName}
                   </h4>
-                  <button
-                    onClick={() => removeFromCart(item.productId)}
-                    style={{
-                      color: '#dc2626',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: '0.25rem'
-                    }}
-                  >
-                    <Trash2 size={14} />
-                  </button>
                 </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  {item.quantity === 1 ? (
+                    <button
+                      onClick={() => removeFromCart(item.productId)}
+                      style={{
+                        backgroundColor: 'e5e7eb',
+                        color: '#dc2626',
+                        padding: '0.25rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '1rem'
+                      }}
+                      title="Hapus item"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  ) : (
                     <button
                       onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                       style={{
                         backgroundColor: '#e5e7eb',
                         color: '#374151',
                         padding: '0.25rem',
-                        borderRadius: '0.25rem',
+                        borderRadius: '0.5rem',
                         border: 'none',
                         cursor: 'pointer',
-                        fontSize: '0.75rem'
+                        fontSize: '1rem'
                       }}
-                      aria-label="Kurangi qty (akan menghapus item)"
+                      aria-label="Kurangi qty"
                     >
                       <Minus size={12} />
                     </button>
-                    <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => handleIncreaseQuantity(item.productId)}
-                      disabled={item.quantity >= (readyStockData[item.productId] || 0)}
-                      style={{
-                        backgroundColor: item.quantity >= (readyStockData[item.productId] || 0) ? '#e5e7eb' : '#3b82f6',
-                        color: item.quantity >= (readyStockData[item.productId] || 0) ? '#9ca3af' : 'white',
-                        padding: '0.25rem',
-                        borderRadius: '0.25rem',
-                        border: 'none',
-                        cursor: item.quantity >= (readyStockData[item.productId] || 0) ? 'not-allowed' : 'pointer',
-                        fontSize: '0.75rem'
-                      }}
-                      title={item.quantity >= (readyStockData[item.productId] || 0) ? 'Stok tidak cukup' : 'Tambah quantity'}
-                    >
-                      <Plus size={12} />
-                    </button>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>
-                    Rp {item.total.toLocaleString('id-ID')}
+                  )}
+                  <span style={{ fontSize: '0.75rem', fontWeight: '500', minWidth: '20px', textAlign: 'center' }}>
+                    {item.quantity}
                   </span>
+                  <button
+                    onClick={() => handleIncreaseQuantity(item.productId)}
+                    disabled={item.quantity >= (readyStockData[item.productId] || 0)}
+                    style={{
+                      backgroundColor: item.quantity >= (readyStockData[item.productId] || 0) ? 'transparent' : 'transparent',
+                      color: item.quantity >= (readyStockData[item.productId] || 0) ? '#6b7280' : 'black',
+                      padding: '0.25rem',
+                      borderRadius: '0.5rem',
+                      border: 'dashed',
+                      borderColor: '#e5e7eb',
+                      borderWidth: '1px',
+                      cursor: item.quantity >= (readyStockData[item.productId] || 0) ? 'not-allowed' : 'pointer',
+                      fontSize: '1rem'
+                    }}
+                    title={item.quantity >= (readyStockData[item.productId] || 0) ? 'Stok tidak cukup' : 'Tambah quantity'}
+                  >
+                    <Plus size={12} />
+                  </button>
                 </div>
               </div>
             ))}
