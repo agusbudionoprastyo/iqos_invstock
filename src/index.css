@@ -565,9 +565,13 @@ code {
 
 /* Mobile navigation */
 @media (max-width: 768px) {
+  .nav {
+    border-radius: 0 0 1rem 1rem;
+  }
+  
   .nav-container {
     justify-content: center;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
   }
   
   .nav-brand {
@@ -575,18 +579,18 @@ code {
   }
   
   .nav-menu {
-    gap: 2rem;
+    gap: 1.5rem;
     justify-content: center;
     width: 100%;
   }
   
   .nav-link {
-    padding: 0.75rem;
+    padding: 0.5rem;
     font-size: 0.75rem;
     flex-direction: column;
     align-items: center;
     gap: 0.25rem;
-    min-width: 60px;
+    min-width: 50px;
   }
   
   .nav-link svg {
