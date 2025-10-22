@@ -6,11 +6,13 @@ import {
   Truck, 
   BarChart3, 
   Settings,
-  Home
+  Home,
+  FileText
 } from 'lucide-react';
 import InventoryManagement from './components/InventoryManagement';
 import SalesModule from './components/SalesModule';
 import Dashboard from './components/Dashboard';
+import ExportReport from './components/ExportReport';
 
 const Navigation = () => {
   const location = useLocation();
@@ -18,7 +20,8 @@ const Navigation = () => {
   const menuItems = [
     { path: '/', icon: Home, label: 'Dashboard' },
     { path: '/inventory', icon: Package, label: 'Inventory' },
-    { path: '/sales', icon: ShoppingCart, label: 'Penjualan' }
+    { path: '/sales', icon: ShoppingCart, label: 'Penjualan' },
+    { path: '/export', icon: FileText, label: 'Report' }
   ];
 
   return (
@@ -62,6 +65,7 @@ const App = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/inventory" element={<InventoryManagement />} />
             <Route path="/sales" element={<SalesModule />} />
+            <Route path="/export" element={<ExportReport />} />
           </Routes>
         </main>
       </div>

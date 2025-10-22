@@ -665,6 +665,93 @@ export const categoryService = {
   }
 };
 
+// Stock Audits CRUD operations
+export const stockAuditService = {
+  // Get all stock audits
+  getAllStockAudits: async () => {
+    try {
+      const auditsRef = ref(database, 'stockAudits');
+      const snapshot = await get(auditsRef);
+      return snapshot.exists() ? Object.values(snapshot.val()) : [];
+    } catch (error) {
+      throw new Error(`Error fetching stock audits: ${error.message}`);
+    }
+  },
+
+  // Get stock audit by ID
+  getStockAuditById: async (auditId) => {
+    try {
+      const auditRef = ref(database, `stockAudits/${auditId}`);
+      const snapshot = await get(auditRef);
+      return snapshot.exists() ? snapshot.val() : null;
+    } catch (error) {
+      throw new Error(`Error fetching stock audit: ${error.message}`);
+    }
+  },
+
+  // Get stock audits by date range
+  getStockAuditsByDateRange: async (startDate, endDate) => {
+    try {
+      const auditsRef = ref(database, 'stockAudits');
+      const snapshot = await get(auditsRef);
+      if (snapshot.exists()) {
+        const audits = Object.values(snapshot.val());
+        return audits.filter(audit => {
+          const auditDate = new Date(audit.date);
+          return auditDate >= new Date(startDate) && auditDate <= new Date(endDate);
+        });
+      }
+      return [];
+    } catch (error) {
+      throw new Error(`Error fetching stock audits by date range: ${error.message}`);
+    }
+  },
+
+  // Get stock audits by month
+  getStockAuditsByMonth: async (year, month) => {
+    try {
+      // Collect from stockAudits (list form)
+      const auditsRef = ref(database, 'stockAudits');
+      const snapshot = await get(auditsRef);
+      const listAudits = snapshot.exists() ? Object.values(snapshot.val()) : [];
+
+      const filteredListAudits = listAudits.filter((audit) => {
+        const auditDate = new Date(audit.date);
+        return (
+          auditDate.getFullYear() == year && auditDate.getMonth() == month - 1
+        );
+      });
+
+      // Collect from stockAuditsByDate (map by date)
+      const byDateRef = ref(database, 'stockAuditsByDate');
+      const byDateSnap = await get(byDateRef);
+      let byDateAudits = [];
+      if (byDateSnap.exists()) {
+        const byDateMap = byDateSnap.val() || {};
+        for (const [dateStr, entry] of Object.entries(byDateMap)) {
+          const d = new Date(dateStr);
+          if (d.getFullYear() == year && d.getMonth() == month - 1) {
+            const resultsObj = (entry && entry.results) || {};
+            const resultsArr = Object.values(resultsObj);
+            byDateAudits.push({
+              id: `byDate-${dateStr}`,
+              date: dateStr,
+              createdAt: entry?.meta?.updatedAt || entry?.meta?.createdAt || null,
+              results: resultsArr,
+              time: entry?.meta?.time || null
+            });
+          }
+        }
+      }
+
+      // Merge both sources; list audits first, then byDate audits
+      return [...filteredListAudits, ...byDateAudits];
+    } catch (error) {
+      throw new Error(`Error fetching stock audits by month: ${error.message}`);
+    }
+  }
+};
+
 // Real-time listeners
 export const realtimeService = {
   // Listen to products changes

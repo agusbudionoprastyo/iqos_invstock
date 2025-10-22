@@ -28,12 +28,12 @@ const InventoryManagement = () => {
   const [customCategory, setCustomCategory] = useState('');
   
   // Stock Audit states
-  const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditDate, setAuditDate] = useState(new Date().toISOString().split('T')[0]);
   const [auditTime, setAuditTime] = useState(new Date().toTimeString().slice(0, 5));
   const [auditResults, setAuditResults] = useState([]);
   const [currentAuditProduct, setCurrentAuditProduct] = useState(null);
   const [auditMode, setAuditMode] = useState(null); // 'manual' | 'barcode' | null
+  const [auditFilter, setAuditFilter] = useState('all'); // 'all' | 'balance' | 'variance'
   
   // Excel Import states
   const [showImportModal, setShowImportModal] = useState(false);
@@ -352,6 +352,35 @@ const InventoryManagement = () => {
     }
   };
 
+
+  const getFilteredAuditResults = () => {
+    if (auditFilter === 'all') return auditResults;
+    
+    return auditResults.filter(result => {
+      if (result.status !== 'completed') return false;
+      
+      const variance = result.physicalStock - result.databaseStock;
+      
+      if (auditFilter === 'balance') {
+        return variance === 0;
+      } else if (auditFilter === 'variance') {
+        return variance !== 0;
+      }
+      
+      return true;
+    });
+  };
+
+  const handleProductClickForAudit = (product) => {
+    // Find the product in audit results
+    const auditResult = auditResults.find(r => r.id === product.id);
+    if (!auditResult) return;
+
+    // Set as current audit product
+    setCurrentAuditProduct(auditResult);
+    setAuditMode(auditResult.useBarcode !== false ? 'barcode' : 'manual');
+  };
+
   const handleAuditBarcodeScan = async (barcode) => {
     try {
       const product = await productService.getProductByBarcode(barcode);
@@ -573,84 +602,6 @@ const InventoryManagement = () => {
     }
   };
 
-  const exportAuditPDF = () => {
-    try {
-      const title = `Laporan Stock Audit - ${auditDate} ${auditTime}`;
-      const printableRows = auditResults.map((r) => {
-        const dbVsFisik = r.physicalStock !== null ? (r.physicalStock - r.databaseStock) : null;
-        const statusText = r.status === 'completed' ? (dbVsFisik === 0 ? 'Balance' : `${dbVsFisik > 0 ? '+' : ''}${dbVsFisik}`) : 'Pending';
-        const statusColor = r.status === 'completed' ? (dbVsFisik === 0 ? '#10b981' : (dbVsFisik > 0 ? '#10b981' : '#ef4444')) : '#f59e0b';
-        const statusBg = r.status === 'completed' ? (dbVsFisik === 0 ? '#10b98120' : (dbVsFisik > 0 ? '#10b98120' : '#ef444420')) : '#f59e0b20';
-        
-        return `
-          <tr>
-            <td>${r.name || '-'}</td>
-            <td style="text-align:center;">${r.useBarcode !== false ? 'Barcode' : 'Manual'}</td>
-            <td style="text-align:right;">${r.databaseStock ?? '-'}</td>
-            <td style="text-align:right;">${r.physicalStock ?? '-'}</td>
-            <td style="text-align:center;">
-              <span style="background-color: ${statusBg}; color: ${statusColor}; padding: 4px 8px; border-radius: 4px; font-weight: 500;">
-                ${statusText}
-              </span>
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      const html = `
-        <html>
-          <head>
-            <meta charset="utf-8" />
-            <title>${title}</title>
-            <style>
-              body { font-family: Arial, Helvetica, sans-serif; color: #111827; padding: 24px; }
-              h1 { font-size: 18px; margin: 0 0 4px 0; }
-              p { margin: 0 0 16px 0; color: #6b7280; }
-              table { width: 100%; border-collapse: collapse; }
-              th, td { border: 1px solid #e5e7eb; padding: 8px; font-size: 12px; }
-              th { background: #f3f4f6; text-align: left; }
-              tfoot td { font-weight: 600; }
-              .meta { margin-bottom: 16px; }
-              @media print {
-                @page { size: A4; margin: 16mm; }
-              }
-            </style>
-          </head>
-          <body>
-            <h1>${title}</h1>
-            <p class="meta">Total item selesai: ${auditResults.filter(r => r.status === 'completed').length}/${auditResults.length}</p>
-            <table>
-              <thead>
-                <tr>
-                  <th>Produk</th>
-                  <th style="text-align:center;">Mode</th>
-                  <th style="text-align:right;">Database Stock</th>
-                  <th style="text-align:right;">Fisik Stock</th>
-                  <th style="text-align:center;">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${printableRows}
-              </tbody>
-            </table>
-          </body>
-        </html>
-      `;
-
-      const printWindow = window.open('', '_blank', 'width=1024,height=768');
-      if (!printWindow) return;
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
-      printWindow.focus();
-      // Delay print to ensure styles render
-      setTimeout(() => {
-        printWindow.print();
-      }, 300);
-    } catch (e) {
-      Swal.fire({ title: 'Error!', text: e.message || 'Gagal mengekspor PDF.', icon: 'error' });
-    }
-  };
 
   // Excel Import Functions
   const handleFileSelect = (event) => {
@@ -861,7 +812,7 @@ const InventoryManagement = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {/* Stock Audit - Full Width */}
               <button
-                onClick={() => setShowAuditModal(true)}
+                onClick={startStockAudit}
                 style={{
                   backgroundColor: '#10b981',
                   color: 'white',
@@ -935,7 +886,7 @@ const InventoryManagement = () => {
               flexWrap: 'wrap'
             }}>
               <button
-                onClick={() => setShowAuditModal(true)}
+                onClick={startStockAudit}
                 style={{
                   backgroundColor: '#10b981',
                   color: 'white',
@@ -1802,60 +1753,14 @@ const InventoryManagement = () => {
       )}
 
       {/* Stock Audit Modal */}
-      {showAuditModal && (
+      {auditResults.length > 0 && (
         <div className="modal-overlay">
           <div className="modal" style={{ maxWidth: '600px', maxHeight: '80vh', overflow: 'auto' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
-              Stock Audit Report
-            </h3>
-            
-            {/* Date and Time Input */}
-            <div className="audit-inputs" style={{ 
-              display: 'flex', 
-              gap: '1rem', 
-              marginBottom: '1.5rem'
-            }}>
-              <div style={{ flex: 1 }}>
-                <label className="form-label">Tanggal</label>
-                <input
-                  type="date"
-                  value={auditDate}
-                  onChange={(e) => setAuditDate(e.target.value)}
-                  className="form-input"
-                  style={{ fontSize: '0.875rem', padding: '0.5rem' }}
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label className="form-label">Waktu</label>
-                <input
-                  type="time"
-                  value={auditTime}
-                  onChange={(e) => setAuditTime(e.target.value)}
-                  className="form-input"
-                  style={{ fontSize: '0.875rem', padding: '0.5rem' }}
-                />
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', margin: 0 }}>
+                Stock Audit Report
+              </h3>
             </div>
-
-            {/* Start Audit Button */}
-            {auditResults.length === 0 && (
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  onClick={() => setShowAuditModal(false)}
-                  className="btn btn-secondary"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >
-                  Tutup
-                </button>
-                <button
-                  onClick={startStockAudit}
-                  className="btn btn-primary"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >
-                  Mulai Stock Audit
-                </button>
-              </div>
-            )}
 
             {/* Current Product Being Audited */}
             {currentAuditProduct && (
@@ -1942,6 +1847,38 @@ const InventoryManagement = () => {
               </div>
             )}
 
+            {/* Filter Options */}
+            {auditResults.length > 0 && (
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <button
+                    onClick={() => setAuditFilter('all')}
+                    className={`btn ${auditFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                  >
+                    Semua
+                  </button>
+                  <button
+                    onClick={() => setAuditFilter('balance')}
+                    className={`btn ${auditFilter === 'balance' ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                  >
+                    Balance
+                  </button>
+                  <button
+                    onClick={() => setAuditFilter('variance')}
+                    className={`btn ${auditFilter === 'variance' ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                  >
+                    Ada Selisih
+                  </button>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                  Menampilkan {getFilteredAuditResults().length} dari {auditResults.length} produk
+                </div>
+              </div>
+            )}
+
             {/* Audit Results */}
             {auditResults.length > 0 && (
               <div>
@@ -1949,7 +1886,7 @@ const InventoryManagement = () => {
                   Hasil Audit ({auditResults.filter(r => r.status === 'completed').length}/{auditResults.length})
                 </h4>
                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                  {auditResults.map((result) => {
+                  {getFilteredAuditResults().map((result) => {
                     const dbVsFisik = result.physicalStock !== null ? (result.physicalStock - result.databaseStock) : null;
                     const readyVsFisik = result.physicalStock !== null ? (result.physicalStock - result.readyStock) : null;
                     const hasDbDiscrepancy = dbVsFisik !== null && dbVsFisik !== 0;
@@ -1957,16 +1894,33 @@ const InventoryManagement = () => {
                     const hasMinusVariance = (dbVsFisik !== null && dbVsFisik < 0) || (readyVsFisik !== null && readyVsFisik < 0);
                     
                     return (
-                      <div key={result.id} style={{
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '0.5rem',
-                        padding: '0.75rem',
-                        marginBottom: '0.5rem',
-                        backgroundColor: result.status === 'completed' 
-                          ? (hasMinusVariance ? '#fef2f2' : '#f0fdf4') 
-                          : '#fefce8',
-                        borderLeft: hasDbDiscrepancy || hasReadyDiscrepancy ? '4px solid #ef4444' : '4px solid #10b981'
-                      }}>
+                      <div 
+                        key={result.id} 
+                        onClick={() => handleProductClickForAudit(result)}
+                        style={{
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '0.5rem',
+                          padding: '0.75rem',
+                          marginBottom: '0.5rem',
+                          backgroundColor: result.status === 'completed' 
+                            ? (hasMinusVariance ? '#fef2f2' : '#f0fdf4') 
+                            : '#fefce8',
+                          borderLeft: hasDbDiscrepancy || hasReadyDiscrepancy ? '4px solid #ef4444' : '4px solid #10b981',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          ':hover': {
+                            backgroundColor: '#f8fafc'
+                          }
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#f8fafc';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = result.status === 'completed' 
+                            ? (hasMinusVariance ? '#fef2f2' : '#f0fdf4') 
+                            : '#fefce8';
+                        }}
+                      >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div>
                             <h5 style={{ fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>
@@ -1975,6 +1929,11 @@ const InventoryManagement = () => {
                             <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
                               {result.useBarcode !== false ? 'Barcode' : 'Manual'}
                             </p>
+                            {result.status === 'pending' && (
+                              <p style={{ fontSize: '0.7rem', color: '#f59e0b', margin: '0.25rem 0 0 0', fontWeight: '500' }}>
+                                Klik untuk audit
+                              </p>
+                            )}
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
@@ -2017,7 +1976,6 @@ const InventoryManagement = () => {
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
                 <button
                   onClick={() => {
-                    setShowAuditModal(false);
                     setAuditResults([]);
                     setCurrentAuditProduct(null);
                     setAuditMode(null);
@@ -2026,13 +1984,6 @@ const InventoryManagement = () => {
                   style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                   Tutup
-                </button>
-                <button
-                  onClick={exportAuditPDF}
-                  className="btn btn-secondary"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >
-                  Export PDF
                 </button>
                 <button
                   onClick={async () => {
@@ -2045,7 +1996,7 @@ const InventoryManagement = () => {
                   className="btn btn-primary"
                   style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  Simpan Laporan
+                  Selesaikan Audit
                 </button>
               </div>
             )}
