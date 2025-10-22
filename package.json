@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@zxing/library": "^0.21.3",
+    "datatables.net-dt": "^2.3.4",
+    "datatables.net-react": "^1.0.1",
     "date-fns": "^2.30.0",
     "firebase": "^10.7.1",
     "html5-qrcode": "^2.3.8",

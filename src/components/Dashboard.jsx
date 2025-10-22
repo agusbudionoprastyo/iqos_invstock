@@ -139,54 +139,54 @@ const Dashboard = () => {
       </div>
 
       {/* Recent Sales */}
-      <div style={{
-        background: 'white',
-        borderRadius: '0.5rem',
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
-      }}>
         <div style={{
-          padding: '1.5rem',
-          borderBottom: '1px solid #e5e7eb'
+          background: 'white',
+          borderRadius: '0.5rem',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
         }}>
-          <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', margin: 0 }}>
-            Penjualan Terbaru
-          </h3>
-        </div>
-        <div style={{ padding: '1.5rem' }}>
-          {recentSales.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {recentSales.map((sale) => (
-                <div key={sale.id} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingBottom: '0.5rem',
-                  borderBottom: '1px solid #f3f4f6'
-                }}>
-                  <div>
-                    <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827', margin: 0 }}>
-                      {sale.customerName || 'Pelanggan Umum'}
-                    </p>
-                    <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
-                      {new Date(sale.createdAt).toLocaleDateString('id-ID')}
-                    </p>
+          <div style={{
+            padding: '1.5rem',
+            borderBottom: '1px solid #e5e7eb'
+          }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', margin: 0 }}>
+              Penjualan Terbaru
+            </h3>
+          </div>
+          <div style={{ padding: '1.5rem' }}>
+            {recentSales.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {recentSales.map((sale) => (
+                  <div key={sale.id} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingBottom: '0.5rem',
+                    borderBottom: '1px solid #f3f4f6'
+                  }}>
+                    <div>
+                      <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827', margin: 0 }}>
+                        {sale.customerName || 'Pelanggan Umum'}
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                        {new Date(sale.createdAt).toLocaleDateString('id-ID')}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontSize: '0.875rem', fontWeight: '600', color: '#059669', margin: 0 }}>
+                        Rp {sale.totalAmount.toLocaleString('id-ID')}
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                        {sale.items.length} item
+                      </p>
+                    </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '0.875rem', fontWeight: '600', color: '#059669', margin: 0 }}>
-                      Rp {sale.totalAmount.toLocaleString('id-ID')}
-                    </p>
-                    <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
-                      {sale.items.length} item
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p style={{ color: '#6b7280', textAlign: 'center', padding: '1rem', margin: 0 }}>
-              Belum ada penjualan
-            </p>
-          )}
+                ))}
+              </div>
+            ) : (
+              <p style={{ color: '#6b7280', textAlign: 'center', padding: '1rem', margin: 0 }}>
+                Belum ada penjualan
+              </p>
+            )}
         </div>
       </div>
     </div>

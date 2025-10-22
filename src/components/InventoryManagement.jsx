@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Package, AlertTriangle, Search, Camera, CheckCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Package, AlertTriangle, Search, Camera, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { productService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
 import Swal from 'sweetalert2';
@@ -41,8 +41,7 @@ const InventoryManagement = () => {
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [totalPages, setTotalPages] = useState(0);
+  const itemsPerPage = 5;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -56,18 +55,6 @@ const InventoryManagement = () => {
   useEffect(() => {
     loadProducts();
   }, []);
-
-  // Update pagination when products change
-  useEffect(() => {
-    const filtered = products.filter(product => {
-      if (!product || !product.name || !product.category) return false;
-      return product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             (product.barcode && product.barcode.toLowerCase().includes(searchTerm.toLowerCase()));
-    });
-    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
-    setCurrentPage(1); // Reset to first page when search changes
-  }, [products, searchTerm, itemsPerPage]);
 
   const loadProducts = async () => {
     try {
@@ -470,6 +457,28 @@ const InventoryManagement = () => {
     }
   };
 
+  const filteredProducts = products.filter(product => {
+    // Safety checks for undefined/null values
+    if (!product || !product.name || !product.category) {
+      return false;
+    }
+    
+    const term = searchTerm.toLowerCase();
+    const inName = product.name.toLowerCase().includes(term);
+    const inCategory = product.category.toLowerCase().includes(term);
+    return inName || inCategory;
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // Reset to first page when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   if (loading) {
     return (
@@ -597,32 +606,6 @@ const InventoryManagement = () => {
     } catch (e) {
       Swal.fire({ title: 'Error!', text: e.message || 'Gagal mengekspor PDF.', icon: 'error' });
     }
-  };
-
-  // Pagination Functions
-  const getFilteredProducts = () => {
-    return products.filter(product => {
-      if (!product || !product.name || !product.category) return false;
-      return product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             (product.barcode && product.barcode.toLowerCase().includes(searchTerm.toLowerCase()));
-    });
-  };
-
-  const getPaginatedProducts = () => {
-    const filtered = getFilteredProducts();
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filtered.slice(startIndex, endIndex);
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
   };
 
   // Excel Import Functions
@@ -976,7 +959,7 @@ const InventoryManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {getPaginatedProducts().map((product) => (
+              {paginatedProducts.map((product) => (
                 <tr key={product.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -1079,11 +1062,70 @@ const InventoryManagement = () => {
               ))}
             </tbody>
           </table>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '1rem',
+              marginTop: '1rem',
+              padding: '1rem'
+            }}>
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0.5rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #d1d5db',
+                  backgroundColor: currentPage === 1 ? '#f9fafb' : 'white',
+                  color: currentPage === 1 ? '#9ca3af' : '#374151',
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <ChevronLeft size={20} />
+              </button>
+              
+              <span style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                minWidth: '100px',
+                textAlign: 'center'
+              }}>
+                {currentPage} / {totalPages}
+              </span>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0.5rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #d1d5db',
+                  backgroundColor: currentPage === totalPages ? '#f9fafb' : 'white',
+                  color: currentPage === totalPages ? '#9ca3af' : '#374151',
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Mobile Cards */}
         <div style={{ display: window.innerWidth <= 768 ? 'block' : 'none' }}>
-          {getPaginatedProducts().map((product) => (
+          {paginatedProducts.map((product) => (
             <div key={product.id} style={{
               padding: '1rem',
               borderBottom: '1px solid #e5e7eb',
@@ -1176,151 +1218,66 @@ const InventoryManagement = () => {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div style={{ 
-            padding: '1rem', 
-            borderTop: '1px solid #e5e7eb',
-            backgroundColor: '#f9fafb'
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+          
+          {/* Mobile Pagination Controls */}
+          {totalPages > 1 && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
               alignItems: 'center',
-              flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
-              gap: '1rem'
+              gap: '1rem',
+              marginTop: '1rem',
+              padding: '1rem'
             }}>
-              {/* Items per page selector */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>Show:</span>
-                <select
-                  value={itemsPerPage}
-                  onChange={(e) => handleItemsPerPageChange(parseInt(e.target.value))}
-                  style={{
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '0.25rem',
-                    border: '1px solid #d1d5db',
-                    fontSize: '0.875rem',
-                    backgroundColor: 'white'
-                  }}
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                </select>
-                <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>per page</span>
-              </div>
-
-              {/* Page info */}
-              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, getFilteredProducts().length)} of {getFilteredProducts().length} products
-              </div>
-
-              {/* Pagination buttons */}
-              <div style={{ display: 'flex', gap: '0.25rem' }}>
-                <button
-                  onClick={() => handlePageChange(1)}
-                  disabled={currentPage === 1}
-                  style={{
-                    padding: '0.5rem',
-                    borderRadius: '0.25rem',
-                    border: '1px solid #d1d5db',
-                    backgroundColor: currentPage === 1 ? '#f3f4f6' : 'white',
-                    color: currentPage === 1 ? '#9ca3af' : '#374151',
-                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  First
-                </button>
-                
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  style={{
-                    padding: '0.5rem',
-                    borderRadius: '0.25rem',
-                    border: '1px solid #d1d5db',
-                    backgroundColor: currentPage === 1 ? '#f3f4f6' : 'white',
-                    color: currentPage === 1 ? '#9ca3af' : '#374151',
-                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  Prev
-                </button>
-
-                {/* Page numbers - Hidden on mobile */}
-                {window.innerWidth > 768 && Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      style={{
-                        padding: '0.5rem 0.75rem',
-                        borderRadius: '0.25rem',
-                        border: '1px solid #d1d5db',
-                        backgroundColor: currentPage === pageNum ? '#3b82f6' : 'white',
-                        color: currentPage === pageNum ? 'white' : '#374151',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        fontWeight: currentPage === pageNum ? '600' : '400'
-                      }}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  style={{
-                    padding: '0.5rem',
-                    borderRadius: '0.25rem',
-                    border: '1px solid #d1d5db',
-                    backgroundColor: currentPage === totalPages ? '#f3f4f6' : 'white',
-                    color: currentPage === totalPages ? '#9ca3af' : '#374151',
-                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  Next
-                </button>
-                
-                <button
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={currentPage === totalPages}
-                  style={{
-                    padding: '0.5rem',
-                    borderRadius: '0.25rem',
-                    border: '1px solid #d1d5db',
-                    backgroundColor: currentPage === totalPages ? '#f3f4f6' : 'white',
-                    color: currentPage === totalPages ? '#9ca3af' : '#374151',
-                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  Last
-                </button>
-              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0.5rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #d1d5db',
+                  backgroundColor: currentPage === 1 ? '#f9fafb' : 'white',
+                  color: currentPage === 1 ? '#9ca3af' : '#374151',
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <ChevronLeft size={20} />
+              </button>
+              
+              <span style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                minWidth: '100px',
+                textAlign: 'center'
+              }}>
+                {currentPage} / {totalPages}
+              </span>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0.5rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #d1d5db',
+                  backgroundColor: currentPage === totalPages ? '#f9fafb' : 'white',
+                  color: currentPage === totalPages ? '#9ca3af' : '#374151',
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <ChevronRight size={20} />
+              </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Add/Edit Product Modal */}
