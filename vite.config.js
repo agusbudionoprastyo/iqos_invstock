@@ -15,7 +15,7 @@ export default defineConfig({
         name: 'IQOS Inventory Management',
         short_name: 'IQOS Inventory',
         description: 'Sistem manajemen inventori IQOS dengan fitur audit stok, penjualan, dan laporan',
-        theme_color: '#3B82F6',
+        theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait-primary',
