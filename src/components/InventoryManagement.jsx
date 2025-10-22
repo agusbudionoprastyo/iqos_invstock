@@ -5,6 +5,7 @@ import BarcodeScanner from './BarcodeScanner';
 import Swal from 'sweetalert2';
 import { ref, get, push, set } from 'firebase/database';
 import { database } from '../firebase/config';
+import * as XLSX from 'xlsx';
 
 const InventoryManagement = () => {
   const [products, setProducts] = useState([]);
@@ -31,6 +32,17 @@ const InventoryManagement = () => {
   const [auditResults, setAuditResults] = useState([]);
   const [currentAuditProduct, setCurrentAuditProduct] = useState(null);
   const [auditMode, setAuditMode] = useState(null); // 'manual' | 'barcode' | null
+  
+  // Excel Import states
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importData, setImportData] = useState([]);
+  const [importProgress, setImportProgress] = useState({ current: 0, total: 0 });
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -44,6 +56,18 @@ const InventoryManagement = () => {
   useEffect(() => {
     loadProducts();
   }, []);
+
+  // Update pagination when products change
+  useEffect(() => {
+    const filtered = products.filter(product => {
+      if (!product || !product.name || !product.category) return false;
+      return product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             (product.barcode && product.barcode.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page when search changes
+  }, [products, searchTerm, itemsPerPage]);
 
   const loadProducts = async () => {
     try {
@@ -446,17 +470,6 @@ const InventoryManagement = () => {
     }
   };
 
-  const filteredProducts = products.filter(product => {
-    // Safety checks for undefined/null values
-    if (!product || !product.name || !product.category) {
-      return false;
-    }
-    
-    const term = searchTerm.toLowerCase();
-    const inName = product.name.toLowerCase().includes(term);
-    const inCategory = product.category.toLowerCase().includes(term);
-    return inName || inCategory;
-  });
 
   if (loading) {
     return (
@@ -586,6 +599,130 @@ const InventoryManagement = () => {
     }
   };
 
+  // Pagination Functions
+  const getFilteredProducts = () => {
+    return products.filter(product => {
+      if (!product || !product.name || !product.category) return false;
+      return product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             (product.barcode && product.barcode.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
+  };
+
+  const getPaginatedProducts = () => {
+    const filtered = getFilteredProducts();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  // Excel Import Functions
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setImportFile(file);
+      parseExcelFile(file);
+    }
+  };
+
+  const parseExcelFile = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        
+        // Skip header row and convert to product objects
+        const products = jsonData.slice(1).map((row, index) => {
+          if (!row[0] || !row[1] || !row[2]) return null; // Skip empty rows
+          
+          return {
+            name: row[0]?.toString().trim() || '',
+            category: row[1]?.toString().trim() || '',
+            price: parseFloat(row[2]) || 0,
+            stock: parseInt(row[3]) || 0,
+            minStock: parseInt(row[4]) || 0,
+            useBarcode: row[5]?.toString().toLowerCase() === 'true' || false,
+            rowIndex: index + 2 // +2 because we skip header and arrays are 0-indexed
+          };
+        }).filter(Boolean);
+
+        setImportData(products);
+      } catch (error) {
+        Swal.fire({ title: 'Error!', text: 'Gagal membaca file Excel.', icon: 'error' });
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const validateImportData = (data) => {
+    const errors = [];
+    data.forEach((product, index) => {
+      if (!product.name) errors.push(`Baris ${product.rowIndex}: Nama produk kosong`);
+      if (!product.category) errors.push(`Baris ${product.rowIndex}: Kategori kosong`);
+      if (product.price <= 0) errors.push(`Baris ${product.rowIndex}: Harga harus lebih dari 0`);
+      if (product.stock < 0) errors.push(`Baris ${product.rowIndex}: Stock tidak boleh negatif`);
+      if (product.minStock < 0) errors.push(`Baris ${product.rowIndex}: Min stock tidak boleh negatif`);
+    });
+    return errors;
+  };
+
+  const importProducts = async () => {
+    try {
+      const errors = validateImportData(importData);
+      if (errors.length > 0) {
+        await Swal.fire({
+          title: 'Data Tidak Valid!',
+          html: errors.slice(0, 5).join('<br>') + (errors.length > 5 ? '<br>...dan lainnya' : ''),
+          icon: 'error'
+        });
+        return;
+      }
+
+      setImportProgress({ current: 0, total: importData.length });
+      
+      for (let i = 0; i < importData.length; i++) {
+        const product = importData[i];
+        await productService.createProduct({
+          name: product.name,
+          category: product.category,
+          price: product.price,
+          stock: product.useBarcode ? 0 : product.stock,
+          minStock: product.minStock,
+          useBarcode: product.useBarcode
+        });
+        
+        setImportProgress({ current: i + 1, total: importData.length });
+      }
+
+      await Swal.fire({
+        title: 'Berhasil!',
+        text: `${importData.length} produk berhasil diimpor.`,
+        icon: 'success'
+      });
+
+      setShowImportModal(false);
+      setImportFile(null);
+      setImportData([]);
+      setImportProgress({ current: 0, total: 0 });
+      loadProducts();
+    } catch (error) {
+      await Swal.fire({ title: 'Error!', text: error.message || 'Gagal mengimpor produk.', icon: 'error' });
+    }
+  };
+
   return (
     <div style={{ padding: '1.5rem' }}>
       <div style={{
@@ -706,6 +843,28 @@ const InventoryManagement = () => {
               Stock Audit
             </button>
             <button
+              onClick={() => setShowImportModal(true)}
+              style={{
+                backgroundColor: 'transparent',
+                color: '#111827',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem',
+                border: '1px solid #d1d5db',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                flex: window.innerWidth <= 768 ? '1' : 'none',
+                minWidth: window.innerWidth <= 768 ? '0' : 'auto'
+              }}
+            >
+              <Package size={20} />
+              Import Excel
+            </button>
+            <button
               onClick={() => setShowAddModal(true)}
               style={{
                 backgroundColor: 'transparent',
@@ -817,7 +976,7 @@ const InventoryManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.map((product) => (
+              {getPaginatedProducts().map((product) => (
                 <tr key={product.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -924,7 +1083,7 @@ const InventoryManagement = () => {
 
         {/* Mobile Cards */}
         <div style={{ display: window.innerWidth <= 768 ? 'block' : 'none' }}>
-          {filteredProducts.map((product) => (
+          {getPaginatedProducts().map((product) => (
             <div key={product.id} style={{
               padding: '1rem',
               borderBottom: '1px solid #e5e7eb',
@@ -1018,6 +1177,150 @@ const InventoryManagement = () => {
             </div>
           ))}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div style={{ 
+            padding: '1rem', 
+            borderTop: '1px solid #e5e7eb',
+            backgroundColor: '#f9fafb'
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+              gap: '1rem'
+            }}>
+              {/* Items per page selector */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>Show:</span>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => handleItemsPerPageChange(parseInt(e.target.value))}
+                  style={{
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '0.25rem',
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.875rem',
+                    backgroundColor: 'white'
+                  }}
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+                <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>per page</span>
+              </div>
+
+              {/* Page info */}
+              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, getFilteredProducts().length)} of {getFilteredProducts().length} products
+              </div>
+
+              {/* Pagination buttons */}
+              <div style={{ display: 'flex', gap: '0.25rem' }}>
+                <button
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1}
+                  style={{
+                    padding: '0.5rem',
+                    borderRadius: '0.25rem',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: currentPage === 1 ? '#f3f4f6' : 'white',
+                    color: currentPage === 1 ? '#9ca3af' : '#374151',
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  First
+                </button>
+                
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  style={{
+                    padding: '0.5rem',
+                    borderRadius: '0.25rem',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: currentPage === 1 ? '#f3f4f6' : 'white',
+                    color: currentPage === 1 ? '#9ca3af' : '#374151',
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  Prev
+                </button>
+
+                {/* Page numbers - Hidden on mobile */}
+                {window.innerWidth > 768 && Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      style={{
+                        padding: '0.5rem 0.75rem',
+                        borderRadius: '0.25rem',
+                        border: '1px solid #d1d5db',
+                        backgroundColor: currentPage === pageNum ? '#3b82f6' : 'white',
+                        color: currentPage === pageNum ? 'white' : '#374151',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                        fontWeight: currentPage === pageNum ? '600' : '400'
+                      }}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    padding: '0.5rem',
+                    borderRadius: '0.25rem',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: currentPage === totalPages ? '#f3f4f6' : 'white',
+                    color: currentPage === totalPages ? '#9ca3af' : '#374151',
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  Next
+                </button>
+                
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    padding: '0.5rem',
+                    borderRadius: '0.25rem',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: currentPage === totalPages ? '#f3f4f6' : 'white',
+                    color: currentPage === totalPages ? '#9ca3af' : '#374151',
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  Last
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Add/Edit Product Modal */}
@@ -1647,6 +1950,111 @@ const InventoryManagement = () => {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Excel Import Modal */}
+      {showImportModal && (
+        <div className="modal-overlay" onClick={() => setShowImportModal(false)}>
+          <div className="modal" style={{ maxWidth: '600px', maxHeight: '80vh', overflow: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
+              Import Produk dari Excel
+            </h3>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label className="form-label">Format Excel:</label>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                Kolom: Nama | Kategori | Harga | Stock | Min Stock | Use Barcode (true/false)
+              </div>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileSelect}
+                className="form-input"
+                style={{ padding: '0.5rem' }}
+              />
+            </div>
+
+            {importData.length > 0 && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+                  Preview Data ({importData.length} produk)
+                </h4>
+                <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: '0.5rem' }}>
+                  <table style={{ width: '100%', fontSize: '0.75rem' }}>
+                    <thead style={{ backgroundColor: '#f3f4f6' }}>
+                      <tr>
+                        <th style={{ padding: '0.5rem', textAlign: 'left' }}>Nama</th>
+                        <th style={{ padding: '0.5rem', textAlign: 'left' }}>Kategori</th>
+                        <th style={{ padding: '0.5rem', textAlign: 'right' }}>Harga</th>
+                        <th style={{ padding: '0.5rem', textAlign: 'center' }}>Stock</th>
+                        <th style={{ padding: '0.5rem', textAlign: 'center' }}>Barcode</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importData.slice(0, 10).map((product, index) => (
+                        <tr key={index}>
+                          <td style={{ padding: '0.5rem' }}>{product.name}</td>
+                          <td style={{ padding: '0.5rem' }}>{product.category}</td>
+                          <td style={{ padding: '0.5rem', textAlign: 'right' }}>{product.price.toLocaleString()}</td>
+                          <td style={{ padding: '0.5rem', textAlign: 'center' }}>{product.stock}</td>
+                          <td style={{ padding: '0.5rem', textAlign: 'center' }}>{product.useBarcode ? 'Ya' : 'Tidak'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {importData.length > 10 && (
+                    <div style={{ padding: '0.5rem', textAlign: 'center', color: '#6b7280' }}>
+                      ...dan {importData.length - 10} produk lainnya
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {importProgress.total > 0 && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.875rem' }}>Progress Import</span>
+                  <span style={{ fontSize: '0.875rem' }}>{importProgress.current}/{importProgress.total}</span>
+                </div>
+                <div style={{ width: '100%', backgroundColor: '#e5e7eb', borderRadius: '0.25rem', height: '8px' }}>
+                  <div 
+                    style={{ 
+                      width: `${(importProgress.current / importProgress.total) * 100}%`, 
+                      backgroundColor: '#10b981', 
+                      height: '100%', 
+                      borderRadius: '0.25rem',
+                      transition: 'width 0.3s ease'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => {
+                  setShowImportModal(false);
+                  setImportFile(null);
+                  setImportData([]);
+                  setImportProgress({ current: 0, total: 0 });
+                }}
+                className="btn btn-secondary"
+                style={{ flex: 1 }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={importProducts}
+                disabled={importData.length === 0 || importProgress.total > 0}
+                className="btn btn-primary"
+                style={{ flex: 1 }}
+              >
+                {importProgress.total > 0 ? 'Mengimpor...' : 'Import Produk'}
+              </button>
+            </div>
           </div>
         </div>
       )}
