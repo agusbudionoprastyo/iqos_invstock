@@ -30,7 +30,9 @@ code {
 
 /* Navigation */
 .nav {
-  background: white;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   padding: 1rem 0;
   position: sticky;
@@ -566,12 +568,19 @@ code {
 /* Mobile navigation */
 @media (max-width: 768px) {
   .nav {
-    border-radius: 0 0 1rem 1rem;
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    right: 0;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0 -1px 3px 0 rgba(0, 0, 0, 0.1);
+    padding: 0.75rem 0;
   }
   
   .nav-container {
     justify-content: center;
-    padding: 0.5rem 1rem;
+    padding: 0 1rem;
   }
   
   .nav-brand {
@@ -596,6 +605,11 @@ code {
   .nav-link svg {
     margin-right: 0;
     margin-bottom: 0.25rem;
+  }
+  
+  /* Add bottom padding to body to prevent content from being hidden behind navbar */
+  body {
+    padding-bottom: 80px;
   }
   
   .audit-inputs {

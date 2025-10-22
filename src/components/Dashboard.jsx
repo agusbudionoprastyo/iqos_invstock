@@ -95,7 +95,10 @@ const Dashboard = () => {
   }
 
   return (
-    <div style={{ padding: '1.5rem' }}>
+    <div style={{ 
+      padding: window.innerWidth <= 768 ? '0.2rem' : '1.5rem',
+      marginTop: '1rem'
+    }}>
       {/* <div style={{ marginBottom: '1.5rem' }}>
         <h1 style={{ fontSize: '1.875rem', fontWeight: '700', color: '#111827', margin: 0 }}>
           Dashboard

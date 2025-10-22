@@ -765,7 +765,9 @@ const InventoryManagement = () => {
   };
 
   return (
-    <div style={{ padding: '1.5rem' }}>
+    <div style={{ 
+      padding: window.innerWidth <= 768 ? '0.2rem' : '1.5rem' 
+    }}>
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -815,7 +817,7 @@ const InventoryManagement = () => {
         {/* Table Header with Search and Actions */}
         <div style={{
           backgroundColor: '#f9fafb',
-          padding: '1rem 1.5rem',
+          padding: window.innerWidth <= 768 ? '1rem 1rem' : '1rem 1.5rem',
           borderBottom: '1px solid #e5e7eb',
           display: 'flex',
           flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
@@ -855,79 +857,145 @@ const InventoryManagement = () => {
       </div>
 
           {/* Action Buttons */}
-      <div style={{
-            display: 'flex',
-            gap: '0.5rem',
-            flexWrap: 'wrap',
-            width: window.innerWidth <= 768 ? '100%' : 'auto'
-          }}>
-            <button
-              onClick={() => setShowAuditModal(true)}
-              style={{
-                backgroundColor: '#10b981',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                borderRadius: '0.5rem',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                flex: window.innerWidth <= 768 ? '1' : 'none',
-                minWidth: window.innerWidth <= 768 ? '0' : 'auto'
-              }}
-            >
-              <CheckCircle size={20} />
-              Stock Audit
-            </button>
-            <button
-              onClick={() => setShowImportModal(true)}
-              style={{
-                backgroundColor: 'transparent',
-                color: '#111827',
-                padding: '0.5rem 1rem',
-                borderRadius: '0.5rem',
-                border: '1px solid #d1d5db',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                flex: window.innerWidth <= 768 ? '1' : 'none',
-                minWidth: window.innerWidth <= 768 ? '0' : 'auto'
-              }}
-            >
-              <Package size={20} />
-              Import Excel
-            </button>
-            <button
-              onClick={() => setShowAddModal(true)}
-              style={{
-                backgroundColor: 'transparent',
-                color: '#111827',
-                padding: '0.5rem 1rem',
-                borderRadius: '0.5rem',
-                border: '1px solid #d1d5db',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                flex: window.innerWidth <= 768 ? '1' : 'none',
-                minWidth: window.innerWidth <= 768 ? '0' : 'auto'
-              }}
-            >
-              <Plus size={20} />
-              Produk
-            </button>
-          </div>
+          {window.innerWidth <= 768 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {/* Stock Audit - Full Width */}
+              <button
+                onClick={() => setShowAuditModal(true)}
+                style={{
+                  backgroundColor: '#10b981',
+                  color: 'white',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  width: '100%'
+                }}
+              >
+                <CheckCircle size={20} />
+                Stock Audit
+              </button>
+              
+              {/* Import Excel and Produk - Side by Side */}
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: '#111827',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #d1d5db',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    flex: 1
+                  }}
+                >
+                  <Package size={20} />
+                  Import Excel
+                </button>
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: '#111827',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #d1d5db',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    flex: 1
+                  }}
+                >
+                  <Plus size={20} />
+                  Produk
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex',
+              gap: '0.5rem',
+              flexWrap: 'wrap'
+            }}>
+              <button
+                onClick={() => setShowAuditModal(true)}
+                style={{
+                  backgroundColor: '#10b981',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}
+              >
+                <CheckCircle size={20} />
+                Stock Audit
+              </button>
+              <button
+                onClick={() => setShowImportModal(true)}
+                style={{
+                  backgroundColor: 'transparent',
+                  color: '#111827',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #d1d5db',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}
+              >
+                <Package size={20} />
+                Import Excel
+              </button>
+              <button
+                onClick={() => setShowAddModal(true)}
+                style={{
+                  backgroundColor: 'transparent',
+                  color: '#111827',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #d1d5db',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}
+              >
+                <Plus size={20} />
+                Produk
+              </button>
+            </div>
+          )}
         </div>
         {/* Desktop Table */}
         <div style={{ 

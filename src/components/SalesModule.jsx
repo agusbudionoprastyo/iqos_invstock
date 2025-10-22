@@ -13,7 +13,7 @@ const SalesModule = () => {
   const [scanningMode, setScanningMode] = useState(null); // 'add' | 'increase' | null
   const [scanningProductId, setScanningProductId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [barcodeFilter, setBarcodeFilter] = useState('all'); // 'all' | 'barcode' | 'manual'
+  const [categoryFilter, setCategoryFilter] = useState('all'); // 'all' | category name
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: ''
@@ -21,6 +21,7 @@ const SalesModule = () => {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastSale, setLastSale] = useState(null);
+  const [showCartPage, setShowCartPage] = useState(false);
 
   useEffect(() => {
     loadProducts();
@@ -230,6 +231,9 @@ const SalesModule = () => {
     }
   };
 
+  // Get unique categories
+  const uniqueCategories = [...new Set(products.map(product => product.category).filter(Boolean))];
+
   const filteredProducts = products.filter(product => {
     // Safety checks for undefined/null values
     if (!product || !product.name || !product.category) {
@@ -243,15 +247,13 @@ const SalesModule = () => {
     // Apply search filter
     const matchesSearch = inName || inCategory;
     
-    // Apply barcode filter
-    let matchesBarcodeFilter = true;
-    if (barcodeFilter === 'barcode') {
-      matchesBarcodeFilter = product.useBarcode !== false;
-    } else if (barcodeFilter === 'manual') {
-      matchesBarcodeFilter = product.useBarcode === false;
+    // Apply category filter
+    let matchesCategoryFilter = true;
+    if (categoryFilter !== 'all') {
+      matchesCategoryFilter = product.category === categoryFilter;
     }
     
-    return matchesSearch && matchesBarcodeFilter;
+    return matchesSearch && matchesCategoryFilter;
   });
 
   if (loading) {
@@ -268,79 +270,95 @@ const SalesModule = () => {
   }
 
   return (
-    <div style={{ padding: '1.5rem' }}>
-      {/* <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '1.5rem'
-      }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827', margin: 0 }}>
-          Penjualan
-        </h1>
-        <button
-          onClick={() => setShowScanner(true)}
-          style={{
-            backgroundColor: '#10b981',
-            color: 'white',
-            padding: '0.5rem 1rem',
-            borderRadius: '0.5rem',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '0.875rem',
-            fontWeight: '500'
-          }}
-        >
-          <Camera size={20} />
-          Scan Barcode
-        </button>
-      </div> */}
-
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : '2fr 1fr',
-        gap: '1rem'
-      }}>
-        {/* Products List */}
+    <div style={{ 
+      padding: window.innerWidth <= 768 ? '0.2rem' : '1.5rem',
+      marginTop: '1rem'
+    }}>
+      {!showCartPage ? (
         <div>
+
           <div style={{
-            background: 'white',
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-            padding: '1.5rem'
+            display: 'grid',
+            gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : '2fr 1fr',
+            gap: '1rem'
           }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '1.5rem'
-            }}>
-              <h2 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
-                Daftar Produk
-              </h2>
-              <button
-                onClick={() => setShowScanner(true)}
-                style={{
-                  backgroundColor: '#10b981',
-                  color: 'white',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '0.5rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontSize: '0.875rem',
-                  fontWeight: '500'
-                }}
-              >
-                <Camera size={20} />
-                Scan Barcode
-              </button>
-            </div>
+            {/* Products List */}
+            <div>
+              <div style={{
+                background: 'white',
+                borderRadius: '0.5rem',
+                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                padding: '1.5rem'
+              }}>
+                <div style={{
+                  marginBottom: '1.5rem'
+                }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                    <button
+                      onClick={() => setShowScanner(true)}
+                      style={{
+                        backgroundColor: '#10b981',
+                        color: 'white',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        flex: 1
+                      }}
+                    >
+                      <Camera size={20} />
+                      Scan Barcode
+                    </button>
+                    {window.innerWidth <= 768 && (
+                      <button
+                        onClick={() => setShowCartPage(true)}
+                        style={{
+                          backgroundColor: 'white',
+                          color: '#374151',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '0.5rem',
+                          border: '2px dashed #d1d5db',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.875rem',
+                          fontWeight: '500',
+                          position: 'relative',
+                          flex: 1
+                        }}
+                      >
+                        <ShoppingCart size={20} />
+                        {cart.length > 0 && (
+                          <span style={{
+                            position: 'absolute',
+                            top: '-4px',
+                            right: '-4px',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            borderRadius: '50%',
+                            width: '20px',
+                            height: '20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.75rem',
+                            fontWeight: '600'
+                          }}>
+                            {cart.reduce((total, item) => total + item.quantity, 0)}
+                          </span>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
             {/* Search Bar */}
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
@@ -369,13 +387,13 @@ const SalesModule = () => {
                 />
               </div>
               
-              {/* Barcode Filter */}
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {/* Category Filter */}
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
                 <button
-                  onClick={() => setBarcodeFilter('all')}
+                  onClick={() => setCategoryFilter('all')}
                   style={{
-                    backgroundColor: barcodeFilter === 'all' ? '#3b82f6' : '#f3f4f6',
-                    color: barcodeFilter === 'all' ? 'white' : '#374151',
+                    backgroundColor: categoryFilter === 'all' ? '#3b82f6' : '#f3f4f6',
+                    color: categoryFilter === 'all' ? 'white' : '#374151',
                     padding: '0.375rem 0.75rem',
                     borderRadius: '0.375rem',
                     border: 'none',
@@ -384,38 +402,26 @@ const SalesModule = () => {
                     fontWeight: '500'
                   }}
                 >
-                  Semua
+                  Semua Kategori
                 </button>
-                <button
-                  onClick={() => setBarcodeFilter('barcode')}
-                  style={{
-                    backgroundColor: barcodeFilter === 'barcode' ? '#3b82f6' : '#f3f4f6',
-                    color: barcodeFilter === 'barcode' ? 'white' : '#374151',
-                    padding: '0.375rem 0.75rem',
-                    borderRadius: '0.375rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '0.75rem',
-                    fontWeight: '500'
-                  }}
-                >
-                  Dengan Barcode
-                </button>
-                <button
-                  onClick={() => setBarcodeFilter('manual')}
-                  style={{
-                    backgroundColor: barcodeFilter === 'manual' ? '#3b82f6' : '#f3f4f6',
-                    color: barcodeFilter === 'manual' ? 'white' : '#374151',
-                    padding: '0.375rem 0.75rem',
-                    borderRadius: '0.375rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '0.75rem',
-                    fontWeight: '500'
-                  }}
-                >
-                  Manual
-                </button>
+                {uniqueCategories.map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setCategoryFilter(category)}
+                    style={{
+                      backgroundColor: categoryFilter === category ? '#3b82f6' : '#f3f4f6',
+                      color: categoryFilter === category ? 'white' : '#374151',
+                      padding: '0.375rem 0.75rem',
+                      borderRadius: '0.375rem',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {category}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -424,7 +430,7 @@ const SalesModule = () => {
               display: 'grid',
               gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))',
               gap: '1rem',
-              maxHeight: window.innerWidth <= 768 ? '20rem' : '24rem',
+              maxHeight: window.innerWidth <= 768 ? '30rem' : '35rem',
               overflowY: 'auto'
             }}>
               {filteredProducts.map((product) => (
@@ -432,7 +438,11 @@ const SalesModule = () => {
                   border: '1px solid #e5e7eb',
                   borderRadius: '0.5rem',
                   padding: '1rem',
-                  transition: 'box-shadow 0.2s'
+                  transition: 'box-shadow 0.2s',
+                  minHeight: '120px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
                 }}>
                   <div style={{
                     display: 'flex',
@@ -448,10 +458,10 @@ const SalesModule = () => {
                     </span>
                   </div>
                   <div style={{ marginBottom: '0.5rem' }}>
-                    <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                    {/* <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
                       Barcode: {product.useBarcode !== false ? 'Per unit' : (product.barcode || '-')}
-                    </p>
-                    <span style={{
+                    </p> */}
+                    {/* <span style={{
                       fontSize: '0.625rem',
                       padding: '0.125rem 0.375rem',
                       borderRadius: '0.25rem',
@@ -460,7 +470,7 @@ const SalesModule = () => {
                       fontWeight: '500'
                     }}>
                       {product.useBarcode !== false ? 'Dengan Barcode' : 'Manual'}
-                    </span>
+                    </span> */}
                   </div>
                   <div style={{
                     display: 'flex',
@@ -501,14 +511,15 @@ const SalesModule = () => {
           </div>
         </div>
 
-        {/* Shopping Cart */}
-        <div>
-          <div style={{
-            background: 'white',
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-            padding: '1.5rem'
-          }}>
+            {/* Shopping Cart - Desktop Only */}
+            {window.innerWidth > 768 && (
+              <div>
+                <div style={{
+                  background: 'white',
+                  borderRadius: '0.5rem',
+                  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                  padding: '1.5rem'
+                }}>
             <h2 style={{
               fontSize: '1.125rem',
               fontWeight: '600',
@@ -689,7 +700,216 @@ const SalesModule = () => {
             </div>
           </div>
         </div>
-      </div>
+      )}
+          </div>
+        </div>
+      ) : (
+        /* Cart Page for Mobile */
+        <div style={{
+          background: 'white',
+          borderRadius: '0.5rem',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          padding: '1rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1rem'
+          }}>
+            <h2 style={{
+              fontSize: '1.125rem',
+              fontWeight: '600',
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <ShoppingCart size={20} style={{ marginRight: '0.5rem' }} />
+              Keranjang
+            </h2>
+            <button
+              onClick={() => setShowCartPage(false)}
+              style={{
+                backgroundColor: '#6b7280',
+                color: 'white',
+                padding: '0.5rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.875rem'
+              }}
+            >
+              Kembali
+            </button>
+          </div>
+
+          {/* Cart Items */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem',
+            marginBottom: '1rem',
+            maxHeight: '20rem',
+            overflowY: 'auto'
+          }}>
+            {cart.map((item) => (
+              <div key={item.productId} style={{
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.5rem',
+                padding: '0.75rem'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: '0.5rem'
+                }}>
+                  <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: '#111827', margin: 0 }}>
+                    {item.productName}
+                  </h4>
+                  <button
+                    onClick={() => removeFromCart(item.productId)}
+                    style={{
+                      color: '#dc2626',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '0.25rem'
+                    }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                      style={{
+                        backgroundColor: '#e5e7eb',
+                        color: '#374151',
+                        padding: '0.25rem',
+                        borderRadius: '0.25rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem'
+                      }}
+                      aria-label="Kurangi qty (akan menghapus item)"
+                    >
+                      <Minus size={12} />
+                    </button>
+                    <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>
+                      {item.quantity}
+                    </span>
+                    <button
+                      onClick={() => handleIncreaseQuantity(item.productId)}
+                      disabled={item.quantity >= (readyStockData[item.productId] || 0)}
+                      style={{
+                        backgroundColor: item.quantity >= (readyStockData[item.productId] || 0) ? '#e5e7eb' : '#3b82f6',
+                        color: item.quantity >= (readyStockData[item.productId] || 0) ? '#9ca3af' : 'white',
+                        padding: '0.25rem',
+                        borderRadius: '0.25rem',
+                        border: 'none',
+                        cursor: item.quantity >= (readyStockData[item.productId] || 0) ? 'not-allowed' : 'pointer',
+                        fontSize: '0.75rem'
+                      }}
+                      title={item.quantity >= (readyStockData[item.productId] || 0) ? 'Stok tidak cukup' : 'Tambah quantity'}
+                    >
+                      <Plus size={12} />
+                    </button>
+                  </div>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>
+                    Rp {item.total.toLocaleString('id-ID')}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Customer Info */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div>
+              <label className="form-label">
+                Nama
+              </label>
+              <input
+                type="text"
+                value={customerInfo.name}
+                onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
+                className="form-input"
+                style={{ fontSize: '0.75rem' }}
+              />
+            </div>
+            <div>
+              <label className="form-label">
+                No. HP
+              </label>
+              <input
+                type="text"
+                value={customerInfo.phone}
+                onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
+                className="form-input"
+                style={{ fontSize: '0.75rem' }}
+              />
+            </div>
+            <div>
+              <label className="form-label">
+                Metode Pembayaran
+              </label>
+              <select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="form-select"
+                style={{ fontSize: '0.75rem' }}
+              >
+                <option value="cash">Tunai</option>
+                <option value="qris">QRIS</option>
+                <option value="card">Kartu</option>
+                <option value="transfer">Transfer</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Total */}
+          <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '1rem' }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1rem'
+            }}>
+              <span style={{ fontSize: '1.125rem', fontWeight: '600' }}>Total</span>
+              <span style={{ fontSize: '1.125rem', fontWeight: '700', color: '#2563eb' }}>
+                Rp {getTotalAmount().toLocaleString('id-ID')}
+              </span>
+            </div>
+            <button
+              onClick={handleCheckout}
+              disabled={cart.length === 0}
+              style={{
+                width: '100%',
+                backgroundColor: cart.length === 0 ? '#d1d5db' : '#10b981',
+                color: 'white',
+                padding: '0.75rem 1rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: cart.length === 0 ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}
+            >
+              Checkout
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Barcode Scanner */}
       <BarcodeScanner
