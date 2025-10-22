@@ -34,6 +34,8 @@ const InventoryManagement = () => {
   const [currentAuditProduct, setCurrentAuditProduct] = useState(null);
   const [auditMode, setAuditMode] = useState(null); // 'manual' | 'barcode' | null
   const [auditFilter, setAuditFilter] = useState('all'); // 'all' | 'balance' | 'variance'
+  const [auditPage, setAuditPage] = useState(1);
+  const itemsPerAuditPage = 2;
   
   // Excel Import states
   const [showImportModal, setShowImportModal] = useState(false);
@@ -1873,9 +1875,6 @@ const InventoryManagement = () => {
                     Ada Selisih
                   </button>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                  Menampilkan {getFilteredAuditResults().length} dari {auditResults.length} produk
-                </div>
               </div>
             )}
 
@@ -1886,7 +1885,11 @@ const InventoryManagement = () => {
                   Hasil Audit ({auditResults.filter(r => r.status === 'completed').length}/{auditResults.length})
                 </h4>
                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                  {getFilteredAuditResults().map((result) => {
+                  {(() => {
+                    const filtered = getFilteredAuditResults();
+                    const start = (auditPage - 1) * itemsPerAuditPage;
+                    const slice = filtered.slice(start, start + itemsPerAuditPage);
+                    return slice.map((result) => {
                     const dbVsFisik = result.physicalStock !== null ? (result.physicalStock - result.databaseStock) : null;
                     const readyVsFisik = result.physicalStock !== null ? (result.physicalStock - result.readyStock) : null;
                     const hasDbDiscrepancy = dbVsFisik !== null && dbVsFisik !== 0;
@@ -1966,7 +1969,52 @@ const InventoryManagement = () => {
                         </div>
                       </div>
                     );
-                  })}
+                  });
+                  })()}
+                </div>
+                {/* Pagination for audit list */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                  <button
+                    onClick={() => setAuditPage((p) => Math.max(1, p - 1))}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '0.5rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid #d1d5db',
+                      backgroundColor: auditPage === 1 ? '#f9fafb' : 'white',
+                      color: auditPage === 1 ? '#9ca3af' : '#374151',
+                      cursor: auditPage === 1 ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <ChevronLeft size={20} />
+  
+                  </button>
+                  <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                    Halaman {auditPage} / {Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))}
+                  </span>
+                  <button
+                    onClick={() => setAuditPage((p) => {
+                      const total = Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage));
+                      return Math.min(total, p + 1);
+                    })}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '0.5rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid #d1d5db',
+                      backgroundColor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? '#f9fafb' : 'white',
+                      color: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? '#9ca3af' : '#374151',
+                      cursor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <ChevronRight size={20} />
+                  </button>
                 </div>
               </div>
             )}
