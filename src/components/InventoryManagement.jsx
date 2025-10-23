@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Package, AlertTriangle, Search, Camera, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit, Trash2, Package, AlertTriangle, Search, Camera, CheckCircle, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { productService, categoryService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
-import Swal from 'sweetalert2';
+import { showToast } from '../utils/toast.jsx';
 import { ref, get, push, set } from 'firebase/database';
 import { database } from '../firebase/config';
 import * as XLSX from 'xlsx';
@@ -198,35 +198,16 @@ const InventoryManagement = () => {
   };
 
   const handleDelete = async (productId) => {
-    const result = await Swal.fire({
-      title: 'Hapus Produk?',
-      text: 'Apakah Anda yakin ingin menghapus produk ini?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Ya, Hapus!',
-      cancelButtonText: 'Batal'
-    });
+    const result = await showToast.confirm('Apakah Anda yakin ingin menghapus produk ini?', 'Hapus Produk?');
 
-    if (result.isConfirmed) {
+    if (result) {
       try {
         await productService.deleteProduct(productId);
-        await Swal.fire({
-          title: 'Berhasil!',
-          text: 'Produk berhasil dihapus.',
-          icon: 'success',
-          timer: 2000,
-          showConfirmButton: false
-        });
+        showToast.success('Produk berhasil dihapus.', 'Berhasil!');
         loadProducts();
       } catch (error) {
         console.error('Error deleting product:', error);
-        await Swal.fire({
-          title: 'Error!',
-          text: 'Gagal menghapus produk.',
-          icon: 'error'
-        });
+        showToast.error('Gagal menghapus produk.', 'Error!');
       }
     }
   };
@@ -244,19 +225,11 @@ const InventoryManagement = () => {
         setCheckedProduct(product);
         setShowStockCheckModal(true);
       } else {
-        await Swal.fire({
-          title: 'Produk Tidak Ditemukan',
-          text: 'Barcode tidak terdaftar dalam sistem.',
-          icon: 'warning'
-        });
+        showToast.warning('Barcode tidak terdaftar dalam sistem.', 'Produk Tidak Ditemukan');
       }
     } catch (error) {
       console.error('Error checking stock:', error);
-      await Swal.fire({
-        title: 'Error!',
-        text: 'Gagal memeriksa stok.',
-        icon: 'error'
-      });
+      showToast.error('Gagal memeriksa stok.', 'Error!');
     }
     setShowScanner(false);
     setScanningMode(null);
@@ -272,23 +245,13 @@ const InventoryManagement = () => {
     try {
       if (!assigningProductId) return;
       await productService.addBarcodeToProduct(assigningProductId, barcode);
-      await Swal.fire({
-        title: 'Berhasil!',
-        text: 'Barcode berhasil di-assign.',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false
-      });
+      showToast.success('Barcode berhasil di-assign.', 'Berhasil!');
       setAssigningProductId(null);
       setScanningMode(null);
       setShowScanner(false);
       loadProducts();
     } catch (e) {
-      await Swal.fire({
-        title: 'Error!',
-        text: e.message || 'Gagal assign barcode',
-        icon: 'error'
-      });
+      showToast.error(e.message || 'Gagal assign barcode', 'Error!');
       setAssigningProductId(null);
       setScanningMode(null);
       setShowScanner(false);
@@ -297,32 +260,19 @@ const InventoryManagement = () => {
 
   const handleManualAssign = async () => {
     if (!manualBarcode.trim()) {
-      await Swal.fire({
-        title: 'Perhatian!',
-        text: 'Masukkan barcode terlebih dahulu.',
-        icon: 'warning'
-      });
+      showToast.warning('Masukkan barcode terlebih dahulu.', 'Perhatian!');
       return;
     }
     
     try {
       await productService.addBarcodeToProduct(assigningProductId, manualBarcode.trim());
-      await Swal.fire({
-        title: 'Berhasil!',
-        text: 'Barcode berhasil di-assign.',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false
-      });
+      showToast.success('Barcode berhasil di-assign.', 'Berhasil!');
       setShowAssignBarcodeModal(false);
       setAssigningProductId(null);
       setManualBarcode('');
       loadProducts();
     } catch (e) {
-      await Swal.fire({
-        title: 'Error!',
-        text: e.message || 'Gagal assign barcode',
-      });
+      showToast.error(e.message || 'Gagal assign barcode', 'Error!');
     }
   };
 
@@ -366,7 +316,7 @@ const InventoryManagement = () => {
       setCurrentAuditProduct(next);
       setAuditMode(next ? (next.useBarcode !== false ? 'barcode' : 'manual') : null);
     } catch (e) {
-      await Swal.fire({ title: 'Error!', text: e.message || 'Gagal memulai audit.', icon: 'error' });
+      showToast.error(e.message || 'Gagal memulai audit.', 'Error!');
     }
   };
 
@@ -403,7 +353,7 @@ const InventoryManagement = () => {
     try {
       const product = await productService.getProductByBarcode(barcode);
       if (!(product && currentAuditProduct && product.id === currentAuditProduct.id)) {
-        await Swal.fire({ title: 'Barcode Salah', text: 'Barcode tidak sesuai produk yang diaudit.', icon: 'warning' });
+        showToast.warning('Barcode tidak sesuai produk yang diaudit.', 'Barcode Salah');
         setShowScanner(false);
         return;
       }
@@ -412,7 +362,7 @@ const InventoryManagement = () => {
       const unitsRef = ref(database, `productUnits/${product.id}`);
       const unitsSnap = await get(unitsRef);
       if (!unitsSnap.exists()) {
-        await Swal.fire({ title: 'Tidak Ada Unit', text: 'Tidak ada unit untuk produk ini.', icon: 'warning' });
+        showToast.warning('Tidak ada unit untuk produk ini.', 'Tidak Ada Unit');
         setShowScanner(false);
         return;
       }
@@ -420,7 +370,7 @@ const InventoryManagement = () => {
       const unitsObj = unitsSnap.val();
       const targetEntry = Object.entries(unitsObj).find(([unitId, unit]) => unit.barcode === barcode && unit.status === 'in_stock');
       if (!targetEntry) {
-        await Swal.fire({ title: 'Unit Tidak Ditemukan', text: 'Unit barcode tidak tersedia/in-stock.', icon: 'warning' });
+        showToast.warning('Unit barcode tidak tersedia/in-stock.', 'Unit Tidak Ditemukan');
         setShowScanner(false);
         return;
       }
@@ -431,7 +381,7 @@ const InventoryManagement = () => {
       const scannedUnits = Array.isArray(existing?.scannedUnits) ? existing.scannedUnits.slice() : [];
 
       if (scannedUnits.includes(unitId)) {
-        await Swal.fire({ title: 'Duplikat Scan', text: 'Unit ini sudah discan untuk produk ini.', icon: 'info' });
+        showToast.info('Unit ini sudah discan untuk produk ini.', 'Duplikat Scan');
         setShowScanner(false);
         return;
       }
@@ -462,16 +412,10 @@ const InventoryManagement = () => {
       // Keep currentAuditProduct in sync for UI counters
       setCurrentAuditProduct((prev) => prev && prev.id === product.id ? { ...prev, physicalStock: physicalCount, scannedUnits } : prev);
 
-      await Swal.fire({
-        title: 'Tersimpan',
-        text: `Ter-scan: ${physicalCount} unit`,
-        icon: 'success',
-        timer: 1200,
-        showConfirmButton: false
-      });
+      showToast.success(`Ter-scan: ${physicalCount} unit`, 'Tersimpan');
     } catch (error) {
       console.error('Error scanning barcode:', error);
-      await Swal.fire({ title: 'Error!', text: 'Gagal memindai barcode.', icon: 'error' });
+      showToast.error('Gagal memindai barcode.', 'Error!');
     }
     setShowScanner(false);
   };
@@ -507,7 +451,7 @@ const InventoryManagement = () => {
         setAuditMode(null);
       }
     } catch (e) {
-      await Swal.fire({ title: 'Error!', text: e.message || 'Gagal menyimpan hasil item.', icon: 'error' });
+      showToast.error(e.message || 'Gagal menyimpan hasil item.', 'Error!');
     }
   };
 
@@ -544,7 +488,7 @@ const InventoryManagement = () => {
         setAuditMode(null);
       }
     } catch (e) {
-      await Swal.fire({ title: 'Error!', text: e.message || 'Gagal menyelesaikan item.', icon: 'error' });
+      showToast.error(e.message || 'Gagal menyelesaikan item.', 'Error!');
     }
   };
 
@@ -613,19 +557,9 @@ const InventoryManagement = () => {
         }))
       };
       await set(auditRef, payload);
-      await Swal.fire({
-        title: 'Tersimpan!',
-        text: 'Laporan audit berhasil disimpan.',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false
-      });
+      showToast.success('Laporan audit berhasil disimpan.', 'Tersimpan!');
     } catch (e) {
-      await Swal.fire({
-        title: 'Error!',
-        text: e.message || 'Gagal menyimpan laporan audit.',
-        icon: 'error'
-      });
+      showToast.error(e.message || 'Gagal menyimpan laporan audit.', 'Error!');
     }
   };
 
@@ -668,7 +602,7 @@ const InventoryManagement = () => {
 
         setImportData(products);
       } catch (error) {
-        Swal.fire({ title: 'Error!', text: 'Gagal membaca file Excel.', icon: 'error' });
+        showToast.error('Gagal membaca file Excel.', 'Error!');
       }
     };
     reader.readAsArrayBuffer(file);
@@ -690,11 +624,7 @@ const InventoryManagement = () => {
     try {
       const errors = validateImportData(importData);
       if (errors.length > 0) {
-        await Swal.fire({
-          title: 'Data Tidak Valid!',
-          html: errors.slice(0, 5).join('<br>') + (errors.length > 5 ? '<br>...dan lainnya' : ''),
-          icon: 'error'
-        });
+        showToast.error(errors.slice(0, 5).join(', ') + (errors.length > 5 ? '...dan lainnya' : ''), 'Data Tidak Valid!');
         return;
       }
 
@@ -726,11 +656,7 @@ const InventoryManagement = () => {
         setImportProgress({ current: i + 1, total: importData.length });
       }
 
-      await Swal.fire({
-        title: 'Berhasil!',
-        text: `${importData.length} produk berhasil diimpor.`,
-        icon: 'success'
-      });
+      showToast.success(`${importData.length} produk berhasil diimpor.`, 'Berhasil!');
 
       setShowImportModal(false);
       setImportFile(null);
@@ -738,7 +664,7 @@ const InventoryManagement = () => {
       setImportProgress({ current: 0, total: 0 });
       loadProducts();
     } catch (error) {
-      await Swal.fire({ title: 'Error!', text: error.message || 'Gagal mengimpor produk.', icon: 'error' });
+      showToast.error(error.message || 'Gagal mengimpor produk.', 'Error!');
     }
   };
 
@@ -766,7 +692,7 @@ const InventoryManagement = () => {
         <div style={{
           backgroundColor: '#fef2f2',
           border: '1px solid #fecaca',
-          borderRadius: '0.5rem',
+          borderRadius: '1.5rem',
           padding: '1rem',
           marginBottom: '1.5rem',
           display: 'flex',
@@ -788,7 +714,7 @@ const InventoryManagement = () => {
       {/* Products Table */}
       <div style={{
         background: 'white',
-        borderRadius: '0.5rem',
+        borderRadius: '1.5rem',
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
         overflow: 'hidden'
       }}>
@@ -1581,9 +1507,35 @@ const InventoryManagement = () => {
       {/* Assign Barcode Modal */}
       {showAssignBarcodeModal && assigningProductId && (
         <div className="modal-overlay">
-          <div className="modal">
+          <div className="modal" style={{ position: 'relative' }}>
+            <button
+              onClick={() => {
+                setShowAssignBarcodeModal(false);
+                setAssigningProductId(null);
+                setManualBarcode('');
+              }}
+              aria-label="Tutup"
+              style={{
+                position: 'absolute',
+                top: '0.5rem',
+                right: '0.5rem',
+                width: '24px',
+                height: '24px',
+                background: '#ffffff',
+                border: 'none',
+                borderRadius: '9999px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+                color: '#6b7280',
+                cursor: 'pointer'
+              }}
+            >
+              <X size={12} />
+            </button>
             <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
-              Assign Barcode ke Unit
+              Barcode
             </h3>
             
             <div style={{ marginBottom: '1rem' }}>
@@ -1614,7 +1566,7 @@ const InventoryManagement = () => {
               marginBottom: '1rem',
               padding: '1rem',
               backgroundColor: '#f8fafc',
-              borderRadius: '0.5rem',
+              borderRadius: '.5rem',
               border: '1px solid #e5e7eb'
             }}>
               <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: '0 0 0.5rem 0' }}>
@@ -1646,19 +1598,7 @@ const InventoryManagement = () => {
               </button>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={() => {
-                  setShowAssignBarcodeModal(false);
-                  setAssigningProductId(null);
-                  setManualBarcode('');
-                }}
-                className="btn btn-secondary"
-                style={{ flex: 1 }}
-              >
-                Tutup
-              </button>
-            </div>
+            
           </div>
         </div>
       )}

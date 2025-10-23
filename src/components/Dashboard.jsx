@@ -69,7 +69,7 @@ const Dashboard = () => {
   const StatCard = ({ title, value, icon: Icon, color }) => (
     <div style={{
       background: 'white',
-      borderRadius: '0.5rem',
+      borderRadius: '1.5rem',
       boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
       padding: '1.5rem',
       display: 'flex',
@@ -116,14 +116,6 @@ const Dashboard = () => {
       padding: window.innerWidth <= 768 ? '0.2rem' : '1.5rem',
       marginTop: '1rem'
     }}>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.875rem', fontWeight: '700', color: '#111827', margin: 0 }}>
-          Dashboard
-        </h1>
-        <p style={{ color: '#6b7280', marginTop: '0.5rem', margin: 0 }}>
-          Ringkasan sistem inventory IQOS
-        </p>
-      </div>
 
       {/* Stats Grid */}
       <div style={{
@@ -161,7 +153,7 @@ const Dashboard = () => {
       {/* Recent Sales */}
         <div style={{
           background: 'white',
-          borderRadius: '0.5rem',
+          borderRadius: '1.5rem',
           boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
         }}>
           <div style={{

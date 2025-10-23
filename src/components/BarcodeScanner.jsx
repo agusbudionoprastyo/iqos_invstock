@@ -45,7 +45,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
         aspectRatio: 1.777,
         rememberLastUsedCamera: true,
         // Better focus and scanning
-        focusMode: 'continuous',
+        focusMode: 'continuous(maxFocusAreas=1)',
         focusDistance: 0,
         // Support common barcodes used in retail
         formatsToSupport: [
@@ -125,46 +125,13 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
     }}>
       <div style={{
         backgroundColor: 'white',
-        borderRadius: '0.5rem',
-        padding: '1.5rem',
+        borderRadius: '1.5rem',
+        padding: '1rem',
         width: '100%',
         maxWidth: '28rem',
         maxHeight: '90vh',
         overflow: 'auto'
       }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1rem'
-        }}>
-          <h3 style={{ fontSize: '1.125rem', fontWeight: '600', margin: 0 }}>
-            Scan Barcode
-          </h3>
-          <button
-            onClick={handleClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.25rem'
-            }}
-          >
-            <X size={24} />
-          </button>
-        </div>
-
-        {/* <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-          <Camera size={48} style={{ color: '#3b82f6', marginBottom: '0.5rem' }} />
-          <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: 0 }}>
-            Arahkan kamera ke barcode untuk memindai
-          </p>
-          {hasPermission && (
-            <p style={{ fontSize: '0.75rem', color: '#059669', margin: '0.5rem 0 0 0' }}>
-              ✓ Kamera aktif - {isScanning ? 'Memindai...' : 'Siap'}
-            </p>
-          )}
-        </div> */}
 
         {/* Scanner Container (html5-qrcode mounts here) */}
         <div style={{
@@ -172,7 +139,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
           width: '100%',
           height: '320px',
           backgroundColor: '#000',
-          borderRadius: '0.5rem',
+          borderRadius: '1rem',
           overflow: 'hidden',
           marginBottom: '1rem'
         }}>
@@ -184,7 +151,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
           <div style={{
             backgroundColor: '#fef2f2',
             border: '1px solid #fecaca',
-            borderRadius: '0.5rem',
+            borderRadius: '1rem',
             padding: '1rem',
             marginBottom: '1rem',
             display: 'flex',

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus, Trash2, Camera, Search, Receipt, ChevronLeft, ChevronRight } from 'lucide-react';
 import { productService, salesService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
-import Swal from 'sweetalert2';
+import { showToast } from '../utils/toast.jsx';
 
 const SalesModule = () => {
   const [products, setProducts] = useState([]);
@@ -69,19 +69,11 @@ const SalesModule = () => {
           addToCart(product);
         }
       } else {
-        await Swal.fire({
-          title: 'Produk Tidak Ditemukan',
-          text: 'Barcode tidak terdaftar dalam sistem.',
-          icon: 'warning'
-        });
+        showToast.warning('Barcode tidak terdaftar dalam sistem.', 'Produk Tidak Ditemukan');
       }
     } catch (error) {
       console.error('Error scanning barcode:', error);
-      await Swal.fire({
-        title: 'Error!',
-        text: 'Gagal memindai barcode.',
-        icon: 'error'
-      });
+      showToast.error('Gagal memindai barcode.', 'Error!');
     }
     setShowScanner(false);
     setScanningMode(null);
@@ -97,11 +89,7 @@ const SalesModule = () => {
     } else {
       const readyStock = readyStockData[product.id] || 0;
       if (readyStock <= 0) {
-        Swal.fire({
-          title: 'Stok Habis',
-          text: 'Stok siap jual untuk produk ini habis.',
-          icon: 'warning'
-        });
+        showToast.warning('Stok siap jual untuk produk ini habis.', 'Stok Habis');
         return;
       }
       setCart([...cart, {
@@ -127,11 +115,7 @@ const SalesModule = () => {
     
     if (existingItem) {
       if (existingItem.quantity >= readyStock) {
-        Swal.fire({
-          title: 'Stok Tidak Cukup',
-          text: `Maksimal quantity: ${readyStock}`,
-          icon: 'warning'
-        });
+        showToast.warning(`Maksimal quantity: ${readyStock}`, 'Stok Tidak Cukup');
         return;
       }
       
@@ -152,11 +136,7 @@ const SalesModule = () => {
     
     const readyStock = readyStockData[productId] || 0;
     if (newQuantity > readyStock) {
-      Swal.fire({
-        title: 'Stok Tidak Cukup',
-        text: `Maksimal quantity: ${readyStock}`,
-        icon: 'warning'
-      });
+      showToast.warning(`Maksimal quantity: ${readyStock}`, 'Stok Tidak Cukup');
       return;
     }
     
@@ -198,11 +178,7 @@ const SalesModule = () => {
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
-      await Swal.fire({
-        title: 'Keranjang Kosong',
-        text: 'Tambahkan produk ke keranjang terlebih dahulu.',
-        icon: 'warning'
-      });
+      showToast.warning('Tambahkan produk ke keranjang terlebih dahulu.', 'Keranjang Kosong');
       return;
     }
 
@@ -228,11 +204,7 @@ const SalesModule = () => {
       loadProducts();
     } catch (error) {
       console.error('Error creating sale:', error);
-      await Swal.fire({
-        title: 'Error!',
-        text: 'Gagal melakukan penjualan.',
-        icon: 'error'
-      });
+      showToast.error('Gagal melakukan penjualan.', 'Error!');
     }
   };
 
@@ -302,7 +274,7 @@ const SalesModule = () => {
             <div>
               <div style={{
                 background: 'white',
-                borderRadius: '0.5rem',
+                borderRadius: '1.5rem',
                 boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                 padding: '1.5rem'
               }}>
@@ -591,7 +563,7 @@ const SalesModule = () => {
               <div>
                 <div style={{
                   background: 'white',
-                  borderRadius: '0.5rem',
+                  borderRadius: '1.5rem',
                   boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                   padding: '1.5rem'
                 }}>
@@ -782,7 +754,7 @@ const SalesModule = () => {
         /* Cart Page for Mobile */
         <div style={{
           background: 'white',
-          borderRadius: '0.5rem',
+          borderRadius: '1.5rem',
           boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
           padding: '1rem'
         }}>

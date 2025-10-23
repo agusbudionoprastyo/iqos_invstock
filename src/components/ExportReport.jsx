@@ -460,26 +460,11 @@ const ExportReport = () => {
       padding: isMobile ? '0.5rem' : '1.5rem',
       marginTop: '1rem'
     }}>
-      {/* Header */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ 
-          fontSize: '1.875rem', 
-          fontWeight: '700', 
-          color: '#111827', 
-          margin: 0,
-          marginBottom: '0.5rem'
-        }}>
-          Export Report
-        </h1>
-        <p style={{ color: '#6b7280', margin: 0 }}>
-          Export laporan penjualan bulanan dan audit stok
-        </p>
-      </div>
 
       {/* Report Type Selection */}
       <div style={{
         background: 'white',
-        borderRadius: '0.5rem',
+        borderRadius: '1.5rem',
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
         padding: '1.5rem',
         marginBottom: '1.5rem'
@@ -577,7 +562,7 @@ const ExportReport = () => {
         }}>
           <div style={{
             background: 'white',
-            borderRadius: '0.5rem',
+            borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
@@ -591,7 +576,7 @@ const ExportReport = () => {
           </div>
           <div style={{
             background: 'white',
-            borderRadius: '0.5rem',
+            borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
@@ -605,7 +590,7 @@ const ExportReport = () => {
           </div>
           <div style={{
             background: 'white',
-            borderRadius: '0.5rem',
+            borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
@@ -619,7 +604,7 @@ const ExportReport = () => {
           </div>
           <div style={{
             background: 'white',
-            borderRadius: '0.5rem',
+            borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
@@ -644,7 +629,7 @@ const ExportReport = () => {
         }}>
           <div style={{
             background: 'white',
-            borderRadius: '0.5rem',
+            borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
@@ -658,7 +643,7 @@ const ExportReport = () => {
           </div>
           <div style={{
             background: 'white',
-            borderRadius: '0.5rem',
+            borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
@@ -672,7 +657,7 @@ const ExportReport = () => {
           </div>
           <div style={{
             background: 'white',
-            borderRadius: '0.5rem',
+            borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
@@ -689,7 +674,7 @@ const ExportReport = () => {
           </div>
           <div style={{
             background: 'white',
-            borderRadius: '0.5rem',
+            borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
@@ -707,7 +692,7 @@ const ExportReport = () => {
       {/* Export Button */}
       <div style={{
         background: 'white',
-        borderRadius: '0.5rem',
+          borderRadius: '1.5rem',
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
         padding: '1.5rem',
         marginBottom: '1.5rem'
@@ -772,7 +757,7 @@ const ExportReport = () => {
       {/* Data Preview */}
       <div style={{
         background: 'white',
-        borderRadius: '0.5rem',
+        borderRadius: '1.5rem',
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
         overflow: 'hidden'
       }}>

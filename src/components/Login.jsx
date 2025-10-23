@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
-import Swal from 'sweetalert2';
+import { showToast } from '../utils/toast.jsx';
 import { userService } from '../services/database';
 
 const Login = ({ onLogin }) => {
@@ -64,20 +64,11 @@ const Login = ({ onLogin }) => {
         
         onLogin(true);
       } else {
-        await Swal.fire({
-          title: 'Login Gagal!',
-          text: 'Username atau password salah.',
-          icon: 'error',
-          timer: 2000
-        });
+        showToast.error('Username atau password salah.', 'Login Gagal!');
       }
     } catch (error) {
       console.error('Login error:', error);
-      await Swal.fire({
-        title: 'Error!',
-        text: 'Terjadi kesalahan saat login.',
-        icon: 'error'
-      });
+      showToast.error('Terjadi kesalahan saat login.', 'Error!');
     } finally {
       setLoading(false);
     }

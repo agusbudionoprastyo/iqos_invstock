@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { 
   Package, 
   ShoppingCart, 
@@ -16,6 +18,7 @@ import Dashboard from './components/Dashboard';
 import ExportReport from './components/ExportReport';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
+import Header from './components/Header';
 
 const Navigation = ({ onLogout }) => {
   const location = useLocation();
@@ -92,44 +95,6 @@ const Navigation = ({ onLogout }) => {
           </ul>
         </div>
       </nav>
-      
-      {/* Mobile floating logout button */}
-      <button
-        onClick={handleLogout}
-        className="mobile-only"
-        style={{
-          position: 'fixed',
-          top: '.8rem',
-          right: '1rem',
-          zIndex: 1000,
-          background: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          borderRadius: '50%',
-          width: '3rem',
-          height: '3rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          color: '#ef4444',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          transition: 'all 0.2s'
-        }}
-        onMouseOver={(e) => {
-          e.target.style.transform = 'scale(1.1)';
-          e.target.style.background = 'rgba(255, 255, 255, 0.25)';
-          e.target.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)';
-        }}
-        onMouseOut={(e) => {
-          e.target.style.transform = 'scale(1)';
-          e.target.style.background = 'rgba(255, 255, 255, 0.15)';
-          e.target.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.1)';
-        }}
-      >
-        <LogOut size={20} />
-      </button>
     </>
   );
 };
@@ -177,6 +142,7 @@ const App = () => {
         <Navigation onLogout={handleLogout} />
         
         <main className="container">
+          <Header onLogout={handleLogout} />
           <Routes>
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/" element={
@@ -201,6 +167,22 @@ const App = () => {
             } />
           </Routes>
         </main>
+        
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+          style={{
+            fontSize: '14px',
+          }}
+        />
       </div>
     </Router>
   );
