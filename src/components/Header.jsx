@@ -105,8 +105,8 @@ const Header = ({ onLogout }) => {
           <button
             onClick={onLogout}
             style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.2)',
+              background: '#ffffff',
+              border: 'none',
               borderRadius: '0.5rem',
               padding: '0.5rem',
               color: '#dc2626',
@@ -116,15 +116,18 @@ const Header = ({ onLogout }) => {
               justifyContent: 'center',
               transition: 'all 0.2s ease',
               fontSize: '0.875rem',
-              alignSelf: 'flex-start'
+              alignSelf: 'flex-start',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
             }}
             onMouseOver={(e) => {
-              e.target.style.background = 'rgba(239, 68, 68, 0.2)';
-              e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+              e.target.style.background = '#f8f9fa';
+              e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+              e.target.style.transform = 'translateY(-1px)';
             }}
             onMouseOut={(e) => {
-              e.target.style.background = 'rgba(239, 68, 68, 0.1)';
-              e.target.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+              e.target.style.background = '#ffffff';
+              e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+              e.target.style.transform = 'translateY(0)';
             }}
             title="Logout"
           >
