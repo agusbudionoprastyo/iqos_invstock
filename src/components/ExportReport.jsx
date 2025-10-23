@@ -487,57 +487,83 @@ const ExportReport = () => {
         <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', margin: 0, marginBottom: '1rem' }}>
           Pilih Jenis Laporan
         </h3>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          Month
+        <div style={{ 
+          display: 'flex', 
+          gap: isMobile ? '1rem' : '1rem', 
+          flexDirection: isMobile ? 'column' : 'row',
+          flexWrap: 'wrap' 
+        }}>
+          {/* Month Input */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: isMobile ? '0' : '1rem', 
+            flexWrap: 'wrap',
+            width: isMobile ? '100%' : 'auto'
+          }}>
+            {!isMobile && <span>Month</span>}
             <input
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               style={{
-                padding: '0.5rem',
+                padding: '0.75rem',
                 border: '1px solid #d1d5db',
                 borderRadius: '0.375rem',
-                fontSize: '1rem'
+                fontSize: '1rem',
+                width: isMobile ? '100%' : 'auto'
               }}
             />
           </div>
-          <button
-            onClick={() => setReportType('sales')}
-            style={{
-              padding: '0.75rem 1.5rem',
-              borderRadius: '0.5rem',
-              border: '1px solid #d1d5db',
-              background: reportType === 'sales' ? '#3b82f6' : 'white',
-              color: reportType === 'sales' ? 'white' : '#374151',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontWeight: '500'
-            }}
-          >
-            <BarChart3 size={18} />
-            Laporan Penjualan
-          </button>
-          <button
-            onClick={() => setReportType('stock')}
-            style={{
-              padding: '0.75rem 1.5rem',
-              borderRadius: '0.5rem',
-              border: '1px solid #d1d5db',
-              background: reportType === 'stock' ? '#3b82f6' : 'white',
-              color: reportType === 'stock' ? 'white' : '#374151',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontWeight: '500'
-            }}
-          >
-            <Package size={18} />
-            Audit Stok
-          </button>
+          
+          {/* Report Type Buttons */}
+          <div style={{
+            display: 'flex',
+            gap: '1rem',
+            flexDirection: isMobile ? 'column' : 'row',
+            width: isMobile ? '100%' : 'auto'
+          }}>
+            <button
+              onClick={() => setReportType('sales')}
+              style={{
+                padding: '0.75rem 1.5rem',
+                borderRadius: '0.5rem',
+                border: '1px solid #d1d5db',
+                background: reportType === 'sales' ? '#3b82f6' : 'white',
+                color: reportType === 'sales' ? 'white' : '#374151',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                fontWeight: '500',
+                width: isMobile ? '100%' : 'auto'
+              }}
+            >
+              <BarChart3 size={18} />
+              Laporan Penjualan
+            </button>
+            <button
+              onClick={() => setReportType('stock')}
+              style={{
+                padding: '0.75rem 1.5rem',
+                borderRadius: '0.5rem',
+                border: '1px solid #d1d5db',
+                background: reportType === 'stock' ? '#3b82f6' : 'white',
+                color: reportType === 'stock' ? 'white' : '#374151',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                fontWeight: '500',
+                width: isMobile ? '100%' : 'auto'
+              }}
+            >
+              <Package size={18} />
+              Audit Stok
+            </button>
+          </div>
         </div>
       </div>
 
