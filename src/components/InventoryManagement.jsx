@@ -586,10 +586,19 @@ const InventoryManagement = () => {
 
   const saveAuditReport = async () => {
     try {
-      const auditsRef = ref(database, 'stockAudits');
-      const newAuditRef = push(auditsRef);
+      // Generate numeric ID for audit
+      const auditsRef = ref(database, 'counters/stockAudits');
+      const counterSnap = await get(auditsRef);
+      let currentCount = 0;
+      if (counterSnap.exists()) {
+        currentCount = counterSnap.val() || 0;
+      }
+      const auditId = (currentCount + 1).toString().padStart(6, '0');
+      await set(auditsRef, currentCount + 1);
+      
+      const auditRef = ref(database, `stockAudits/${auditId}`);
       const payload = {
-        id: newAuditRef.key,
+        id: auditId,
         date: auditDate,
         time: auditTime,
         createdAt: Date.now(),
@@ -603,7 +612,7 @@ const InventoryManagement = () => {
           status: r.status
         }))
       };
-      await set(newAuditRef, payload);
+      await set(auditRef, payload);
       await Swal.fire({
         title: 'Tersimpan!',
         text: 'Laporan audit berhasil disimpan.',

@@ -1,6 +1,26 @@
 import { ref, set, get, push, update, remove, onValue, off } from 'firebase/database';
 import { database } from '../firebase/config';
 
+// Helper function to generate sequential numeric ID
+const generateNumericId = async (collectionName) => {
+  try {
+    const counterRef = ref(database, `counters/${collectionName}`);
+    const snapshot = await get(counterRef);
+    
+    let currentCount = 0;
+    if (snapshot.exists()) {
+      currentCount = snapshot.val() || 0;
+    }
+    
+    const newId = currentCount + 1;
+    await set(counterRef, newId);
+    
+    return newId.toString().padStart(6, '0'); // Format: 000001, 000002, etc.
+  } catch (error) {
+    throw new Error(`Error generating numeric ID: ${error.message}`);
+  }
+};
+
 // Database schema structure:
 /*
 {
@@ -403,10 +423,10 @@ export const productService = {
       });
 
       // Create stock movement record
-      const movementRef = ref(database, 'stockMovements');
-      const newMovementRef = push(movementRef);
+      const movementId = await generateNumericId('stockMovements');
+      const movementRef = ref(database, `stockMovements/${movementId}`);
       const movement = {
-        id: newMovementRef.key,
+        id: movementId,
         productId,
         productName: product.name,
         type: quantityChange > 0 ? 'in' : 'out',
@@ -415,7 +435,7 @@ export const productService = {
         referenceId,
         createdAt: Date.now()
       };
-      await set(newMovementRef, movement);
+      await set(movementRef, movement);
 
       return true;
     } catch (error) {
@@ -479,10 +499,10 @@ export const productService = {
       }
 
       // Create stock movement record
-      const movementRef = ref(database, 'stockMovements');
-      const newMovementRef = push(movementRef);
+      const movementId = await generateNumericId('stockMovements');
+      const movementRef = ref(database, `stockMovements/${movementId}`);
       const movement = {
-        id: newMovementRef.key,
+        id: movementId,
         productId,
         productName: product.name,
         type: 'out',
@@ -491,7 +511,7 @@ export const productService = {
         referenceId: saleId,
         createdAt: Date.now()
       };
-      await set(newMovementRef, movement);
+      await set(movementRef, movement);
 
       return true;
     } catch (error) {
@@ -505,22 +525,23 @@ export const salesService = {
   // Create sale
   createSale: async (saleData) => {
     try {
-      const salesRef = ref(database, 'sales');
-      const newSaleRef = push(salesRef);
+      const saleId = await generateNumericId('sales');
+      const salesRef = ref(database, `sales/${saleId}`);
+      
       const sale = {
-        id: newSaleRef.key,
+        id: saleId,
         ...saleData,
         createdAt: Date.now(),
         status: 'completed'
       };
-      await set(newSaleRef, sale);
+      await set(salesRef, sale);
 
       // Update stock for each item
       for (const item of saleData.items) {
         await productService.updateStockAndMarkUnitsSold(
           item.productId,
           item.quantity,
-          newSaleRef.key
+          saleId
         );
       }
 
@@ -558,15 +579,16 @@ export const procurementService = {
   // Create procurement
   createProcurement: async (procurementData) => {
     try {
-      const procurementsRef = ref(database, 'procurements');
-      const newProcurementRef = push(procurementsRef);
+      const procurementId = await generateNumericId('procurements');
+      const procurementsRef = ref(database, `procurements/${procurementId}`);
+      
       const procurement = {
-        id: newProcurementRef.key,
+        id: procurementId,
         ...procurementData,
         createdAt: Date.now(),
         status: 'pending'
       };
-      await set(newProcurementRef, procurement);
+      await set(procurementsRef, procurement);
       return procurement;
     } catch (error) {
       throw new Error(`Error creating procurement: ${error.message}`);
@@ -816,6 +838,92 @@ export const stockAuditService = {
       return [...filteredListAudits, ...byDateAudits];
     } catch (error) {
       throw new Error(`Error fetching stock audits by month: ${error.message}`);
+    }
+  }
+};
+
+// Users CRUD operations
+export const userService = {
+  // Get all users
+  getAllUsers: async () => {
+    try {
+      const usersRef = ref(database, 'users');
+      const snapshot = await get(usersRef);
+      return snapshot.exists() ? Object.values(snapshot.val()) : [];
+    } catch (error) {
+      throw new Error(`Error fetching users: ${error.message}`);
+    }
+  },
+
+  // Get user by username
+  getUserByUsername: async (username) => {
+    try {
+      const usersRef = ref(database, 'users');
+      const snapshot = await get(usersRef);
+      if (snapshot.exists()) {
+        const users = Object.values(snapshot.val());
+        return users.find(user => user.username === username) || null;
+      }
+      return null;
+    } catch (error) {
+      throw new Error(`Error fetching user: ${error.message}`);
+    }
+  },
+
+  // Create user
+  createUser: async (userData) => {
+    try {
+      const userId = await generateNumericId('users');
+      const usersRef = ref(database, `users/${userId}`);
+      
+      const user = {
+        id: userId,
+        ...userData,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      await set(usersRef, user);
+      return user;
+    } catch (error) {
+      throw new Error(`Error creating user: ${error.message}`);
+    }
+  },
+
+  // Update user
+  updateUser: async (userId, userData) => {
+    try {
+      const userRef = ref(database, `users/${userId}`);
+      await update(userRef, {
+        ...userData,
+        updatedAt: Date.now()
+      });
+      return true;
+    } catch (error) {
+      throw new Error(`Error updating user: ${error.message}`);
+    }
+  },
+
+  // Delete user
+  deleteUser: async (userId) => {
+    try {
+      const userRef = ref(database, `users/${userId}`);
+      await remove(userRef);
+      return true;
+    } catch (error) {
+      throw new Error(`Error deleting user: ${error.message}`);
+    }
+  },
+
+  // Authenticate user
+  authenticateUser: async (username, password) => {
+    try {
+      const user = await userService.getUserByUsername(username);
+      if (user && user.password === password) {
+        return user;
+      }
+      return null;
+    } catch (error) {
+      throw new Error(`Error authenticating user: ${error.message}`);
     }
   }
 };

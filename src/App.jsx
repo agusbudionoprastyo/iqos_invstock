@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { 
   Package, 
   ShoppingCart, 
@@ -7,14 +7,17 @@ import {
   BarChart3, 
   Settings,
   Home,
-  FileText
+  FileText,
+  LogOut
 } from 'lucide-react';
 import InventoryManagement from './components/InventoryManagement';
 import SalesModule from './components/SalesModule';
 import Dashboard from './components/Dashboard';
 import ExportReport from './components/ExportReport';
+import Login from './components/Login';
+import ProtectedRoute from './components/ProtectedRoute';
 
-const Navigation = () => {
+const Navigation = ({ onLogout }) => {
   const location = useLocation();
   
   const menuItems = [
@@ -24,48 +27,178 @@ const Navigation = () => {
     { path: '/sales', icon: ShoppingCart, label: 'Penjualan' }
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('username');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
+    onLogout();
+  };
+
   return (
-    <nav className="nav">
-      <div className="nav-container">
-        <Link to="/" className="nav-brand">
-          {/* <Package size={24} /> */}
-          <span className="mobile-hidden">IQOS</span>
-        </Link>
-        <ul className="nav-menu">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <li key={item.path}>
-                <Link
-                  to={item.path}
-                  className={`nav-link ${isActive ? 'active' : ''}`}
-                >
-                  <Icon size={18} />
-                  {item.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    </nav>
+    <>
+      <nav className="nav">
+        <div className="nav-container">
+          <Link to="/" className="nav-brand">
+            <span className="mobile-hidden">IQOS</span>
+          </Link>
+          <ul className="nav-menu">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              
+              return (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    className={`nav-link ${isActive ? 'active' : ''}`}
+                  >
+                    <Icon size={18} />
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+            {/* Desktop logout button */}
+            {/* <li className="desktop-only">
+              <button
+                onClick={handleLogout}
+                className="nav-link"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#6b7280',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.375rem',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.color = '#ef4444';
+                  e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.color = '#6b7280';
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                <LogOut size={18} />
+                Logout
+              </button>
+            </li> */}
+          </ul>
+        </div>
+      </nav>
+      
+      {/* Mobile floating logout button */}
+      <button
+        onClick={handleLogout}
+        className="mobile-only"
+        style={{
+          position: 'fixed',
+          top: '.8rem',
+          right: '1rem',
+          zIndex: 1000,
+          background: 'rgba(255, 255, 255, 0.15)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          borderRadius: '50%',
+          width: '3rem',
+          height: '3rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          color: '#ef4444',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.2s'
+        }}
+        onMouseOver={(e) => {
+          e.target.style.transform = 'scale(1.1)';
+          e.target.style.background = 'rgba(255, 255, 255, 0.25)';
+          e.target.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)';
+        }}
+        onMouseOut={(e) => {
+          e.target.style.transform = 'scale(1)';
+          e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+          e.target.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.1)';
+        }}
+      >
+        <LogOut size={20} />
+      </button>
+    </>
   );
 };
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user is already authenticated
+    const authStatus = localStorage.getItem('isAuthenticated') === 'true';
+    setIsAuthenticated(authStatus);
+    setLoading(false);
+  }, []);
+
+  const handleLogin = (success) => {
+    setIsAuthenticated(success);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+  };
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        background: 'rgba(249, 250, 251, 0.8)'
+      }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   return (
     <Router>
       <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-        <Navigation />
+        <Navigation onLogout={handleLogout} />
         
         <main className="container">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/inventory" element={<InventoryManagement />} />
-            <Route path="/sales" element={<SalesModule />} />
-            <Route path="/export" element={<ExportReport />} />
+            <Route path="/login" element={<Navigate to="/" replace />} />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/inventory" element={
+              <ProtectedRoute>
+                <InventoryManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="/sales" element={
+              <ProtectedRoute>
+                <SalesModule />
+              </ProtectedRoute>
+            } />
+            <Route path="/export" element={
+              <ProtectedRoute>
+                <ExportReport />
+              </ProtectedRoute>
+            } />
           </Routes>
         </main>
       </div>

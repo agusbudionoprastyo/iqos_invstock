@@ -952,6 +952,28 @@ code {
   .mobile-hidden {
     display: none;
   }
+  
+  .desktop-only {
+    display: none;
+  }
+  
+  .mobile-only {
+    display: block;
+  }
+}
+
+@media (min-width: 641px) {
+  .mobile-hidden {
+    display: block;
+  }
+  
+  .desktop-only {
+    display: block;
+  }
+  
+  .mobile-only {
+    display: none;
+  }
 }
 
 @media (min-width: 641px) {
