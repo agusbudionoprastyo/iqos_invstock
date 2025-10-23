@@ -64,21 +64,37 @@ const InventoryManagement = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const productsData = await productService.getAllProducts();
-      setProducts(productsData);
       
-      // Load barcode count and ready stock for each product
+      // Use super-optimized function that gets everything in 2 Firebase calls
+      const productsWithStockData = await productService.getAllProductsWithStockData();
+      
+      // Extract data for state
+      const products = productsWithStockData.map(p => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        price: p.price,
+        stock: p.stock,
+        minStock: p.minStock,
+        useBarcode: p.useBarcode,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt
+      }));
+      
       const barcodeCounts = {};
       const readyStocks = {};
-      for (const product of productsData) {
-        barcodeCounts[product.id] = await productService.getUnitsWithBarcodeCount(product.id);
-        readyStocks[product.id] = await productService.getReadyStock(product.id);
-      }
+      
+      productsWithStockData.forEach(p => {
+        barcodeCounts[p.id] = p.barcodeCount;
+        readyStocks[p.id] = p.readyStock;
+      });
+      
+      setProducts(products);
       setProductsWithBarcodeCount(barcodeCounts);
       setReadyStockCount(readyStocks);
       
       // Check for low stock products
-      const lowStock = productsData.filter(product => product.stock <= product.minStock);
+      const lowStock = products.filter(product => product.stock <= product.minStock);
       setLowStockProducts(lowStock);
     } catch (error) {
       console.error('Error loading products:', error);
@@ -1976,28 +1992,63 @@ const InventoryManagement = () => {
                   })()}
                 </div>
                 {/* Pagination for audit list */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
-                  <button
-                    onClick={() => setAuditPage((p) => Math.max(1, p - 1))}
-                    className="btn btn-secondary"
-                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                  >
-                    Prev
-                  </button>
-                  <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                    Halaman {auditPage} / {Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))}
-                  </span>
-                  <button
-                    onClick={() => setAuditPage((p) => {
-                      const total = Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage));
-                      return Math.min(total, p + 1);
-                    })}
-                    className="btn btn-secondary"
-                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                  >
-                    Next
-                  </button>
-                </div>
+                {Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) > 1 && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    marginTop: '1rem',
+                    padding: '1rem'
+                  }}>
+                    <button
+                      onClick={() => setAuditPage(prev => Math.max(prev - 1, 1))}
+                      disabled={auditPage === 1}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '0.5rem',
+                        borderRadius: '0.5rem',
+                        border: '1px solid #d1d5db',
+                        backgroundColor: auditPage === 1 ? '#f9fafb' : 'white',
+                        color: auditPage === 1 ? '#9ca3af' : '#374151',
+                        cursor: auditPage === 1 ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    
+                    <span style={{
+                      fontSize: '0.875rem',
+                      color: '#6b7280',
+                      minWidth: '100px',
+                      textAlign: 'center'
+                    }}>
+                      {auditPage} / {Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))}
+                    </span>
+                    
+                    <button
+                      onClick={() => setAuditPage(prev => Math.min(prev + 1, Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))))}
+                      disabled={auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '0.5rem',
+                        borderRadius: '0.5rem',
+                        border: '1px solid #d1d5db',
+                        backgroundColor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? '#f9fafb' : 'white',
+                        color: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? '#9ca3af' : '#374151',
+                        cursor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

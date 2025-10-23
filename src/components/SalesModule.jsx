@@ -32,17 +32,20 @@ const SalesModule = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const productsData = await productService.getAllProducts();
       
-      // Load ready stock for each product
+      // Use super-optimized function that gets everything in 2 Firebase calls
+      const productsWithStockData = await productService.getAllProductsWithStockData();
+      
+      // Extract ready stock data
       const readyStocks = {};
-      for (const product of productsData) {
-        readyStocks[product.id] = await productService.getReadyStock(product.id);
-      }
+      productsWithStockData.forEach(p => {
+        readyStocks[p.id] = p.readyStock;
+      });
+      
       setReadyStockData(readyStocks);
       
       // Only show products with ready stock > 0
-      const availableProducts = productsData.filter(product => readyStocks[product.id] > 0);
+      const availableProducts = productsWithStockData.filter(product => product.readyStock > 0);
       setProducts(availableProducts);
     } catch (error) {
       console.error('Error loading products:', error);

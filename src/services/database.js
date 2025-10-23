@@ -104,48 +104,83 @@ export const productService = {
     }
   },
 
-  // Get units count with barcode for a product
-  getUnitsWithBarcodeCount: async (productId) => {
+  // Bulk get units count with barcode for multiple products (optimized)
+  getBulkUnitsWithBarcodeCount: async (productIds) => {
     try {
-      const unitsRef = ref(database, `productUnits/${productId}`);
+      const results = {};
+      
+      // Get all productUnits data in one call
+      const unitsRef = ref(database, 'productUnits');
       const snapshot = await get(unitsRef);
+      
       if (snapshot.exists()) {
-        const units = Object.values(snapshot.val());
-        return units.filter(unit => unit.barcode).length;
+        const allUnits = snapshot.val();
+        
+        // Process each product
+        for (const productId of productIds) {
+          const productUnits = allUnits[productId];
+          if (productUnits) {
+            const units = Object.values(productUnits);
+            results[productId] = units.filter(unit => unit.barcode).length;
+          } else {
+            results[productId] = 0;
+          }
+        }
+      } else {
+        // No units data, return 0 for all products
+        for (const productId of productIds) {
+          results[productId] = 0;
+        }
       }
-      return 0;
+      
+      return results;
     } catch (error) {
-      throw new Error(`Error getting units count: ${error.message}`);
+      throw new Error(`Error getting bulk units count: ${error.message}`);
     }
   },
 
-  // Get ready stock (units with barcode) for a product
-  getReadyStock: async (productId) => {
+  // Bulk get ready stock for multiple products (optimized)
+  getBulkReadyStock: async (products) => {
     try {
-      // First check if product uses barcode
-      const productRef = ref(database, `products/${productId}`);
-      const productSnap = await get(productRef);
-      if (!productSnap.exists()) {
-        return 0;
-      }
+      const results = {};
       
-      const product = productSnap.val();
-      
-      // If product doesn't use barcode, ready stock = total stock
-      if (product.useBarcode === false) {
-        return product.stock || 0;
-      }
-      
-      // If product uses barcode, count units with barcode
-      const unitsRef = ref(database, `productUnits/${productId}`);
+      // Get all productUnits data in one call
+      const unitsRef = ref(database, 'productUnits');
       const snapshot = await get(unitsRef);
+      
       if (snapshot.exists()) {
-        const units = Object.values(snapshot.val());
-        return units.filter(unit => unit.barcode && unit.status === 'in_stock').length;
+        const allUnits = snapshot.val();
+        
+        // Process each product
+        for (const product of products) {
+          if (product.useBarcode === false) {
+            // If product doesn't use barcode, ready stock = total stock
+            results[product.id] = product.stock || 0;
+          } else {
+            // If product uses barcode, count units with barcode and in_stock status
+            const productUnits = allUnits[product.id];
+            if (productUnits) {
+              const units = Object.values(productUnits);
+              results[product.id] = units.filter(unit => unit.barcode && unit.status === 'in_stock').length;
+            } else {
+              results[product.id] = 0;
+            }
+          }
+        }
+      } else {
+        // No units data, return stock for non-barcode products, 0 for barcode products
+        for (const product of products) {
+          if (product.useBarcode === false) {
+            results[product.id] = product.stock || 0;
+          } else {
+            results[product.id] = 0;
+          }
+        }
       }
-      return 0;
+      
+      return results;
     } catch (error) {
-      throw new Error(`Error getting ready stock: ${error.message}`);
+      throw new Error(`Error getting bulk ready stock: ${error.message}`);
     }
   },
 
@@ -174,14 +209,47 @@ export const productService = {
     }
   },
 
-  // Get all products
-  getAllProducts: async () => {
+  // Get all products with bulk ready stock data (super optimized)
+  getAllProductsWithStockData: async () => {
     try {
-      const productsRef = ref(database, 'products');
-      const snapshot = await get(productsRef);
-      return snapshot.exists() ? Object.values(snapshot.val()) : [];
+      // Get products and productUnits in parallel
+      const [productsSnapshot, unitsSnapshot] = await Promise.all([
+        get(ref(database, 'products')),
+        get(ref(database, 'productUnits'))
+      ]);
+      
+      const products = productsSnapshot.exists() ? Object.values(productsSnapshot.val()) : [];
+      const allUnits = unitsSnapshot.exists() ? unitsSnapshot.val() : {};
+      
+      // Process products with their stock data
+      const productsWithStockData = products.map(product => {
+        let readyStock = 0;
+        let barcodeCount = 0;
+        
+        if (product.useBarcode === false) {
+          // Non-barcode product: ready stock = total stock
+          readyStock = product.stock || 0;
+          barcodeCount = 0;
+        } else {
+          // Barcode product: count units with barcode
+          const productUnits = allUnits[product.id];
+          if (productUnits) {
+            const units = Object.values(productUnits);
+            barcodeCount = units.filter(unit => unit.barcode).length;
+            readyStock = units.filter(unit => unit.barcode && unit.status === 'in_stock').length;
+          }
+        }
+        
+        return {
+          ...product,
+          readyStock,
+          barcodeCount
+        };
+      });
+      
+      return productsWithStockData;
     } catch (error) {
-      throw new Error(`Error fetching products: ${error.message}`);
+      throw new Error(`Error getting products with stock data: ${error.message}`);
     }
   },
 

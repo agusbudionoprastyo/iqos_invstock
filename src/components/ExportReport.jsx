@@ -41,14 +41,30 @@ const ExportReport = () => {
   };
 
   const loadSalesReport = async () => {
-    const sales = await salesService.getAllSales();
+    const [sales, productsWithStockData] = await Promise.all([
+      salesService.getAllSales(),
+      productService.getAllProductsWithStockData()
+    ]);
+    
+    // Create a map of productId to category for quick lookup
+    const productCategoryMap = {};
+    productsWithStockData.forEach(product => {
+      productCategoryMap[product.id] = product.category;
+    });
+    
     const [year, month] = selectedMonth.split('-');
     
-    // Filter sales for selected month
+    // Filter sales for selected month and add category to each item
     const monthlySales = sales.filter(sale => {
       const saleDate = new Date(sale.createdAt);
       return saleDate.getFullYear() == year && saleDate.getMonth() == month - 1;
-    });
+    }).map(sale => ({
+      ...sale,
+      items: sale.items.map(item => ({
+        ...item,
+        category: productCategoryMap[item.productId] || 'Unknown'
+      }))
+    }));
 
     setSalesData(monthlySales);
 
@@ -110,10 +126,13 @@ const ExportReport = () => {
     setStockAudits(sessions);
 
     // Get products and stock movements for additional context
-    const [products, stockMovements] = await Promise.all([
-      productService.getAllProducts(),
+    const [productsWithStockData, stockMovements] = await Promise.all([
+      productService.getAllProductsWithStockData(),
       stockMovementService.getAllStockMovements()
     ]);
+    
+    // Extract just the products from the stock data
+    const products = productsWithStockData;
 
     // Get current month's stock movements
     const monthlyMovements = stockMovements.filter(movement => {
@@ -469,6 +488,20 @@ const ExportReport = () => {
           Pilih Jenis Laporan
         </h3>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          Month
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              style={{
+                padding: '0.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.375rem',
+                fontSize: '1rem'
+              }}
+            />
+          </div>
           <button
             onClick={() => setReportType('sales')}
             style={{
@@ -505,36 +538,6 @@ const ExportReport = () => {
             <Package size={18} />
             Audit Stok
           </button>
-        </div>
-      </div>
-
-      {/* Month Selection */}
-      <div style={{
-        background: 'white',
-        borderRadius: '0.5rem',
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-        padding: '1.5rem',
-        marginBottom: '1.5rem'
-      }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', margin: 0, marginBottom: '1rem' }}>
-          Pilih Bulan
-        </h3>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          <Calendar size={20} color="#6b7280" />
-          <input
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            style={{
-              padding: '0.5rem',
-              border: '1px solid #d1d5db',
-              borderRadius: '0.375rem',
-              fontSize: '1rem'
-            }}
-          />
-          <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-            {getMonthName(selectedMonth)}
-          </span>
         </div>
       </div>
 
@@ -765,51 +768,94 @@ const ExportReport = () => {
           ) : reportType === 'sales' ? (
             salesData.length > 0 ? (
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                {/* Desktop Table */}
+                {!isMobile ? (
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                       <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
                         Tanggal
                       </th>
                       <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
-                        ID Transaksi
+                        Produk
                       </th>
                       <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
-                        Pelanggan
+                        Kategori
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
-                        Total Item
+                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                        Qty
                       </th>
                       <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
-                        Total Harga
+                        Harga
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {salesData.slice(0, 10).map((sale) => (
-                      <tr key={sale.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                        <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151' }}>
-                          {new Date(sale.createdAt).toLocaleDateString('id-ID')}
-                        </td>
-                        <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', fontFamily: 'monospace' }}>
-                          {sale.id.slice(0, 8)}...
-                        </td>
-                        <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151' }}>
-                          {sale.customerName || 'Pelanggan Umum'}
-                        </td>
-                        <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151' }}>
-                          {sale.items.reduce((sum, item) => sum + item.quantity, 0)}
-                        </td>
-                        <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', textAlign: 'right' }}>
-                          {formatCurrency(sale.totalAmount)}
-                        </td>
-                      </tr>
-                    ))}
+                    {salesData.slice(0, 10).map((sale) => 
+                      sale.items.map((item, itemIndex) => (
+                        <tr key={`${sale.id}-${itemIndex}`} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151' }}>
+                            {new Date(sale.createdAt).toLocaleDateString('id-ID')}
+                          </td>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', fontWeight: '500' }}>
+                            {item.productName}
+                          </td>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#6b7280' }}>
+                            {item.category}
+                          </td>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', textAlign: 'center' }}>
+                            {item.quantity}
+                          </td>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', textAlign: 'right', fontWeight: '500' }}>
+                            {formatCurrency(item.total)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
-                {salesData.length > 10 && (
+                ) : (
+                  /* Mobile Table - 2 columns only */
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                        <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                          Item
+                        </th>
+                        <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                          Harga
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {salesData.slice(0, 10).map((sale) => 
+                        sale.items.map((item, itemIndex) => (
+                          <tr key={`${sale.id}-${itemIndex}`} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                            <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151' }}>
+                            <div>
+                              <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
+                                {item.productName}
+                              </div>
+                              <div style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                                {item.category}
+                              </div>
+                              <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                                Qty: {item.quantity}
+                              </div>
+                            </div>
+                            </td>
+                            <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', textAlign: 'right', fontWeight: '500' }}>
+                              {formatCurrency(item.total)}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
+                {salesData.reduce((total, sale) => total + sale.items.length, 0) > 10 && (
                   <p style={{ textAlign: 'center', color: '#6b7280', marginTop: '1rem', fontSize: '0.875rem' }}>
-                    Menampilkan 10 dari {salesData.length} transaksi
+                    Menampilkan 10 dari {salesData.reduce((total, sale) => total + sale.items.length, 0)} item
                   </p>
                 )}
               </div>
@@ -822,7 +868,9 @@ const ExportReport = () => {
           ) : (
             stockData.length > 0 ? (
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                {/* Desktop Table */}
+                {!isMobile ? (
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                       <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
@@ -858,7 +906,18 @@ const ExportReport = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {stockData.slice(0, 10).map((item, index) => {
+                    {stockData
+                      .filter(item => {
+                        if (!item.product) return false;
+                        const auditResult = getAuditResult(item.product.id);
+                        const hasPhysical = auditResult && typeof auditResult.physicalStock === 'number';
+                        if (!hasPhysical) return false;
+                        const systemStock = item.product.stock;
+                        const variance = auditResult.physicalStock - systemStock;
+                        return variance !== 0; // Only show products with variance
+                      })
+                      .slice(0, 10)
+                      .map((item, index) => {
                       if (!item.product) return null;
                       
                       const inMovements = item.movements.filter(m => m.type === 'in');
@@ -871,18 +930,6 @@ const ExportReport = () => {
                       const physicalStockValue = hasPhysical ? auditResult.physicalStock : '-';
                       const variance = hasPhysical ? (auditResult.physicalStock - systemStock) : '-';
                       const auditDateStr = getAuditDateString(item.product.id);
-                      
-                      // Debug logging
-                      if (auditResult && item.product.name === 'AUBURN') {
-                        console.log('Debug AUBURN:', {
-                          productName: item.product.name,
-                          systemStock,
-                          physicalStock: auditResult.physicalStock,
-                          databaseStock: auditResult.databaseStock,
-                          variance,
-                          calculation: `${auditResult.physicalStock} - ${systemStock} = ${variance}`
-                        });
-                      }
                       const auditStatus = auditResult ? auditResult.status : 'Belum Diaudit';
                       const isLowStock = systemStock <= item.product.minStock;
                       
@@ -981,9 +1028,95 @@ const ExportReport = () => {
                     })}
                   </tbody>
                 </table>
-                {stockData.length > 10 && (
+                ) : (
+                  /* Mobile Table - 2 columns only */
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                        <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                          Produk
+                        </th>
+                        <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                          Selisih
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stockData
+                        .filter(item => {
+                          if (!item.product) return false;
+                          const auditResult = getAuditResult(item.product.id);
+                          const hasPhysical = auditResult && typeof auditResult.physicalStock === 'number';
+                          if (!hasPhysical) return false;
+                          const systemStock = item.product.stock;
+                          const variance = auditResult.physicalStock - systemStock;
+                          return variance !== 0; // Only show products with variance
+                        })
+                        .slice(0, 10)
+                        .map((item, index) => {
+                        if (!item.product) return null;
+                        
+                        const systemStock = item.product.stock;
+                        const auditResult = getAuditResult(item.product.id);
+                        const hasPhysical = auditResult && typeof auditResult.physicalStock === 'number';
+                        const variance = hasPhysical ? (auditResult.physicalStock - systemStock) : '-';
+                        
+                        return (
+                          <tr key={index} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                            <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151' }}>
+                              <div>
+                                <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
+                                  {item.product.name}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                                  {item.product.category}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                                  Sistem: {systemStock} | Fisik: {hasPhysical ? auditResult.physicalStock : '-'}
+                                </div>
+                              </div>
+                            </td>
+                            <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                              {auditResult ? (
+                                <span style={{
+                                  color: variance > 0 ? '#059669' : variance < 0 ? '#dc2626' : '#6b7280',
+                                  fontWeight: '600',
+                                  fontSize: '0.875rem',
+                                  padding: '0.25rem 0.5rem',
+                                  borderRadius: '0.375rem',
+                                  background: variance > 0 ? '#f0fdf4' : variance < 0 ? '#fef2f2' : '#f9fafb'
+                                }}>
+                                  {variance > 0 ? '+' : ''}{variance}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#9ca3af', fontSize: '0.875rem' }}>-</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+                {stockData.filter(item => {
+                  if (!item.product) return false;
+                  const auditResult = getAuditResult(item.product.id);
+                  const hasPhysical = auditResult && typeof auditResult.physicalStock === 'number';
+                  if (!hasPhysical) return false;
+                  const systemStock = item.product.stock;
+                  const variance = auditResult.physicalStock - systemStock;
+                  return variance !== 0;
+                }).length > 10 && (
                   <p style={{ textAlign: 'center', color: '#6b7280', marginTop: '1rem', fontSize: '0.875rem' }}>
-                    Menampilkan 10 dari {stockData.length} produk
+                    Menampilkan 10 dari {stockData.filter(item => {
+                      if (!item.product) return false;
+                      const auditResult = getAuditResult(item.product.id);
+                      const hasPhysical = auditResult && typeof auditResult.physicalStock === 'number';
+                      if (!hasPhysical) return false;
+                      const systemStock = item.product.stock;
+                      const variance = auditResult.physicalStock - systemStock;
+                      return variance !== 0;
+                    }).length} produk dengan selisih
                   </p>
                 )}
               </div>

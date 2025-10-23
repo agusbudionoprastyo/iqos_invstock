@@ -13,6 +13,7 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [recentSales, setRecentSales] = useState([]);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     loadDashboardData();
@@ -22,15 +23,25 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
-      const [products, sales] = await Promise.all([
-        productService.getAllProducts(),
+      const [productsWithStockData, sales] = await Promise.all([
+        productService.getAllProductsWithStockData(),
         salesService.getAllSales()
       ]);
+      
+      // Extract just the products from the stock data
+      const products = productsWithStockData;
+      
+      // Create a map of productId to category for quick lookup
+      const productCategoryMap = {};
+      products.forEach(product => {
+        productCategoryMap[product.id] = product.category;
+      });
 
       // Calculate stats
       const lowStockProducts = products.filter(product => product.stock <= product.minStock);
       const totalRevenue = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
 
+      setProducts(products);
       setStats({
         totalProducts: products.length,
         lowStockProducts: lowStockProducts.length,
@@ -38,8 +49,14 @@ const Dashboard = () => {
         totalRevenue
       });
 
-      // Get recent transactions
-      const sortedSales = sales.sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
+      // Get recent transactions and add category to each item
+      const sortedSales = sales.sort((a, b) => b.createdAt - a.createdAt).slice(0, 5).map(sale => ({
+        ...sale,
+        items: sale.items.map(item => ({
+          ...item,
+          category: productCategoryMap[item.productId] || 'Unknown'
+        }))
+      }));
       setRecentSales(sortedSales);
 
     } catch (error) {
@@ -160,27 +177,58 @@ const Dashboard = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {recentSales.map((sale) => (
                   <div key={sale.id} style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    paddingBottom: '0.5rem',
+                    paddingBottom: '1rem',
                     borderBottom: '1px solid #f3f4f6'
                   }}>
-                    <div>
-                      <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827', margin: 0 }}>
-                        {sale.customerName || 'Pelanggan Umum'}
-                      </p>
-                      <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
-                        {new Date(sale.createdAt).toLocaleDateString('id-ID')}
-                      </p>
+                    {/* Sale Header */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '0.75rem'
+                    }}>
+                      <div>
+                        <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827', margin: 0 }}>
+                          {sale.customerName || 'Pelanggan Umum'}
+                        </p>
+                        <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                          {new Date(sale.createdAt).toLocaleDateString('id-ID')}
+                        </p>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <p style={{ fontSize: '0.875rem', fontWeight: '600', color: '#059669', margin: 0 }}>
+                          Rp {sale.totalAmount.toLocaleString('id-ID')}
+                        </p>
+                        <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                          {sale.items.length} item
+                        </p>
+                      </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontSize: '0.875rem', fontWeight: '600', color: '#059669', margin: 0 }}>
-                        Rp {sale.totalAmount.toLocaleString('id-ID')}
-                      </p>
-                      <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
-                        {sale.items.length} item
-                      </p>
+                    
+                    {/* Items List */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {sale.items.map((item, index) => (
+                        <div key={index} style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '0.5rem',
+                          backgroundColor: '#f9fafb',
+                          borderRadius: '0.375rem'
+                        }}>
+                          <div>
+                            <p style={{ fontSize: '0.75rem', fontWeight: '500', color: '#111827', margin: 0 }}>
+                              {item.productName}
+                            </p>
+                            <p style={{ fontSize: '0.625rem', color: '#6b7280', margin: 0 }}>
+                              {item.category} • Qty: {item.quantity}
+                            </p>
+                          </div>
+                          <p style={{ fontSize: '0.75rem', fontWeight: '500', color: '#059669', margin: 0 }}>
+                            Rp {item.total.toLocaleString('id-ID')}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
@@ -190,6 +238,66 @@ const Dashboard = () => {
                 Belum ada penjualan
               </p>
             )}
+        </div>
+      </div>
+
+      {/* Low Stock Products */}
+      <div style={{
+        background: 'white',
+        borderRadius: '0.5rem',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        marginTop: '1.5rem'
+      }}>
+        <div style={{
+          padding: '1.5rem',
+          borderBottom: '1px solid #e5e7eb'
+        }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', margin: 0 }}>
+            Produk Stok Rendah
+          </h3>
+        </div>
+        <div style={{ padding: '1.5rem' }}>
+          {stats.lowStockProducts > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {products.filter(product => product.stock <= product.minStock).slice(0, 10).map((product) => (
+                <div key={product.id} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.75rem',
+                  backgroundColor: '#fef2f2',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #fecaca'
+                }}>
+                  <div>
+                    <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827', margin: 0 }}>
+                      {product.name}
+                    </p>
+                    <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                      {product.category}
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '0.875rem', fontWeight: '600', color: '#dc2626', margin: 0 }}>
+                      {product.stock} / {product.minStock}
+                    </p>
+                    <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                      Stok tersisa
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {stats.lowStockProducts > 10 && (
+                <p style={{ textAlign: 'center', color: '#6b7280', marginTop: '0.5rem', fontSize: '0.75rem' }}>
+                  Menampilkan 10 dari {stats.lowStockProducts} produk stok rendah
+                </p>
+              )}
+            </div>
+          ) : (
+            <p style={{ color: '#6b7280', textAlign: 'center', padding: '1rem', margin: 0 }}>
+              Semua produk memiliki stok yang cukup
+            </p>
+          )}
         </div>
       </div>
     </div>
