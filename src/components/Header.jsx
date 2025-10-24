@@ -48,7 +48,8 @@ const Header = ({ onLogout }) => {
       zIndex: 50,
       width: '100vw',
       marginLeft: 'calc(-50vw + 50%)',
-      marginRight: 'calc(-50vw + 50%)'
+      marginRight: 'calc(-50vw + 50%)',
+      boxShadow: window.innerWidth <= 768 ? '0 8px 32px rgba(0, 0, 0, 0.15)' : 'none'
     }}
     className="header-responsive"
     >

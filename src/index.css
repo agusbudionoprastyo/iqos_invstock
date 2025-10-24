@@ -1027,7 +1027,7 @@ code {
     margin-bottom: 1rem !important;
     border-bottom-left-radius: 1.5rem !important;
     border-bottom-right-radius: 1.5rem !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
   }
   
   .header-responsive h1 {
