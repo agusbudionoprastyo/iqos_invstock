@@ -107,7 +107,7 @@ const Header = ({ onLogout }) => {
             style={{
               background: '#ffffff',
               border: 'none',
-              borderRadius: '0.5rem',
+              borderRadius: '1rem',
               padding: '0.5rem',
               color: '#dc2626',
               cursor: 'pointer',

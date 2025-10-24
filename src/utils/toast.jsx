@@ -1,12 +1,12 @@
 import { toast } from 'react-toastify';
+import { AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-react';
 
 // Custom toast styles with glass transparency effect
 const glassToastStyle = {
-  background: 'rgba(255, 255, 255, 0.25)',
+  background: 'rgba(255, 255, 255, 0.5)',
   backdropFilter: 'blur(15px)',
   WebkitBackdropFilter: 'blur(15px)',
   border: '1px solid rgba(255, 255, 255, 0.3)',
-  borderRadius: '1.5rem',
   boxShadow: '0 8px 32px rgba(31, 38, 135, 0.37)',
   color: '#374151',
   fontWeight: '500',
@@ -32,7 +32,7 @@ export const showToast = {
     const content = title ? `${title}\n${message}` : message;
     toast.success(content, {
       ...toastConfig,
-      icon: '✅',
+      icon: <CheckCircle size={20} />,
     });
   },
 
@@ -40,7 +40,7 @@ export const showToast = {
     const content = title ? `${title}\n${message}` : message;
     toast.error(content, {
       ...toastConfig,
-      icon: '❌',
+      icon: <XCircle size={20} />,
     });
   },
 
@@ -48,7 +48,7 @@ export const showToast = {
     const content = title ? `${title}\n${message}` : message;
     toast.warning(content, {
       ...toastConfig,
-      icon: '⚠️',
+      icon: <AlertTriangle size={20} />,
     });
   },
 
@@ -56,7 +56,7 @@ export const showToast = {
     const content = title ? `${title}\n${message}` : message;
     toast.info(content, {
       ...toastConfig,
-      icon: 'ℹ️',
+      icon: <Info size={20} />,
     });
   },
 
