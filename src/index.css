@@ -708,6 +708,11 @@ code {
     padding-bottom: 100px;
   }
   
+  /* Ensure all main content has proper margin above navbar */
+  .container {
+    margin-bottom: 120px;
+  }
+  
   .audit-inputs {
     flex-direction: column !important;
   }
@@ -1022,6 +1027,7 @@ code {
     margin-bottom: 1rem !important;
     border-bottom-left-radius: 1.5rem !important;
     border-bottom-right-radius: 1.5rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
   }
   
   .header-responsive h1 {

@@ -17,7 +17,7 @@ const glassToastStyle = {
 // Toast configuration
 const toastConfig = {
   position: 'top-right',
-  autoClose: 3000,
+  autoClose: 15000,
   hideProgressBar: false,
   closeOnClick: true,
   pauseOnHover: true,
