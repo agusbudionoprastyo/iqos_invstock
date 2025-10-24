@@ -19,7 +19,35 @@ import ExportReport from './components/ExportReport';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
-import { DarkModeProvider } from './contexts/DarkModeContext';
+import { DarkModeProvider, useDarkMode } from './contexts/DarkModeContext';
+
+// Component to update PWA theme color based on dark mode
+const PWAThemeUpdater = () => {
+  const { isDarkMode } = useDarkMode();
+
+  useEffect(() => {
+    const updateThemeColor = () => {
+      const themeColor = isDarkMode ? '#2d2e34' : '#ffffff';
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      const metaMsTileColor = document.querySelector('meta[name="msapplication-TileColor"]');
+      const manifestLink = document.querySelector('link[rel="manifest"]');
+      
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', themeColor);
+      }
+      if (metaMsTileColor) {
+        metaMsTileColor.setAttribute('content', themeColor);
+      }
+      if (manifestLink) {
+        manifestLink.setAttribute('href', isDarkMode ? '/manifest.json' : '/manifest-light.json');
+      }
+    };
+
+    updateThemeColor();
+  }, [isDarkMode]);
+
+  return null;
+};
 
 const Navigation = ({ onLogout }) => {
   const location = useLocation();
@@ -142,6 +170,7 @@ const App = () => {
     <DarkModeProvider>
       <Router>
         <div style={{ minHeight: '100vh', backgroundColor: 'var(--background-color)' }}>
+          <PWAThemeUpdater />
           <Navigation onLogout={handleLogout} />
           
           <main className="container">
@@ -181,7 +210,6 @@ const App = () => {
             pauseOnFocusLoss
             draggable
             pauseOnHover
-            theme="light"
             style={{
               fontSize: '14px',
             }}

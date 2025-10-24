@@ -749,11 +749,6 @@ code {
     height: 2px;
   }
   
-  .nav-link:hover {
-    background-color: var(--background-color);
-    border-radius: 1.5rem;
-    border-bottom-color: transparent;
-  }
   
   /* Add bottom padding to body to prevent content from being hidden behind navbar */
   body {
