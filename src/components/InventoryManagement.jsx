@@ -680,7 +680,7 @@ const InventoryManagement = () => {
         flexWrap: 'wrap',
         gap: '1rem'
       }}>
-        {/* <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827', margin: 0 }}>
+        {/* <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-color)', margin: 0 }}>
           Manajemen Inventory
         </h1> */}
         {/* <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}> */}
@@ -690,20 +690,20 @@ const InventoryManagement = () => {
       {/* Low Stock Alert */}
       {lowStockProducts.length > 0 && (
         <div style={{
-          backgroundColor: '#fef2f2',
-          border: '1px solid #fecaca',
-          borderRadius: '1.5rem',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid var(--error-color)',
+          borderRadius: '1rem',
           padding: '1rem',
           marginBottom: '1.5rem',
           display: 'flex',
           alignItems: 'center'
         }}>
-          <AlertTriangle size={20} style={{ color: '#dc2626', marginRight: '0.5rem' }} />
+          <AlertTriangle size={20} style={{ color: 'var(--error-color)', marginRight: '0.5rem' }} />
           <div>
-            <h3 style={{ fontWeight: '500', color: '#991b1b', margin: 0, fontSize: '0.875rem' }}>
+            <h3 style={{ fontWeight: '500', color: 'var(--error-color)', margin: 0, fontSize: '0.875rem' }}>
               Stok Rendah!
             </h3>
-            <p style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem', margin: 0 }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--error-color)', marginTop: '0.25rem', margin: 0 }}>
               {lowStockProducts.length} produk memiliki stok di bawah minimum
             </p>
           </div>
@@ -713,16 +713,17 @@ const InventoryManagement = () => {
 
       {/* Products Table */}
       <div style={{
-        background: 'white',
+        background: 'var(--card-background)',
         borderRadius: '1.5rem',
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        border: '1px solid var(--border-color)',
         overflow: 'hidden'
       }}>
         {/* Table Header with Search and Actions */}
         <div style={{
-          backgroundColor: '#f9fafb',
+          backgroundColor: 'var(--background-color)',
           padding: window.innerWidth <= 768 ? '1rem 1rem' : '1rem 1.5rem',
-          borderBottom: '1px solid #e5e7eb',
+          borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
           alignItems: window.innerWidth <= 768 ? 'stretch' : 'center',
@@ -740,7 +741,7 @@ const InventoryManagement = () => {
             left: '0.75rem',
             top: '50%',
             transform: 'translateY(-50%)',
-            color: '#9ca3af'
+            color: 'var(--secondary-color)'
           }} />
           <input
             type="text"
@@ -753,9 +754,11 @@ const InventoryManagement = () => {
               paddingRight: '1rem',
               paddingTop: '0.5rem',
               paddingBottom: '0.5rem',
-              border: '1px solid #d1d5db',
+              border: '1px solid var(--border-color)',
               borderRadius: '0.5rem',
-              fontSize: '0.875rem'
+              fontSize: '0.875rem',
+              background: 'var(--card-background)',
+              color: 'var(--text-color)'
             }}
           />
       </div>
@@ -767,7 +770,7 @@ const InventoryManagement = () => {
               <button
                 onClick={startStockAudit}
                 style={{
-                  backgroundColor: '#10b981',
+                  backgroundColor: 'var(--success-color)',
                   color: 'white',
                   padding: '0.75rem 1rem',
                   borderRadius: '0.5rem',
@@ -792,10 +795,10 @@ const InventoryManagement = () => {
                   onClick={() => setShowImportModal(true)}
                   style={{
                     backgroundColor: 'transparent',
-                    color: '#111827',
+                    color: 'var(--text-color)',
                     padding: '0.75rem 1rem',
                     borderRadius: '0.5rem',
-                    border: '1px solid #d1d5db',
+                    border: '1px solid var(--border-color)',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -813,10 +816,10 @@ const InventoryManagement = () => {
                   onClick={() => setShowAddModal(true)}
                   style={{
                     backgroundColor: 'transparent',
-                    color: '#111827',
+                    color: 'var(--text-color)',
                     padding: '0.75rem 1rem',
                     borderRadius: '0.5rem',
-                    border: '1px solid #d1d5db',
+                    border: '1px solid var(--border-color)',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -841,7 +844,7 @@ const InventoryManagement = () => {
               <button
                 onClick={startStockAudit}
                 style={{
-                  backgroundColor: '#10b981',
+                  backgroundColor: 'var(--success-color)',
                   color: 'white',
                   padding: '0.5rem 1rem',
                   borderRadius: '0.5rem',
@@ -862,10 +865,10 @@ const InventoryManagement = () => {
                 onClick={() => setShowImportModal(true)}
                 style={{
                   backgroundColor: 'transparent',
-                  color: '#111827',
+                  color: 'var(--text-color)',
                   padding: '0.5rem 1rem',
                   borderRadius: '0.5rem',
-                  border: '1px solid #d1d5db',
+                  border: '1px solid var(--border-color)',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -882,10 +885,10 @@ const InventoryManagement = () => {
                 onClick={() => setShowAddModal(true)}
                 style={{
                   backgroundColor: 'transparent',
-                  color: '#111827',
+                  color: 'var(--text-color)',
                   padding: '0.5rem 1rem',
                   borderRadius: '0.5rem',
-                  border: '1px solid #d1d5db',
+                  border: '1px solid var(--border-color)',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -912,17 +915,17 @@ const InventoryManagement = () => {
             borderCollapse: 'collapse',
             minWidth: '600px'
           }}>
-            <thead style={{ backgroundColor: '#f9fafb' }}>
+            <thead style={{ backgroundColor: 'var(--background-color)' }}>
               <tr>
                 <th style={{
                   padding: '0.75rem 1.5rem',
                   textAlign: 'left',
                   fontSize: '0.75rem',
                   fontWeight: '500',
-                  color: '#6b7280',
+                  color: 'var(--secondary-color)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  borderBottom: '1px solid #e5e7eb'
+                  borderBottom: '1px solid var(--border-color)'
                 }}>
                   Produk
                 </th>
@@ -931,10 +934,10 @@ const InventoryManagement = () => {
                   textAlign: 'left',
                   fontSize: '0.75rem',
                   fontWeight: '500',
-                  color: '#6b7280',
+                  color: 'var(--secondary-color)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  borderBottom: '1px solid #e5e7eb'
+                  borderBottom: '1px solid var(--border-color)'
                 }}>
                   Ready Stock
                 </th>
@@ -943,10 +946,10 @@ const InventoryManagement = () => {
                   textAlign: 'left',
                   fontSize: '0.75rem',
                   fontWeight: '500',
-                  color: '#6b7280',
+                  color: 'var(--secondary-color)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  borderBottom: '1px solid #e5e7eb'
+                  borderBottom: '1px solid var(--border-color)'
                 }}>
                   Kategori
                 </th>
@@ -955,10 +958,10 @@ const InventoryManagement = () => {
                   textAlign: 'left',
                   fontSize: '0.75rem',
                   fontWeight: '500',
-                  color: '#6b7280',
+                  color: 'var(--secondary-color)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  borderBottom: '1px solid #e5e7eb'
+                  borderBottom: '1px solid var(--border-color)'
                 }}>
                   Stok
                 </th>
@@ -967,10 +970,10 @@ const InventoryManagement = () => {
                   textAlign: 'left',
                   fontSize: '0.75rem',
                   fontWeight: '500',
-                  color: '#6b7280',
+                  color: 'var(--secondary-color)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  borderBottom: '1px solid #e5e7eb'
+                  borderBottom: '1px solid var(--border-color)'
                 }}>
                   Harga
                 </th>
@@ -979,10 +982,10 @@ const InventoryManagement = () => {
                   textAlign: 'left',
                   fontSize: '0.75rem',
                   fontWeight: '500',
-                  color: '#6b7280',
+                  color: 'var(--secondary-color)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  borderBottom: '1px solid #e5e7eb'
+                  borderBottom: '1px solid var(--border-color)'
                 }}>
                   Aksi
                 </th>
@@ -990,37 +993,37 @@ const InventoryManagement = () => {
             </thead>
             <tbody>
               {paginatedProducts.map((product) => (
-                <tr key={product.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                <tr key={product.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Package size={20} style={{ color: '#9ca3af', marginRight: '0.75rem' }} />
+                      <Package size={20} style={{ color: 'var(--secondary-color)', marginRight: '0.75rem' }} />
                       <div>
-                        <div style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827' }}>
+                        <div style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-color)' }}>
                           {product.name}
                         </div>
-                        {/* <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                        {/* <div style={{ fontSize: '0.875rem', color: 'var(--secondary-color)' }}>
                           ID: {product.id}
                         </div> */}
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: '#111827' }}>
+                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <span style={{
                         fontWeight: '600',
-                        color: (product.useBarcode === false ? product.stock : (readyStockCount[product.id] || 0)) > 0 ? '#059669' : '#dc2626'
+                        color: (product.useBarcode === false ? product.stock : (readyStockCount[product.id] || 0)) > 0 ? 'var(--success-color)' : 'var(--error-color)'
                       }}>
                         {product.useBarcode === false ? product.stock : (readyStockCount[product.id] || 0)}
                       </span>
-                      <span style={{ color: '#6b7280', marginLeft: '0.25rem' }}>
+                      <span style={{ color: 'var(--secondary-color)', marginLeft: '0.25rem' }}>
                         / {product.stock} unit
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', marginTop: '0.25rem' }}>
                       {product.useBarcode !== false ? 'Dengan barcode' : 'Tanpa barcode'}
                     </div>
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: '#111827' }}>
+                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                     {product.category}
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
@@ -1028,19 +1031,19 @@ const InventoryManagement = () => {
                       <span style={{
                         fontSize: '0.875rem',
                         fontWeight: '500',
-                        color: product.stock <= product.minStock ? '#dc2626' : '#111827'
+                        color: product.stock <= product.minStock ? 'var(--error-color)' : 'var(--text-color)'
                       }}>
                         {product.stock}
                       </span>
-                      <span style={{ fontSize: '0.875rem', color: '#6b7280', marginLeft: '0.25rem' }}>
+                      <span style={{ fontSize: '0.875rem', color: 'var(--secondary-color)', marginLeft: '0.25rem' }}>
                         / {product.minStock} min
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', marginTop: '0.25rem' }}>
                       {product.useBarcode !== false ? 'Dihitung dari unit' : 'Manual'}
                     </div>
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: '#111827' }}>
+                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                     Rp {product.price.toLocaleString('id-ID')}
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
@@ -1048,7 +1051,7 @@ const InventoryManagement = () => {
                       <button
                         onClick={() => handleEdit(product)}
                         style={{
-                          color: '#2563eb',
+                          color: 'var(--primary-color)',
                           background: 'none',
                           border: 'none',
                           cursor: 'pointer',
@@ -1061,9 +1064,9 @@ const InventoryManagement = () => {
                         <button
                           onClick={() => handleAssignBarcode(product.id)}
                           style={{
-                            color: '#10b981',
+                            color: 'var(--success-color)',
                             background: 'none',
-                            border: '1px dashed #10b981',
+                            border: '1px dashed var(--success-color)',
                             borderRadius: '0.375rem',
                             cursor: 'pointer',
                             padding: '0.25rem 0.5rem',
@@ -1077,7 +1080,7 @@ const InventoryManagement = () => {
                       <button
                         onClick={() => handleDelete(product.id)}
                         style={{
-                          color: '#dc2626',
+                          color: 'var(--error-color)',
                           background: 'none',
                           border: 'none',
                           cursor: 'pointer',
@@ -1112,9 +1115,9 @@ const InventoryManagement = () => {
                   justifyContent: 'center',
                   padding: '0.5rem',
                   borderRadius: '0.5rem',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: currentPage === 1 ? '#f9fafb' : 'white',
-                  color: currentPage === 1 ? '#9ca3af' : '#374151',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: currentPage === 1 ? 'var(--background-color)' : 'var(--card-background)',
+                  color: currentPage === 1 ? 'var(--secondary-color)' : 'var(--text-color)',
                   cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                   transition: 'all 0.2s'
                 }}
@@ -1124,7 +1127,7 @@ const InventoryManagement = () => {
               
               <span style={{
                 fontSize: '0.875rem',
-                color: '#6b7280',
+                color: 'var(--secondary-color)',
                 minWidth: '100px',
                 textAlign: 'center'
               }}>
@@ -1140,9 +1143,9 @@ const InventoryManagement = () => {
                   justifyContent: 'center',
                   padding: '0.5rem',
                   borderRadius: '0.5rem',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: currentPage === totalPages ? '#f9fafb' : 'white',
-                  color: currentPage === totalPages ? '#9ca3af' : '#374151',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: currentPage === totalPages ? 'var(--background-color)' : 'var(--card-background)',
+                  color: currentPage === totalPages ? 'var(--secondary-color)' : 'var(--text-color)',
                   cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                   transition: 'all 0.2s'
                 }}
@@ -1158,24 +1161,24 @@ const InventoryManagement = () => {
           {paginatedProducts.map((product) => (
             <div key={product.id} style={{
               padding: '1rem',
-              borderBottom: '1px solid #e5e7eb',
+              borderBottom: '1px solid var(--border-color)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
             }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  {/* <Package size={16} style={{ color: '#9ca3af', marginRight: '0.5rem' }} /> */}
+                  {/* <Package size={16} style={{ color: 'var(--secondary-color)', marginRight: '0.5rem' }} /> */}
                   <div>
-                    <div style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827' }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-color)' }}>
                       {product.name}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
                       {product.category}
                     </div>
                   </div>
                 </div>
-                {/* <div style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                {/* <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', marginBottom: '0.25rem' }}>
                   ID: {product.id}
                 </div> */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -1183,19 +1186,19 @@ const InventoryManagement = () => {
                     <span style={{
                       fontSize: '0.75rem',
                       fontWeight: '600',
-                      color: (product.useBarcode === false ? product.stock : (readyStockCount[product.id] || 0)) > 0 ? '#059669' : '#dc2626'
+                      color: (product.useBarcode === false ? product.stock : (readyStockCount[product.id] || 0)) > 0 ? 'var(--success-color)' : 'var(--error-color)'
                     }}>
                       Ready {product.useBarcode === false ? product.stock : (readyStockCount[product.id] || 0)}
                     </span>
-                    <span style={{ fontSize: '0.75rem', color: '#6b7280', marginLeft: '0.25rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', marginLeft: '0.25rem' }}>
                       / {product.stock}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
                     Rp {product.price.toLocaleString('id-ID')}
                   </div>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', marginTop: '0.25rem' }}>
                   {product.useBarcode !== false ? 'Dengan barcode' : 'Tanpa barcode'}
                 </div>
               </div>
@@ -1203,7 +1206,7 @@ const InventoryManagement = () => {
                 <button
                   onClick={() => handleEdit(product)}
                   style={{
-                    color: '#2563eb',
+                    color: 'var(--primary-color)',
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
@@ -1218,9 +1221,9 @@ const InventoryManagement = () => {
                   <button
                     onClick={() => handleAssignBarcode(product.id)}
                     style={{
-                      color: '#10b981',
+                      color: 'var(--success-color)',
                       background: 'none',
-                      border: '1px dashed #10b981',
+                      border: '1px dashed var(--success-color)',
                       borderRadius: '0.25rem',
                       cursor: 'pointer',
                       padding: '0.25rem',
@@ -1234,7 +1237,7 @@ const InventoryManagement = () => {
                 <button
                   onClick={() => handleDelete(product.id)}
                   style={{
-                    color: '#dc2626',
+                    color: 'var(--error-color)',
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
@@ -1268,9 +1271,9 @@ const InventoryManagement = () => {
                   justifyContent: 'center',
                   padding: '0.5rem',
                   borderRadius: '0.5rem',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: currentPage === 1 ? '#f9fafb' : 'white',
-                  color: currentPage === 1 ? '#9ca3af' : '#374151',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: currentPage === 1 ? 'var(--background-color)' : 'var(--card-background)',
+                  color: currentPage === 1 ? 'var(--secondary-color)' : 'var(--text-color)',
                   cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                   transition: 'all 0.2s'
                 }}
@@ -1280,7 +1283,7 @@ const InventoryManagement = () => {
               
               <span style={{
                 fontSize: '0.875rem',
-                color: '#6b7280',
+                color: 'var(--secondary-color)',
                 minWidth: '100px',
                 textAlign: 'center'
               }}>
@@ -1296,9 +1299,9 @@ const InventoryManagement = () => {
                   justifyContent: 'center',
                   padding: '0.5rem',
                   borderRadius: '0.5rem',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: currentPage === totalPages ? '#f9fafb' : 'white',
-                  color: currentPage === totalPages ? '#9ca3af' : '#374151',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: currentPage === totalPages ? 'var(--background-color)' : 'var(--card-background)',
+                  color: currentPage === totalPages ? 'var(--secondary-color)' : 'var(--text-color)',
                   cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                   transition: 'all 0.2s'
                 }}
@@ -1314,7 +1317,7 @@ const InventoryManagement = () => {
       {(showAddModal || showEditModal) && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0, color: 'var(--text-color)' }}>
               {showAddModal ? 'Tambah Produk' : 'Edit Produk'}
             </h3>
             
@@ -1398,7 +1401,7 @@ const InventoryManagement = () => {
                       onChange={handleInputChange}
                       style={{ width: '1rem', height: '1rem' }}
                     />
-                    <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                    <span style={{ fontSize: '0.875rem', color: 'var(--secondary-color)' }}>
                       Centang jika produk menggunakan barcode untuk tracking unit
                     </span>
                   </div>
@@ -1406,11 +1409,11 @@ const InventoryManagement = () => {
                     <div style={{
                       marginTop: '0.5rem',
                       padding: '0.75rem',
-                      backgroundColor: '#f0f9ff',
-                      border: '1px solid #bae6fd',
+                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                      border: '1px solid var(--primary-color)',
                       borderRadius: '0.375rem',
                       fontSize: '0.75rem',
-                      color: '#0369a1'
+                      color: 'var(--primary-color)'
                     }}>
                       <strong>Info:</strong> Stok akan dihitung otomatis dari jumlah unit yang memiliki barcode. Field "Stok Awal" akan di-disable.
                     </div>
@@ -1419,11 +1422,11 @@ const InventoryManagement = () => {
                     <div style={{
                       marginTop: '0.5rem',
                       padding: '0.75rem',
-                      backgroundColor: '#fef3c7',
-                      border: '1px solid #fbbf24',
+                      backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                      border: '1px solid var(--warning-color)',
                       borderRadius: '0.375rem',
                       fontSize: '0.75rem',
-                      color: '#92400e'
+                      color: 'var(--warning-color)'
                     }}>
                       <strong>Info:</strong> Produk tanpa barcode menggunakan input stok manual. Field "Stok Awal" akan di-enable untuk input manual.
                     </div>
@@ -1447,7 +1450,7 @@ const InventoryManagement = () => {
                       placeholder={formData.useBarcode ? "Dihitung otomatis" : "Jumlah stok awal"}
                       style={{
                         opacity: formData.useBarcode ? 0.6 : 1,
-                        backgroundColor: formData.useBarcode ? '#f9fafb' : 'white',
+                        backgroundColor: formData.useBarcode ? 'var(--background-color)' : 'var(--card-background)',
                         cursor: formData.useBarcode ? 'not-allowed' : 'text'
                       }}
                     />
@@ -1521,20 +1524,20 @@ const InventoryManagement = () => {
                 right: '0.5rem',
                 width: '24px',
                 height: '24px',
-                background: '#ffffff',
+                background: 'var(--card-background)',
                 border: 'none',
                 borderRadius: '9999px',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
-                color: '#6b7280',
+                color: 'var(--secondary-color)',
                 cursor: 'pointer'
               }}
             >
               <X size={12} />
             </button>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0, color: 'var(--text-color)' }}>
               Barcode
             </h3>
             
@@ -1565,11 +1568,11 @@ const InventoryManagement = () => {
               textAlign: 'center', 
               marginBottom: '1rem',
               padding: '1rem',
-              backgroundColor: '#f8fafc',
+              backgroundColor: 'var(--background-color)',
               borderRadius: '.5rem',
-              border: '1px solid #e5e7eb'
+              border: '1px solid var(--border-color)'
             }}>
-              <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: '0 0 0.5rem 0' }}>
+              <p style={{ fontSize: '0.875rem', color: 'var(--secondary-color)', margin: '0 0 0.5rem 0' }}>
                 Atau scan barcode dengan kamera
               </p>
               <button
@@ -1579,7 +1582,7 @@ const InventoryManagement = () => {
                   setShowScanner(true);
                 }}
                 style={{
-                  backgroundColor: '#10b981',
+                  backgroundColor: 'var(--success-color)',
                   color: 'white',
                   padding: '0.5rem 1rem',
                   borderRadius: '0.5rem',
@@ -1607,26 +1610,26 @@ const InventoryManagement = () => {
       {showStockCheckModal && checkedProduct && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0, color: 'var(--text-color)' }}>
               Informasi Stok Produk
             </h3>
             
             <div style={{
-              backgroundColor: checkedProduct.stock <= checkedProduct.minStock ? '#fef2f2' : '#f0fdf4',
-              border: `1px solid ${checkedProduct.stock <= checkedProduct.minStock ? '#fecaca' : '#bbf7d0'}`,
+              backgroundColor: checkedProduct.stock <= checkedProduct.minStock ? 'var(--error-color)' : 'var(--success-color)',
+              border: `1px solid ${checkedProduct.stock <= checkedProduct.minStock ? 'var(--error-color)' : 'var(--success-color)'}`,
               borderRadius: '0.5rem',
               padding: '1rem',
               marginBottom: '1rem'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <Package size={20} style={{ 
-                  color: checkedProduct.stock <= checkedProduct.minStock ? '#dc2626' : '#059669',
+                  color: checkedProduct.stock <= checkedProduct.minStock ? 'var(--error-color)' : 'var(--success-color)',
                   marginRight: '0.5rem'
                 }} />
                 <h4 style={{ 
                   fontSize: '1rem', 
                   fontWeight: '600', 
-                  color: checkedProduct.stock <= checkedProduct.minStock ? '#991b1b' : '#065f46',
+                  color: checkedProduct.stock <= checkedProduct.minStock ? 'var(--error-color)' : 'var(--success-color)',
                   margin: 0
                 }}>
                   {checkedProduct.name}
@@ -1635,36 +1638,36 @@ const InventoryManagement = () => {
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>Unit ID:</span>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827' }}>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--secondary-color)' }}>Unit ID:</span>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-color)' }}>
                     {checkedProduct.matchedUnitId || '-'}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>Kategori:</span>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827' }}>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--secondary-color)' }}>Kategori:</span>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-color)' }}>
                     {checkedProduct.category}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>Stok Saat Ini:</span>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--secondary-color)' }}>Stok Saat Ini:</span>
                   <span style={{ 
                     fontSize: '0.875rem', 
                     fontWeight: '600',
-                    color: checkedProduct.stock <= checkedProduct.minStock ? '#dc2626' : '#059669'
+                    color: checkedProduct.stock <= checkedProduct.minStock ? 'var(--error-color)' : 'var(--success-color)'
                   }}>
                     {checkedProduct.stock} unit
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>Stok Minimum:</span>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827' }}>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--secondary-color)' }}>Stok Minimum:</span>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-color)' }}>
                     {checkedProduct.minStock} unit
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>Harga:</span>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827' }}>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--secondary-color)' }}>Harga:</span>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-color)' }}>
                     Rp {checkedProduct.price.toLocaleString('id-ID')}
                   </span>
                 </div>
@@ -1674,13 +1677,13 @@ const InventoryManagement = () => {
                 <div style={{
                   marginTop: '0.75rem',
                   padding: '0.5rem',
-                  backgroundColor: '#fef2f2',
-                  border: '1px solid #fecaca',
+                  backgroundColor: 'var(--error-color)',
+                  border: '1px solid var(--error-color)',
                   borderRadius: '0.25rem'
                 }}>
                   <p style={{ 
                     fontSize: '0.75rem', 
-                    color: '#991b1b', 
+                    color: 'var(--error-color)', 
                     margin: 0,
                     display: 'flex',
                     alignItems: 'center'
@@ -1724,7 +1727,7 @@ const InventoryManagement = () => {
         <div className="modal-overlay">
           <div className="modal" style={{ maxWidth: '600px', maxHeight: '80vh', overflow: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', margin: 0 }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', margin: 0, color: 'var(--text-color)' }}>
                 Stock Audit Report
               </h3>
             </div>
@@ -1732,16 +1735,16 @@ const InventoryManagement = () => {
             {/* Current Product Being Audited */}
             {currentAuditProduct && (
               <div style={{
-                backgroundColor: '#f0f9ff',
-                border: '1px solid #0ea5e9',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                border: '1px solid var(--primary-color)',
                 borderRadius: '0.5rem',
                 padding: '1rem',
                 marginBottom: '1.5rem'
               }}>
-                <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem', margin: 0 }}>
+                <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem', margin: 0, color: 'var(--text-color)' }}>
                   {currentAuditProduct.name}
                 </h4>
-                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem', margin: 0 }}>
+                <p style={{ fontSize: '0.875rem', color: 'var(--secondary-color)', marginBottom: '0.5rem', margin: 0 }}>
                   Stock : {currentAuditProduct.databaseStock}
                 </p>
                 
@@ -1781,7 +1784,7 @@ const InventoryManagement = () => {
                   </div>
                 ) : (
                   <div>
-                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem', margin: 0 }}>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--secondary-color)', marginBottom: '0.5rem', margin: 0 }}>
                       Scan barcode untuk menghitung stock fisik
                     </p>
                     <button
@@ -1792,7 +1795,7 @@ const InventoryManagement = () => {
                       <Camera size={20} style={{ marginRight: '0.5rem' }} />
                       Scan Barcode
                     </button>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.75rem', color: '#6b7280' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
                       <span>Ter-scan: {Array.isArray(currentAuditProduct.scannedUnits) ? currentAuditProduct.scannedUnits.length : (currentAuditProduct.physicalStock ?? 0)} unit</span>
                       <span>
                         Var: {(() => {
@@ -1840,7 +1843,7 @@ const InventoryManagement = () => {
                     Ada Selisih
                   </button>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
                   Menampilkan maksimal 2 per halaman ({getFilteredAuditResults().length} total)
                 </div>
               </div>
@@ -1849,7 +1852,7 @@ const InventoryManagement = () => {
             {/* Audit Results */}
             {auditResults.length > 0 && (
               <div>
-                <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
+                <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem', margin: 0, color: 'var(--text-color)' }}>
                   Hasil Audit ({auditResults.filter(r => r.status === 'completed').length}/{auditResults.length})
                 </h4>
                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
@@ -1869,57 +1872,57 @@ const InventoryManagement = () => {
                         key={result.id} 
                         onClick={() => handleProductClickForAudit(result)}
                         style={{
-                          border: '1px solid #e5e7eb',
+                          border: '1px solid var(--border-color)',
                           borderRadius: '0.5rem',
                           padding: '0.75rem',
                           marginBottom: '0.5rem',
                           backgroundColor: result.status === 'completed' 
-                            ? (hasMinusVariance ? '#fef2f2' : '#f0fdf4') 
-                            : '#fefce8',
-                          borderLeft: hasDbDiscrepancy || hasReadyDiscrepancy ? '4px solid #ef4444' : '4px solid #10b981',
+                            ? (hasMinusVariance ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)') 
+                            : 'rgba(245, 158, 11, 0.1)',
+                          borderLeft: hasDbDiscrepancy || hasReadyDiscrepancy ? '4px solid var(--error-color)' : '4px solid var(--success-color)',
                           cursor: 'pointer',
                           transition: 'all 0.2s ease',
                           ':hover': {
-                            backgroundColor: '#f8fafc'
+                            backgroundColor: 'var(--background-color)'
                           }
                         }}
                         onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#f8fafc';
+                          e.target.style.backgroundColor = 'var(--background-color)';
                         }}
                         onMouseLeave={(e) => {
                           e.target.style.backgroundColor = result.status === 'completed' 
-                            ? (hasMinusVariance ? '#fef2f2' : '#f0fdf4') 
-                            : '#fefce8';
+                            ? (hasMinusVariance ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)') 
+                            : 'rgba(245, 158, 11, 0.1)';
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div>
-                            <h5 style={{ fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>
+                            <h5 style={{ fontSize: '0.875rem', fontWeight: '500', margin: 0, color: 'var(--text-color)' }}>
                               {result.name}
                             </h5>
-                            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', margin: 0 }}>
                               {result.useBarcode !== false ? 'Barcode' : 'Manual'}
                             </p>
                             {result.status === 'pending' && (
-                              <p style={{ fontSize: '0.7rem', color: '#f59e0b', margin: '0.25rem 0 0 0', fontWeight: '500' }}>
+                              <p style={{ fontSize: '0.7rem', color: 'var(--warning-color)', margin: '0.25rem 0 0 0', fontWeight: '500' }}>
                                 Klik untuk audit
                               </p>
                             )}
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
                               Stock : {result.databaseStock}
                             </div>
                             {result.status === 'completed' ? (
                               <div>
-                                <div style={{ fontSize: '0.75rem', fontWeight: '500', color: '#059669' }}>
+                                <div style={{ fontSize: '0.75rem', fontWeight: '500', color: 'var(--success-color)' }}>
                                   Fisik: {result.physicalStock}
                                 </div>
                                 {(hasDbDiscrepancy || hasReadyDiscrepancy) && (
                                   <div style={{ fontSize: '0.7rem', marginTop: '0.25rem' }}>
                                     {hasReadyDiscrepancy && (
                                       <span style={{ 
-                                        color: readyVsFisik > 0 ? '#059669' : '#ef4444',
+                                        color: readyVsFisik > 0 ? 'var(--success-color)' : 'var(--error-color)',
                                         fontWeight: '500'
                                       }}>
                                       {readyVsFisik > 0 ? '+' : ''}{readyVsFisik}
@@ -1929,7 +1932,7 @@ const InventoryManagement = () => {
                                 )}
                               </div>
                             ) : (
-                              <div style={{ fontSize: '0.75rem', fontWeight: '500', color: '#f59e0b' }}>
+                              <div style={{ fontSize: '0.75rem', fontWeight: '500', color: 'var(--warning-color)' }}>
                                 Pending
                               </div>
                             )}
@@ -1959,9 +1962,9 @@ const InventoryManagement = () => {
                         justifyContent: 'center',
                         padding: '0.5rem',
                         borderRadius: '0.5rem',
-                        border: '1px solid #d1d5db',
-                        backgroundColor: auditPage === 1 ? '#f9fafb' : 'white',
-                        color: auditPage === 1 ? '#9ca3af' : '#374151',
+                        border: '1px solid var(--border-color)',
+                        backgroundColor: auditPage === 1 ? 'var(--background-color)' : 'var(--card-background)',
+                        color: auditPage === 1 ? 'var(--secondary-color)' : 'var(--text-color)',
                         cursor: auditPage === 1 ? 'not-allowed' : 'pointer',
                         transition: 'all 0.2s'
                       }}
@@ -1971,7 +1974,7 @@ const InventoryManagement = () => {
                     
                     <span style={{
                       fontSize: '0.875rem',
-                      color: '#6b7280',
+                      color: 'var(--secondary-color)',
                       minWidth: '100px',
                       textAlign: 'center'
                     }}>
@@ -1987,9 +1990,9 @@ const InventoryManagement = () => {
                         justifyContent: 'center',
                         padding: '0.5rem',
                         borderRadius: '0.5rem',
-                        border: '1px solid #d1d5db',
-                        backgroundColor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? '#f9fafb' : 'white',
-                        color: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? '#9ca3af' : '#374151',
+                        border: '1px solid var(--border-color)',
+                        backgroundColor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? 'var(--background-color)' : 'var(--card-background)',
+                        color: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? 'var(--secondary-color)' : 'var(--text-color)',
                         cursor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? 'not-allowed' : 'pointer',
                         transition: 'all 0.2s'
                       }}
@@ -2038,13 +2041,13 @@ const InventoryManagement = () => {
       {showImportModal && (
         <div className="modal-overlay" onClick={() => setShowImportModal(false)}>
           <div className="modal" style={{ maxWidth: '600px', maxHeight: '80vh', overflow: 'auto' }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0 }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', margin: 0, color: 'var(--text-color)' }}>
               Import Produk dari Excel
             </h3>
             
             <div style={{ marginBottom: '1.5rem' }}>
               <label className="form-label">Format Excel:</label>
-              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.875rem', color: 'var(--secondary-color)', marginBottom: '1rem' }}>
                 Kolom: Nama | Kategori | Harga | Stock | Min Stock | Use Barcode (true/false)
               </div>
               <input
@@ -2061,9 +2064,9 @@ const InventoryManagement = () => {
                 <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
                   Preview Data ({importData.length} produk)
                 </h4>
-                <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: '0.5rem' }}>
+                <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '0.5rem' }}>
                   <table style={{ width: '100%', fontSize: '0.75rem' }}>
-                    <thead style={{ backgroundColor: '#f3f4f6' }}>
+                    <thead style={{ backgroundColor: 'var(--background-color)' }}>
                       <tr>
                         <th style={{ padding: '0.5rem', textAlign: 'left' }}>Nama</th>
                         <th style={{ padding: '0.5rem', textAlign: 'left' }}>Kategori</th>
@@ -2085,7 +2088,7 @@ const InventoryManagement = () => {
                     </tbody>
                   </table>
                   {importData.length > 10 && (
-                    <div style={{ padding: '0.5rem', textAlign: 'center', color: '#6b7280' }}>
+                    <div style={{ padding: '0.5rem', textAlign: 'center', color: 'var(--secondary-color)' }}>
                       ...dan {importData.length - 10} produk lainnya
                     </div>
                   )}
@@ -2099,11 +2102,11 @@ const InventoryManagement = () => {
                   <span style={{ fontSize: '0.875rem' }}>Progress Import</span>
                   <span style={{ fontSize: '0.875rem' }}>{importProgress.current}/{importProgress.total}</span>
                 </div>
-                <div style={{ width: '100%', backgroundColor: '#e5e7eb', borderRadius: '0.25rem', height: '8px' }}>
+                <div style={{ width: '100%', backgroundColor: 'var(--border-color)', borderRadius: '0.25rem', height: '8px' }}>
                   <div 
                     style={{ 
                       width: `${(importProgress.current / importProgress.total) * 100}%`, 
-                      backgroundColor: '#10b981', 
+                      backgroundColor: 'var(--success-color)', 
                       height: '100%', 
                       borderRadius: '0.25rem',
                       transition: 'width 0.3s ease'

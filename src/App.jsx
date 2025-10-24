@@ -19,6 +19,7 @@ import ExportReport from './components/ExportReport';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
+import { DarkModeProvider } from './contexts/DarkModeContext';
 
 const Navigation = ({ onLogout }) => {
   const location = useLocation();
@@ -125,7 +126,8 @@ const App = () => {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        background: 'rgba(249, 250, 251, 0.8)'
+        background: 'var(--background-color)',
+        color: 'var(--text-color)'
       }}>
         <div className="spinner"></div>
       </div>
@@ -137,54 +139,56 @@ const App = () => {
   }
 
   return (
-    <Router>
-      <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-        <Navigation onLogout={handleLogout} />
-        
-        <main className="container">
-          <Header onLogout={handleLogout} />
-          <Routes>
-            <Route path="/login" element={<Navigate to="/" replace />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/inventory" element={
-              <ProtectedRoute>
-                <InventoryManagement />
-              </ProtectedRoute>
-            } />
-            <Route path="/sales" element={
-              <ProtectedRoute>
-                <SalesModule />
-              </ProtectedRoute>
-            } />
-            <Route path="/export" element={
-              <ProtectedRoute>
-                <ExportReport />
-              </ProtectedRoute>
-            } />
-          </Routes>
-        </main>
-        
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-          style={{
-            fontSize: '14px',
-          }}
-        />
-      </div>
-    </Router>
+    <DarkModeProvider>
+      <Router>
+        <div style={{ minHeight: '100vh', backgroundColor: 'var(--background-color)' }}>
+          <Navigation onLogout={handleLogout} />
+          
+          <main className="container">
+            <Header onLogout={handleLogout} />
+            <Routes>
+              <Route path="/login" element={<Navigate to="/" replace />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/inventory" element={
+                <ProtectedRoute>
+                  <InventoryManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/sales" element={
+                <ProtectedRoute>
+                  <SalesModule />
+                </ProtectedRoute>
+              } />
+              <Route path="/export" element={
+                <ProtectedRoute>
+                  <ExportReport />
+                </ProtectedRoute>
+              } />
+            </Routes>
+          </main>
+          
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            style={{
+              fontSize: '14px',
+            }}
+          />
+        </div>
+      </Router>
+    </DarkModeProvider>
   );
 };
 

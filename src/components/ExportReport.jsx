@@ -463,13 +463,13 @@ const ExportReport = () => {
 
       {/* Report Type Selection */}
       <div style={{
-        background: 'white',
+        background: 'var(--card-background)',
         borderRadius: '1.5rem',
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
         padding: '1.5rem',
         marginBottom: '1.5rem'
       }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', margin: 0, marginBottom: '1rem' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: 'var(--text-color)', margin: 0, marginBottom: '1rem' }}>
           Pilih Jenis Laporan
         </h3>
         <div style={{ 
@@ -493,7 +493,7 @@ const ExportReport = () => {
               onChange={(e) => setSelectedMonth(e.target.value)}
               style={{
                 padding: '0.75rem',
-                border: '1px solid #d1d5db',
+                border: '1px solid var(--border-color)',
                 borderRadius: '0.375rem',
                 fontSize: '1rem',
                 width: isMobile ? '100%' : 'auto'
@@ -513,9 +513,9 @@ const ExportReport = () => {
               style={{
                 padding: '0.75rem 1.5rem',
                 borderRadius: '0.5rem',
-                border: '1px solid #d1d5db',
-                background: reportType === 'sales' ? '#3b82f6' : 'white',
-                color: reportType === 'sales' ? 'white' : '#374151',
+                border: '1px solid var(--border-color)',
+                background: reportType === 'sales' ? 'var(--primary-color)' : 'var(--card-background)',
+                color: reportType === 'sales' ? 'white' : 'var(--text-color)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -533,9 +533,9 @@ const ExportReport = () => {
               style={{
                 padding: '0.75rem 1.5rem',
                 borderRadius: '0.5rem',
-                border: '1px solid #d1d5db',
-                background: reportType === 'stock' ? '#3b82f6' : 'white',
-                color: reportType === 'stock' ? 'white' : '#374151',
+                border: '1px solid var(--border-color)',
+                background: reportType === 'stock' ? 'var(--primary-color)' : 'var(--card-background)',
+                color: reportType === 'stock' ? 'white' : 'var(--text-color)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -561,58 +561,58 @@ const ExportReport = () => {
           marginBottom: '1.5rem'
         }}>
           <div style={{
-            background: 'white',
+            background: 'var(--card-background)',
             borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
           }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: '#6b7280', margin: 0, marginBottom: '0.5rem' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--secondary-color)', margin: 0, marginBottom: '0.5rem' }}>
               Total Transaksi
             </h4>
-            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: '#111827', margin: 0 }}>
+            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-color)', margin: 0 }}>
               {monthlyStats.totalTransactions}
             </p>
           </div>
           <div style={{
-            background: 'white',
+            background: 'var(--card-background)',
             borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
           }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: '#6b7280', margin: 0, marginBottom: '0.5rem' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--secondary-color)', margin: 0, marginBottom: '0.5rem' }}>
               Total Item Terjual
             </h4>
-            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: '#111827', margin: 0 }}>
+            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-color)', margin: 0 }}>
               {monthlyStats.totalSales}
             </p>
           </div>
           <div style={{
-            background: 'white',
+            background: 'var(--card-background)',
             borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
           }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: '#6b7280', margin: 0, marginBottom: '0.5rem' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--secondary-color)', margin: 0, marginBottom: '0.5rem' }}>
               Total Revenue
             </h4>
-            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: '#111827', margin: 0 }}>
+            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-color)', margin: 0 }}>
               {formatCurrency(monthlyStats.totalRevenue)}
             </p>
           </div>
           <div style={{
-            background: 'white',
+            background: 'var(--card-background)',
             borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
           }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: '#6b7280', margin: 0, marginBottom: '0.5rem' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--secondary-color)', margin: 0, marginBottom: '0.5rem' }}>
               Rata-rata Transaksi
             </h4>
-            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: '#111827', margin: 0 }}>
+            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-color)', margin: 0 }}>
               {formatCurrency(monthlyStats.averageTransactionValue)}
             </p>
           </div>
@@ -628,44 +628,44 @@ const ExportReport = () => {
           marginBottom: '1.5rem'
         }}>
           <div style={{
-            background: 'white',
+            background: 'var(--card-background)',
             borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
           }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: '#6b7280', margin: 0, marginBottom: '0.5rem' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--secondary-color)', margin: 0, marginBottom: '0.5rem' }}>
               Total Produk
             </h4>
-            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: '#111827', margin: 0 }}>
+            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-color)', margin: 0 }}>
               {stockData.length}
             </p>
           </div>
           <div style={{
-            background: 'white',
+            background: 'var(--card-background)',
             borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
           }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: '#6b7280', margin: 0, marginBottom: '0.5rem' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--secondary-color)', margin: 0, marginBottom: '0.5rem' }}>
               Sudah Diaudit
             </h4>
-            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: '#059669', margin: 0 }}>
+            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--success-color)', margin: 0 }}>
               {stockData.filter(item => getAuditResult(item.product?.id)).length}
             </p>
           </div>
           <div style={{
-            background: 'white',
+            background: 'var(--card-background)',
             borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
           }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: '#6b7280', margin: 0, marginBottom: '0.5rem' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--secondary-color)', margin: 0, marginBottom: '0.5rem' }}>
               Ada Selisih
             </h4>
-            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: '#f59e0b', margin: 0 }}>
+            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--warning-color)', margin: 0 }}>
               {stockData.filter(item => {
                 const auditResult = getAuditResult(item.product?.id);
                 return auditResult && (auditResult.physicalStock - item.product.stock !== 0);
@@ -673,16 +673,16 @@ const ExportReport = () => {
             </p>
           </div>
           <div style={{
-            background: 'white',
+            background: 'var(--card-background)',
             borderRadius: '1.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             padding: '1.5rem',
             textAlign: 'center'
           }}>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: '#6b7280', margin: 0, marginBottom: '0.5rem' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--secondary-color)', margin: 0, marginBottom: '0.5rem' }}>
               Total Audit
             </h4>
-            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: '#111827', margin: 0 }}>
+            <p style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-color)', margin: 0 }}>
               {stockAudits.length}
             </p>
           </div>
@@ -691,7 +691,7 @@ const ExportReport = () => {
 
       {/* Export Button */}
       <div style={{
-        background: 'white',
+        background: 'var(--card-background)',
           borderRadius: '1.5rem',
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
         padding: '1.5rem',
@@ -699,10 +699,10 @@ const ExportReport = () => {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', margin: 0, marginBottom: '0.25rem' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: 'var(--text-color)', margin: 0, marginBottom: '0.25rem' }}>
               Export Data
             </h3>
-            <p style={{ color: '#6b7280', margin: 0, fontSize: '0.875rem' }}>
+            <p style={{ color: 'var(--secondary-color)', margin: 0, fontSize: '0.875rem' }}>
               Download laporan dalam format CSV atau PDF
             </p>
           </div>
@@ -717,7 +717,7 @@ const ExportReport = () => {
                 padding: '0.75rem 1.5rem',
                 borderRadius: '0.5rem',
                 border: 'none',
-                background: loading || (reportType === 'sales' ? salesData.length === 0 : stockData.length === 0) ? '#9ca3af' : '#10b981',
+                background: loading || (reportType === 'sales' ? salesData.length === 0 : stockData.length === 0) ? 'var(--secondary-color)' : 'var(--success-color)',
                 color: 'white',
                 cursor: loading || (reportType === 'sales' ? salesData.length === 0 : stockData.length === 0) ? 'not-allowed' : 'pointer',
                 display: 'flex',
@@ -737,7 +737,7 @@ const ExportReport = () => {
                 padding: '0.75rem 1.5rem',
                 borderRadius: '0.5rem',
                 border: 'none',
-                background: loading || (reportType === 'sales' ? salesData.length === 0 : stockData.length === 0) ? '#9ca3af' : '#dc2626',
+                background: loading || (reportType === 'sales' ? salesData.length === 0 : stockData.length === 0) ? 'var(--secondary-color)' : 'var(--error-color)',
                 color: 'white',
                 cursor: loading || (reportType === 'sales' ? salesData.length === 0 : stockData.length === 0) ? 'not-allowed' : 'pointer',
                 display: 'flex',
@@ -756,16 +756,16 @@ const ExportReport = () => {
 
       {/* Data Preview */}
       <div style={{
-        background: 'white',
+        background: 'var(--card-background)',
         borderRadius: '1.5rem',
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
         overflow: 'hidden'
       }}>
         <div style={{
           padding: '1.5rem',
-          borderBottom: '1px solid #e5e7eb'
+          borderBottom: '1px solid var(--border-color)'
         }}>
-          <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', margin: 0 }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: 'var(--text-color)', margin: 0 }}>
             Preview Data
           </h3>
         </div>
@@ -774,7 +774,7 @@ const ExportReport = () => {
           {loading ? (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
               <div className="spinner"></div>
-              <p style={{ color: '#6b7280', marginTop: '1rem' }}>Loading data...</p>
+              <p style={{ color: 'var(--secondary-color)', marginTop: '1rem' }}>Loading data...</p>
             </div>
           ) : reportType === 'sales' ? (
             salesData.length > 0 ? (
@@ -783,20 +783,20 @@ const ExportReport = () => {
                 {!isMobile ? (
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Tanggal
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Produk
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Kategori
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Qty
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Harga
                       </th>
                     </tr>
@@ -804,20 +804,20 @@ const ExportReport = () => {
                   <tbody>
                     {salesData.slice(0, 10).map((sale) => 
                       sale.items.map((item, itemIndex) => (
-                        <tr key={`${sale.id}-${itemIndex}`} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151' }}>
+                        <tr key={`${sale.id}-${itemIndex}`} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                             {new Date(sale.createdAt).toLocaleDateString('id-ID')}
                           </td>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', fontWeight: '500' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)', fontWeight: '500' }}>
                             {item.productName}
                           </td>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#6b7280' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--secondary-color)' }}>
                             {item.category}
                           </td>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', textAlign: 'center' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)', textAlign: 'center' }}>
                             {item.quantity}
                           </td>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', textAlign: 'right', fontWeight: '500' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)', textAlign: 'right', fontWeight: '500' }}>
                             {formatCurrency(item.total)}
                           </td>
                         </tr>
@@ -829,11 +829,11 @@ const ExportReport = () => {
                   /* Mobile Table - 2 columns only */
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                        <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                           Item
                         </th>
-                        <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                        <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                           Harga
                         </th>
                       </tr>
@@ -841,21 +841,21 @@ const ExportReport = () => {
                     <tbody>
                       {salesData.slice(0, 10).map((sale) => 
                         sale.items.map((item, itemIndex) => (
-                          <tr key={`${sale.id}-${itemIndex}`} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151' }}>
+                          <tr key={`${sale.id}-${itemIndex}`} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                             <div>
                               <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
                                 {item.productName}
                               </div>
-                              <div style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', marginBottom: '0.25rem' }}>
                                 {item.category}
                               </div>
-                              <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
                                 Qty: {item.quantity}
                               </div>
                             </div>
                             </td>
-                            <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', textAlign: 'right', fontWeight: '500' }}>
+                            <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)', textAlign: 'right', fontWeight: '500' }}>
                               {formatCurrency(item.total)}
                             </td>
                           </tr>
@@ -865,7 +865,7 @@ const ExportReport = () => {
                   </table>
                 )}
                 {salesData.reduce((total, sale) => total + sale.items.length, 0) > 10 && (
-                  <p style={{ textAlign: 'center', color: '#6b7280', marginTop: '1rem', fontSize: '0.875rem' }}>
+                  <p style={{ textAlign: 'center', color: 'var(--secondary-color)', marginTop: '1rem', fontSize: '0.875rem' }}>
                     Menampilkan 10 dari {salesData.reduce((total, sale) => total + sale.items.length, 0)} item
                   </p>
                 )}
@@ -873,7 +873,7 @@ const ExportReport = () => {
             ) : (
               <div style={{ textAlign: 'center', padding: '2rem' }}>
                 <FileText size={48} color="#9ca3af" />
-                <p style={{ color: '#6b7280', marginTop: '1rem' }}>Tidak ada data penjualan untuk bulan ini</p>
+                <p style={{ color: 'var(--secondary-color)', marginTop: '1rem' }}>Tidak ada data penjualan untuk bulan ini</p>
               </div>
             )
           ) : (
@@ -883,35 +883,35 @@ const ExportReport = () => {
                 {!isMobile ? (
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Produk
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Kategori
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Stok Sistem
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Stok Fisik
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Selisih
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Stok Masuk
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Stok Keluar
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Tgl Audit
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Status Audit
                       </th>
-                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                         Status Stok
                       </th>
                     </tr>
@@ -967,17 +967,17 @@ const ExportReport = () => {
                       }
                       
                       return (
-                        <tr key={index} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151' }}>
+                        <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                             {item.product.name}
                           </td>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                             {item.product.category}
                           </td>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', textAlign: 'center', fontWeight: '500' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)', textAlign: 'center', fontWeight: '500' }}>
                             {systemStock}
                           </td>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', textAlign: 'center', fontWeight: '500' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)', textAlign: 'center', fontWeight: '500' }}>
                             {physicalStockValue}
                           </td>
                           <td style={{ padding: '0.75rem', textAlign: 'center' }}>
@@ -993,13 +993,13 @@ const ExportReport = () => {
                               <span style={{ color: '#9ca3af', fontSize: '0.875rem' }}>-</span>
                             )}
                           </td>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#059669', textAlign: 'center' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--success-color)', textAlign: 'center' }}>
                             {totalIn}
                           </td>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#dc2626', textAlign: 'center' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--error-color)', textAlign: 'center' }}>
                             {totalOut}
                           </td>
-                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151', textAlign: 'center' }}>
+                          <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)', textAlign: 'center' }}>
                             {auditDateStr}
                           </td>
                           <td style={{ padding: '0.75rem', textAlign: 'center' }}>
@@ -1043,11 +1043,11 @@ const ExportReport = () => {
                   /* Mobile Table - 2 columns only */
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                        <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                      <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                           Produk
                         </th>
-                        <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                        <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                           Selisih
                         </th>
                       </tr>
@@ -1073,16 +1073,16 @@ const ExportReport = () => {
                         const variance = hasPhysical ? (auditResult.physicalStock - systemStock) : '-';
                         
                         return (
-                          <tr key={index} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#374151' }}>
+                          <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                               <div>
                                 <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
                                   {item.product.name}
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
                                   {item.product.category}
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', marginTop: '0.25rem' }}>
                                   Sistem: {systemStock} | Fisik: {hasPhysical ? auditResult.physicalStock : '-'}
                                 </div>
                               </div>
@@ -1100,7 +1100,7 @@ const ExportReport = () => {
                                   {variance > 0 ? '+' : ''}{variance}
                                 </span>
                               ) : (
-                                <span style={{ color: '#9ca3af', fontSize: '0.875rem' }}>-</span>
+                                <span style={{ color: 'var(--secondary-color)', fontSize: '0.875rem' }}>-</span>
                               )}
                             </td>
                           </tr>
@@ -1118,7 +1118,7 @@ const ExportReport = () => {
                   const variance = auditResult.physicalStock - systemStock;
                   return variance !== 0;
                 }).length > 10 && (
-                  <p style={{ textAlign: 'center', color: '#6b7280', marginTop: '1rem', fontSize: '0.875rem' }}>
+                  <p style={{ textAlign: 'center', color: 'var(--secondary-color)', marginTop: '1rem', fontSize: '0.875rem' }}>
                     Menampilkan 10 dari {stockData.filter(item => {
                       if (!item.product) return false;
                       const auditResult = getAuditResult(item.product.id);
@@ -1134,7 +1134,7 @@ const ExportReport = () => {
             ) : (
               <div style={{ textAlign: 'center', padding: '2rem' }}>
                 <Package size={48} color="#9ca3af" />
-                <p style={{ color: '#6b7280', marginTop: '1rem' }}>Tidak ada data stok untuk bulan ini</p>
+                <p style={{ color: 'var(--secondary-color)', marginTop: '1rem' }}>Tidak ada data stok untuk bulan ini</p>
               </div>
             )
           )}

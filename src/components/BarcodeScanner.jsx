@@ -124,7 +124,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
       padding: '1rem'
     }}>
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: 'var(--card-background)',
         borderRadius: '1.5rem',
         padding: '1rem',
         width: '100%',
@@ -138,7 +138,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
           position: 'relative',
           width: '100%',
           height: '320px',
-          backgroundColor: '#000',
+          backgroundColor: 'var(--background-color)',
           borderRadius: '1rem',
           overflow: 'hidden',
           marginBottom: '1rem'
@@ -149,17 +149,17 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
         {/* Error Message */}
         {error && (
           <div style={{
-            backgroundColor: '#fef2f2',
-            border: '1px solid #fecaca',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid var(--error-color)',
             borderRadius: '1rem',
             padding: '1rem',
             marginBottom: '1rem',
             display: 'flex',
             alignItems: 'center'
           }}>
-            <AlertCircle size={20} style={{ color: '#dc2626', marginRight: '0.5rem' }} />
+            <AlertCircle size={20} style={{ color: 'var(--error-color)', marginRight: '0.5rem' }} />
             <div>
-              <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#991b1b', margin: 0 }}>
+              <p style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--error-color)', margin: 0 }}>
                 {error}
               </p>
               <button
@@ -167,7 +167,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
                 style={{
                   marginTop: '0.5rem',
                   fontSize: '0.75rem',
-                  color: '#dc2626',
+                  color: 'var(--error-color)',
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
@@ -183,20 +183,20 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
         {/* Success Message */}
         {scannedCode && (
           <div style={{
-            backgroundColor: '#f0fdf4',
-            border: '1px solid #bbf7d0',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid var(--success-color)',
             borderRadius: '0.5rem',
             padding: '1rem',
             marginBottom: '1rem',
             display: 'flex',
             alignItems: 'center'
           }}>
-            <CheckCircle size={20} style={{ color: '#059669', marginRight: '0.5rem' }} />
+            <CheckCircle size={20} style={{ color: 'var(--success-color)', marginRight: '0.5rem' }} />
             <div>
-              <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#065f46', margin: 0 }}>
+              <p style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--success-color)', margin: 0 }}>
                 Barcode berhasil dipindai!
               </p>
-              <p style={{ fontSize: '0.75rem', color: '#059669', marginTop: '0.25rem', margin: 0 }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--success-color)', marginTop: '0.25rem', margin: 0 }}>
                 {scannedCode}
               </p>
             </div>
@@ -205,8 +205,8 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
 
         {/* Instructions for iOS */}
         {/* <div style={{
-          backgroundColor: '#f8fafc',
-          border: '1px solid #e2e8f0',
+          backgroundColor: 'var(--card-background)',
+          border: '1px solid var(--border-color)',
           borderRadius: '0.5rem',
           padding: '1rem',
           marginBottom: '1rem'
@@ -224,7 +224,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
 
         {/* Manual Input Fallback */}
         <div style={{ marginBottom: '1rem' }}>
-          <label style={{ fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+          <label style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-color)', marginBottom: '0.5rem', display: 'block' }}>
             Atau masukkan barcode secara manual:
           </label>
           <input
@@ -235,9 +235,11 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
             style={{
               width: '100%',
               padding: '0.5rem',
-              border: '1px solid #d1d5db',
+              border: '1px solid var(--border-color)',
               borderRadius: '0.375rem',
-              fontSize: '0.875rem'
+              fontSize: '0.875rem',
+              backgroundColor: 'var(--card-background)',
+              color: 'var(--text-color)'
             }}
           />
           {manualCode && (
@@ -249,7 +251,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
               style={{
                 marginTop: '0.5rem',
                 width: '100%',
-                backgroundColor: '#10b981',
+                backgroundColor: 'var(--success-color)',
                 color: 'white',
                 padding: '0.5rem',
                 borderRadius: '0.375rem',
@@ -270,7 +272,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
             onClick={handleClose}
             style={{
               flex: 1,
-              backgroundColor: '#6b7280',
+              backgroundColor: 'var(--secondary-color)',
               color: 'white',
               padding: '0.5rem 1rem',
               borderRadius: '0.5rem',
@@ -290,7 +292,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
               }}
               style={{
                 flex: 1,
-                backgroundColor: '#3b82f6',
+                backgroundColor: 'var(--primary-color)',
                 color: 'white',
                 padding: '0.5rem 1rem',
                 borderRadius: '0.5rem',

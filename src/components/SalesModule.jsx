@@ -273,7 +273,7 @@ const SalesModule = () => {
             {/* Products List */}
             <div>
               <div style={{
-                background: 'white',
+                background: 'var(--card-background)',
                 borderRadius: '1.5rem',
                 boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                 padding: '1.5rem'
@@ -285,7 +285,7 @@ const SalesModule = () => {
                     <button
                       onClick={() => setShowScanner(true)}
                       style={{
-                        backgroundColor: '#10b981',
+                        backgroundColor: 'var(--success-color)',
                         color: 'white',
                         padding: '0.5rem 1rem',
                         borderRadius: '0.5rem',
@@ -307,11 +307,11 @@ const SalesModule = () => {
                       <button
                         onClick={() => setShowCartPage(true)}
                         style={{
-                          backgroundColor: 'white',
-                          color: '#374151',
+                          backgroundColor: 'var(--card-background)',
+                          color: 'var(--text-color)',
                           padding: '0.5rem 1rem',
                           borderRadius: '0.5rem',
-                          border: '2px dashed #d1d5db',
+                          border: '2px dashed var(--border-color)',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
@@ -329,7 +329,7 @@ const SalesModule = () => {
                             position: 'absolute',
                             top: '-4px',
                             right: '-4px',
-                            backgroundColor: '#ef4444',
+                            backgroundColor: 'var(--error-color)',
                             color: 'white',
                             borderRadius: '50%',
                             width: '20px',
@@ -355,7 +355,7 @@ const SalesModule = () => {
                   left: '0.75rem',
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  color: '#9ca3af'
+                  color: 'var(--secondary-color)'
                 }} />
                 <input
                   type="text"
@@ -368,9 +368,11 @@ const SalesModule = () => {
                     paddingRight: '1rem',
                     paddingTop: '0.5rem',
                     paddingBottom: '0.5rem',
-                    border: '1px solid #d1d5db',
+                    border: '1px solid var(--border-color)',
                     borderRadius: '0.5rem',
-                    fontSize: '0.875rem'
+                    fontSize: '0.875rem',
+                    backgroundColor: 'var(--card-background)',
+                    color: 'var(--text-color)'
                   }}
                 />
               </div>
@@ -380,8 +382,8 @@ const SalesModule = () => {
                 <button
                   onClick={() => setCategoryFilter('all')}
                   style={{
-                    backgroundColor: categoryFilter === 'all' ? '#3b82f6' : '#f3f4f6',
-                    color: categoryFilter === 'all' ? 'white' : '#374151',
+                    backgroundColor: categoryFilter === 'all' ? 'var(--primary-color)' : 'var(--background-color)',
+                    color: categoryFilter === 'all' ? 'white' : 'var(--text-color)',
                     padding: '0.375rem 0.75rem',
                     borderRadius: '0.375rem',
                     border: 'none',
@@ -397,8 +399,8 @@ const SalesModule = () => {
                     key={category}
                     onClick={() => setCategoryFilter(category)}
                     style={{
-                      backgroundColor: categoryFilter === category ? '#3b82f6' : '#f3f4f6',
-                      color: categoryFilter === category ? 'white' : '#374151',
+                      backgroundColor: categoryFilter === category ? 'var(--primary-color)' : 'var(--background-color)',
+                      color: categoryFilter === category ? 'white' : 'var(--text-color)',
                       padding: '0.375rem 0.75rem',
                       borderRadius: '0.375rem',
                       border: 'none',
@@ -423,7 +425,7 @@ const SalesModule = () => {
             }}>
               {paginatedProducts.map((product) => (
                 <div key={product.id} style={{
-                  border: '1px solid #e5e7eb',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '0.5rem',
                   padding: '1rem',
                   transition: 'box-shadow 0.2s',
@@ -438,10 +440,10 @@ const SalesModule = () => {
                     alignItems: 'flex-start',
                     marginBottom: '0.5rem'
                   }}>
-                    <h3 style={{ fontWeight: '500', color: '#111827', margin: 0, fontSize: '0.875rem' }}>
+                    <h3 style={{ fontWeight: '500', color: 'var(--text-color)', margin: 0, fontSize: '0.875rem' }}>
                       {product.name}
                     </h3>
-                    <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
                       {product.category}
                     </span>
                   </div>
@@ -453,8 +455,8 @@ const SalesModule = () => {
                       fontSize: '0.625rem',
                       padding: '0.125rem 0.375rem',
                       borderRadius: '0.25rem',
-                      backgroundColor: product.useBarcode !== false ? '#dbeafe' : '#f3f4f6',
-                      color: product.useBarcode !== false ? '#1e40af' : '#6b7280',
+                      backgroundColor: product.useBarcode !== false ? 'var(--primary-color)' : 'var(--background-color)',
+                      color: product.useBarcode !== false ? 'var(--primary-color)' : 'var(--secondary-color)',
                       fontWeight: '500'
                     }}>
                       {product.useBarcode !== false ? 'Dengan Barcode' : 'Manual'}
@@ -465,13 +467,13 @@ const SalesModule = () => {
                     justifyContent: 'space-between',
                     alignItems: 'center'
                   }}>
-                    <span style={{ fontWeight: '600', color: '#2563eb', fontSize: '0.875rem' }}>
+                    <span style={{ fontWeight: '600', color: 'var(--primary-color)', fontSize: '0.875rem' }}>
                       Rp {product.price.toLocaleString('id-ID')}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <span style={{
                         fontSize: '0.75rem',
-                        color: (readyStockData[product.id] || 0) > 0 ? '#059669' : '#dc2626'
+                        color: (readyStockData[product.id] || 0) > 0 ? 'var(--success-color)' : 'var(--error-color)'
                       }}>
                         Ready: {readyStockData[product.id] || 0}
                       </span>
@@ -479,7 +481,7 @@ const SalesModule = () => {
                         onClick={() => handleAddToCart(product)}
                         disabled={(readyStockData[product.id] || 0) <= 0}
                         style={{
-                          backgroundColor: (readyStockData[product.id] || 0) <= 0 ? '#d1d5db' : '#3b82f6',
+                          backgroundColor: (readyStockData[product.id] || 0) <= 0 ? 'var(--border-color)' : 'var(--primary-color)',
                           color: 'white',
                           padding: '0.25rem',
                           borderRadius: '0.25rem',
@@ -516,9 +518,9 @@ const SalesModule = () => {
                     gap: '0.5rem',
                     padding: '0.5rem',
                     borderRadius: '0.5rem',
-                    border: '1px solid #d1d5db',
-                    backgroundColor: currentPage === 1 ? '#f9fafb' : 'white',
-                    color: currentPage === 1 ? '#9ca3af' : '#374151',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: currentPage === 1 ? 'var(--background-color)' : 'var(--card-background)',
+                    color: currentPage === 1 ? 'var(--secondary-color)' : 'var(--text-color)',
                     cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s'
                   }}
@@ -544,9 +546,9 @@ const SalesModule = () => {
                     gap: '0.5rem',
                     padding: '0.5rem',
                     borderRadius: '0.5rem',
-                    border: '1px solid #d1d5db',
-                    backgroundColor: currentPage === totalPages ? '#f9fafb' : 'white',
-                    color: currentPage === totalPages ? '#9ca3af' : '#374151',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: currentPage === totalPages ? 'var(--background-color)' : 'var(--card-background)',
+                    color: currentPage === totalPages ? 'var(--secondary-color)' : 'var(--text-color)',
                     cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s'
                   }}
@@ -562,7 +564,7 @@ const SalesModule = () => {
             {window.innerWidth > 768 && (
               <div>
                 <div style={{
-                  background: 'white',
+                  background: 'var(--card-background)',
                   borderRadius: '1.5rem',
                   boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                   padding: '1.5rem'
@@ -590,7 +592,7 @@ const SalesModule = () => {
             }}>
               {cart.map((item) => (
                 <div key={item.productId} style={{
-                  border: '1px solid #e5e7eb',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '0.5rem',
                   padding: '0.75rem'
                 }}>
@@ -600,13 +602,13 @@ const SalesModule = () => {
                     alignItems: 'flex-start',
                     marginBottom: '0.5rem'
                   }}>
-                    <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: '#111827', margin: 0 }}>
+                    <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: 'var(--text-color)', margin: 0 }}>
                       {item.productName}
                     </h4>
                     <button
                       onClick={() => removeFromCart(item.productId)}
                       style={{
-                        color: '#dc2626',
+                        color: 'var(--error-color)',
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
@@ -625,8 +627,8 @@ const SalesModule = () => {
                       <button
                         onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                         style={{
-                          backgroundColor: '#e5e7eb',
-                          color: '#374151',
+                          backgroundColor: 'var(--border-color)',
+                          color: 'var(--text-color)',
                           padding: '0.25rem',
                           borderRadius: '0.25rem',
                           border: 'none',
@@ -644,8 +646,8 @@ const SalesModule = () => {
                         onClick={() => handleIncreaseQuantity(item.productId)}
                         disabled={item.quantity >= (readyStockData[item.productId] || 0)}
                         style={{
-                          backgroundColor: item.quantity >= (readyStockData[item.productId] || 0) ? '#e5e7eb' : '#3b82f6',
-                          color: item.quantity >= (readyStockData[item.productId] || 0) ? '#9ca3af' : 'white',
+                          backgroundColor: item.quantity >= (readyStockData[item.productId] || 0) ? 'var(--border-color)' : 'var(--primary-color)',
+                          color: item.quantity >= (readyStockData[item.productId] || 0) ? 'var(--secondary-color)' : 'white',
                           padding: '0.25rem',
                           borderRadius: '0.25rem',
                           border: 'none',
@@ -710,7 +712,7 @@ const SalesModule = () => {
             </div>
 
             {/* Total */}
-            <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '1rem' }}>
+            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -718,7 +720,7 @@ const SalesModule = () => {
                 marginBottom: '1rem'
               }}>
                 <span style={{ fontSize: '1.125rem', fontWeight: '600' }}>Total</span>
-                <span style={{ fontSize: '1.125rem', fontWeight: '700', color: '#2563eb' }}>
+                <span style={{ fontSize: '1.125rem', fontWeight: '700', color: 'var(--primary-color)' }}>
                   Rp {getTotalAmount().toLocaleString('id-ID')}
                 </span>
               </div>
@@ -727,7 +729,7 @@ const SalesModule = () => {
                 disabled={cart.length === 0}
                 style={{
                   width: '100%',
-                  backgroundColor: cart.length === 0 ? '#d1d5db' : '#10b981',
+                  backgroundColor: cart.length === 0 ? 'var(--border-color)' : 'var(--success-color)',
                   color: 'white',
                   padding: '0.5rem 1rem',
                   borderRadius: '0.5rem',
@@ -753,7 +755,7 @@ const SalesModule = () => {
       ) : (
         /* Cart Page for Mobile */
         <div style={{
-          background: 'white',
+                  background: 'var(--card-background)',
           borderRadius: '1.5rem',
           boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
           padding: '1rem'
@@ -778,7 +780,7 @@ const SalesModule = () => {
               onClick={() => setShowCartPage(false)}
               style={{
                 backgroundColor: 'transparent',
-                color: '#6b7280',
+                color: 'var(--secondary-color)',
                 padding: '0.5rem',
                 borderRadius: '0.5rem',
                 border: 'none',
@@ -805,13 +807,13 @@ const SalesModule = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '0.5rem 0',
-                borderBottom: '1px solid #f3f4f6'
+                borderBottom: '1px solid var(--border-color)'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: '600', minWidth: '60px' }}>
                     Rp {item.total.toLocaleString('id-ID')}
                   </span>
-                  <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: '#111827', margin: 0, flex: 1 }}>
+                  <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: 'var(--text-color)', margin: 0, flex: 1 }}>
                     {item.productName}
                   </h4>
                 </div>
@@ -821,7 +823,7 @@ const SalesModule = () => {
                       onClick={() => removeFromCart(item.productId)}
                       style={{
                         backgroundColor: 'e5e7eb',
-                        color: '#dc2626',
+                        color: 'var(--error-color)',
                         padding: '0.25rem',
                         borderRadius: '0.5rem',
                         border: 'none',
@@ -836,8 +838,8 @@ const SalesModule = () => {
                     <button
                       onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                       style={{
-                        backgroundColor: '#e5e7eb',
-                        color: '#374151',
+                        backgroundColor: 'var(--border-color)',
+                          color: 'var(--text-color)',
                         padding: '0.25rem',
                         borderRadius: '0.5rem',
                         border: 'none',
@@ -857,11 +859,11 @@ const SalesModule = () => {
                     disabled={item.quantity >= (readyStockData[item.productId] || 0)}
                     style={{
                       backgroundColor: item.quantity >= (readyStockData[item.productId] || 0) ? 'transparent' : 'transparent',
-                      color: item.quantity >= (readyStockData[item.productId] || 0) ? '#6b7280' : 'black',
+                      color: item.quantity >= (readyStockData[item.productId] || 0) ? 'var(--secondary-color)' : 'var(--text-color)',
                       padding: '0.25rem',
                       borderRadius: '0.5rem',
                       border: 'dashed',
-                      borderColor: '#e5e7eb',
+                      borderColor: 'var(--border-color)',
                       borderWidth: '1px',
                       cursor: item.quantity >= (readyStockData[item.productId] || 0) ? 'not-allowed' : 'pointer',
                       fontSize: '1rem'
@@ -920,7 +922,7 @@ const SalesModule = () => {
           </div>
 
           {/* Total */}
-          <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '1rem' }}>
+          <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -928,7 +930,7 @@ const SalesModule = () => {
               marginBottom: '1rem'
             }}>
               <span style={{ fontSize: '1.125rem', fontWeight: '600' }}>Total</span>
-              <span style={{ fontSize: '1.125rem', fontWeight: '700', color: '#2563eb' }}>
+              <span style={{ fontSize: '1.125rem', fontWeight: '700', color: 'var(--primary-color)' }}>
                 Rp {getTotalAmount().toLocaleString('id-ID')}
               </span>
             </div>
@@ -937,7 +939,7 @@ const SalesModule = () => {
               disabled={cart.length === 0}
               style={{
                 width: '100%',
-                backgroundColor: cart.length === 0 ? '#d1d5db' : '#10b981',
+                backgroundColor: cart.length === 0 ? 'var(--secondary-color)' : 'var(--success-color)',
                 color: 'white',
                 padding: '0.75rem 1rem',
                 borderRadius: '0.5rem',
@@ -997,7 +999,7 @@ const SalesModule = () => {
               </div>
             </div>
 
-            <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '0.5rem', marginBottom: '1rem' }}>
+            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', marginBottom: '1rem' }}>
               <h4 style={{ fontWeight: '500', marginBottom: '0.5rem', margin: 0 }}>Item:</h4>
               {lastSale.items.map((item, index) => (
                 <div key={index} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
@@ -1007,7 +1009,7 @@ const SalesModule = () => {
               ))}
             </div>
 
-            <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '0.5rem', marginBottom: '1rem' }}>
+            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600' }}>
                 <span>Total:</span>
                 <span>Rp {lastSale.totalAmount.toLocaleString('id-ID')}</span>

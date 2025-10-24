@@ -77,23 +77,25 @@ const Login = ({ onLogin }) => {
   if (initializing) {
     return (
       <div style={{
-        minHeight: '100vh',
+        height: '100vh',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'rgba(249, 250, 251, 0.8)',
-        padding: '1rem'
+        background: 'var(--background-color)',
+        padding: '1rem',
+        boxSizing: 'border-box'
       }}>
         <div style={{
-          background: 'white',
-          borderRadius: '1rem',
-          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-          padding: '2rem',
+          background: window.innerWidth <= 768 ? 'transparent' : 'var(--card-background)',
+          borderRadius: window.innerWidth <= 768 ? '0' : '1rem',
+          boxShadow: window.innerWidth <= 768 ? 'none' : '0 10px 25px rgba(0, 0, 0, 0.1)',
+          padding: window.innerWidth <= 768 ? '1rem' : '2rem',
           textAlign: 'center',
-          border: '1px solid #e5e7eb'
+          border: window.innerWidth <= 768 ? 'none' : '1px solid var(--border-color)'
         }}>
           <div className="spinner" style={{ margin: '0 auto' }}></div>
-          <p style={{ marginTop: '1rem', color: '#6b7280' }}>Menginisialisasi sistem...</p>
+          <p style={{ marginTop: '1rem', color: 'var(--secondary-color)' }}>Menginisialisasi sistem...</p>
         </div>
       </div>
     );
@@ -101,21 +103,23 @@ const Login = ({ onLogin }) => {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      height: '100vh',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'rgba(249, 250, 251, 0.8)',
-      padding: '1rem'
+      background: 'var(--background-color)',
+      padding: '1rem',
+      boxSizing: 'border-box'
     }}>
       <div style={{
-        background: 'white',
-        borderRadius: '1rem',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-        padding: '2rem',
+        background: window.innerWidth <= 768 ? 'transparent' : 'var(--card-background)',
+        borderRadius: window.innerWidth <= 768 ? '0' : '1rem',
+        boxShadow: window.innerWidth <= 768 ? 'none' : '0 10px 25px rgba(0, 0, 0, 0.1)',
+        padding: window.innerWidth <= 768 ? '1rem' : '2rem',
         width: '100%',
         maxWidth: '400px',
-        border: '1px solid #e5e7eb'
+        border: window.innerWidth <= 768 ? 'none' : '1px solid var(--border-color)'
       }}>
         {/* Logo/Header */}
         <div style={{
@@ -125,7 +129,7 @@ const Login = ({ onLogin }) => {
           <h1 style={{
             fontSize: '1.5rem',
             fontWeight: '600',
-            color: '#1f2937',
+            color: 'var(--text-color)',
             margin: 0
           }}>
             IQOS
@@ -139,7 +143,7 @@ const Login = ({ onLogin }) => {
               display: 'block',
               fontSize: '0.875rem',
               fontWeight: '500',
-              color: '#374151',
+              color: 'var(--text-color)',
               marginBottom: '0.5rem'
             }}>
               Username
@@ -152,7 +156,7 @@ const Login = ({ onLogin }) => {
                 transform: 'translateY(-50%)',
                 width: '1.25rem',
                 height: '1.25rem',
-                color: '#6b7280'
+                color: 'var(--secondary-color)'
               }} />
               <input
                 type="text"
@@ -164,18 +168,20 @@ const Login = ({ onLogin }) => {
                 style={{
                   width: '100%',
                   padding: '0.75rem 0.75rem 0.75rem 3rem',
-                  border: '1px solid #d1d5db',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '0.5rem',
                   fontSize: '0.875rem',
                   transition: 'all 0.2s',
-                  outline: 'none'
+                  outline: 'none',
+                  backgroundColor: 'var(--card-background)',
+                  color: 'var(--text-color)'
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.borderColor = 'var(--primary-color)';
                   e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.borderColor = 'var(--border-color)';
                   e.target.style.boxShadow = 'none';
                 }}
               />
@@ -187,7 +193,7 @@ const Login = ({ onLogin }) => {
               display: 'block',
               fontSize: '0.875rem',
               fontWeight: '500',
-              color: '#374151',
+              color: 'var(--text-color)',
               marginBottom: '0.5rem'
             }}>
               Password
@@ -200,7 +206,7 @@ const Login = ({ onLogin }) => {
                 transform: 'translateY(-50%)',
                 width: '1.25rem',
                 height: '1.25rem',
-                color: '#6b7280'
+                color: 'var(--secondary-color)'
               }} />
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -212,18 +218,20 @@ const Login = ({ onLogin }) => {
                 style={{
                   width: '100%',
                   padding: '0.75rem 3rem 0.75rem 3rem',
-                  border: '1px solid #d1d5db',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '0.5rem',
                   fontSize: '0.875rem',
                   transition: 'all 0.2s',
-                  outline: 'none'
+                  outline: 'none',
+                  backgroundColor: 'var(--card-background)',
+                  color: 'var(--text-color)'
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.borderColor = 'var(--primary-color)';
                   e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.borderColor = 'var(--border-color)';
                   e.target.style.boxShadow = 'none';
                 }}
               />
@@ -238,7 +246,7 @@ const Login = ({ onLogin }) => {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  color: '#6b7280',
+                  color: 'var(--secondary-color)',
                   padding: '0.25rem'
                 }}
               >
@@ -253,7 +261,7 @@ const Login = ({ onLogin }) => {
             style={{
               width: '100%',
               padding: '0.75rem',
-              background: loading ? '#9ca3af' : 'linear-gradient(135deg,rgb(243, 6, 125) 0%,rgb(244, 139, 185) 100%)',
+              background: loading ? 'var(--secondary-color)' : 'linear-gradient(135deg,rgb(243, 6, 125) 0%,rgb(244, 139, 185) 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '0.5rem',
@@ -297,21 +305,21 @@ const Login = ({ onLogin }) => {
           </button>
         </form>
 
-        {/* Footer */}
-        <div style={{
-          textAlign: 'center',
-          marginTop: '2rem',
-          paddingTop: '1rem',
-          borderTop: '1px solid #e5e7eb'
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        textAlign: 'center',
+        padding: '1rem',
+        marginTop: 'auto'
+      }}>
+        <p style={{
+          fontSize: '0.75rem',
+          color: 'var(--secondary-color)',
+          margin: 0
         }}>
-          <p style={{
-            fontSize: '0.75rem',
-            color: '#9ca3af',
-            margin: 0
-          }}>
-            © 2025 IQOS Inventory by AGU
-          </p>
-        </div>
+          © 2025 IQOS Inventory by AGU
+        </p>
       </div>
 
       <style jsx>{`

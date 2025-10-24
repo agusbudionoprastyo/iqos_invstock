@@ -68,12 +68,14 @@ const Dashboard = () => {
 
   const StatCard = ({ title, value, icon: Icon, color }) => (
     <div style={{
-      background: 'white',
+      background: 'var(--card-background)',
       borderRadius: '1.5rem',
       boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
       padding: '1.5rem',
       display: 'flex',
-      alignItems: 'center'
+      alignItems: 'center',
+      border: '1px solid var(--border-color)',
+      transition: 'background-color 0.3s ease, border-color 0.3s ease'
     }}>
       <div style={{
         width: '48px',
@@ -88,10 +90,10 @@ const Dashboard = () => {
         <Icon size={24} style={{ color: color }} />
       </div>
       <div>
-        <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#6b7280', margin: 0 }}>
+        <p style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--secondary-color)', margin: 0 }}>
           {title}
         </p>
-        <p style={{ fontSize: '1.5rem', fontWeight: '600', color: '#111827', margin: 0 }}>
+        <p style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-color)', margin: 0 }}>
           {value}
         </p>
       </div>
@@ -104,7 +106,8 @@ const Dashboard = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '16rem'
+        height: '16rem',
+        color: 'var(--text-color)'
       }}>
         <div className="spinner"></div>
       </div>
@@ -152,15 +155,17 @@ const Dashboard = () => {
 
       {/* Recent Sales */}
         <div style={{
-          background: 'white',
+          background: 'var(--card-background)',
           borderRadius: '1.5rem',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          border: '1px solid var(--border-color)',
+          transition: 'background-color 0.3s ease, border-color 0.3s ease'
         }}>
           <div style={{
             padding: '1.5rem',
-            borderBottom: '1px solid #e5e7eb'
+            borderBottom: '1px solid var(--border-color)'
           }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', margin: 0 }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: 'var(--text-color)', margin: 0 }}>
               Penjualan Terbaru
             </h3>
           </div>
@@ -170,7 +175,7 @@ const Dashboard = () => {
                 {recentSales.map((sale) => (
                   <div key={sale.id} style={{
                     paddingBottom: '1rem',
-                    borderBottom: '1px solid #f3f4f6'
+                    // borderBottom: '1px solid var(--border-color)'
                   }}>
                     
                     {/* Items List */}
@@ -181,25 +186,26 @@ const Dashboard = () => {
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           padding: '0.5rem',
-                          backgroundColor: '#f9fafb',
-                          borderRadius: '0.375rem'
+                          backgroundColor: 'var(--background-color)',
+                          borderRadius: '0.375rem',
+                          border: '1px solid var(--border-color)'
                         }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                          <p style={{ fontSize: '0.75rem', fontWeight: '500', color: '#111827', margin: 0, textAlign: 'left' }}>
+                          <p style={{ fontSize: '0.75rem', fontWeight: '500', color: 'var(--text-color)', margin: 0, textAlign: 'left' }}>
                               {item.productName}
                           </p>
-                          <p style={{ fontSize: '0.625rem', color: '#6b7280', margin: 0, textAlign: 'left' }}>
+                          <p style={{ fontSize: '0.625rem', color: 'var(--secondary-color)', margin: 0, textAlign: 'left' }}>
                             {item.category} • Qty {item.quantity}
                           </p>
-                          <p style={{ fontSize: '0.75rem', fontWeight: '500', color: '#059669', margin: 0, textAlign: 'left' }}>
+                          <p style={{ fontSize: '0.75rem', fontWeight: '500', color: 'var(--success-color)', margin: 0, textAlign: 'left' }}>
                             Rp {item.total.toLocaleString('id-ID')}
                           </p>
                         </div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'end', fontSize: '0.875rem' }}>
-                            <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#6b7280', margin: 0 }}>
+                            <p style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--secondary-color)', margin: 0 }}>
                               {sale.customerName || 'Pelanggan Umum'}
                             </p>
-                            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', margin: 0 }}>
                               {new Date(sale.createdAt).toLocaleDateString('id-ID')}
                             </p>
                           </div>
@@ -210,7 +216,7 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : (
-              <p style={{ color: '#6b7280', textAlign: 'center', padding: '1rem', margin: 0 }}>
+              <p style={{ color: 'var(--secondary-color)', textAlign: 'center', padding: '1rem', margin: 0 }}>
                 Belum ada penjualan
               </p>
             )}

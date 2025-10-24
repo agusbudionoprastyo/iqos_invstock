@@ -3,12 +3,12 @@ import { AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-react';
 
 // Custom toast styles with glass transparency effect
 const glassToastStyle = {
-  background: 'rgba(255, 255, 255, 0.5)',
+  background: 'var(--header-background)',
   backdropFilter: 'blur(15px)',
   WebkitBackdropFilter: 'blur(15px)',
-  border: '1px solid rgba(255, 255, 255, 0.3)',
+  border: '1px solid var(--border-color)',
   boxShadow: '0 8px 32px rgba(31, 38, 135, 0.37)',
-  color: '#374151',
+  color: 'var(--text-color)',
   fontWeight: '500',
   fontSize: '14px',
   padding: '12px 16px',
@@ -74,7 +74,7 @@ export const showToast = {
                 resolve(true);
               }}
               style={{
-                background: 'rgba(34, 197, 94, 0.8)',
+                background: 'var(--success-color)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '1rem',
@@ -92,7 +92,7 @@ export const showToast = {
                 resolve(false);
               }}
               style={{
-                background: 'rgba(239, 68, 68, 0.8)',
+                background: 'var(--error-color)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '1rem',
@@ -124,22 +124,22 @@ export const showToast = {
         <div style={{ textAlign: 'center' }}>
           <div style={{ marginBottom: '12px', fontWeight: '600' }}>{title}</div>
           <div style={{ marginBottom: '12px' }}>{message}</div>
-          <input
-            type="text"
-            placeholder={placeholder}
-            onChange={(e) => (inputValue = e.target.value)}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '1rem',
-              background: 'rgba(255, 255, 255, 0.1)',
-              color: '#374151',
-              marginBottom: '12px',
-              fontSize: '14px',
-            }}
-            autoFocus
-          />
+        <input
+          type="text"
+          placeholder={placeholder}
+          onChange={(e) => (inputValue = e.target.value)}
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            border: '1px solid var(--border-color)',
+            borderRadius: '1rem',
+            background: 'var(--card-background)',
+            color: 'var(--text-color)',
+            marginBottom: '12px',
+            fontSize: '14px',
+          }}
+          autoFocus
+        />
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
             <button
               onClick={() => {
@@ -147,7 +147,7 @@ export const showToast = {
                 resolve(inputValue);
               }}
               style={{
-                background: 'rgba(34, 197, 94, 0.8)',
+                background: 'var(--success-color)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '1rem',
@@ -165,7 +165,7 @@ export const showToast = {
                 resolve(null);
               }}
               style={{
-                background: 'rgba(107, 114, 128, 0.8)',
+                background: 'var(--secondary-color)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '1rem',
