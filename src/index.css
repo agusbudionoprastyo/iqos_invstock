@@ -27,23 +27,9 @@
   --header-background: rgba(45, 46, 52, 0.85);
 }
 
-/* Toast close button styling */
+/* Toast close button styling - Hidden */
 .Toastify__close-button {
-  color: var(--text-color) !important;
-  opacity: 0.7 !important;
-  transition: opacity 0.2s ease !important;
-}
-
-.Toastify__close-button:hover {
-  opacity: 1 !important;
-}
-
-.Toastify__close-button--default {
-  color: var(--text-color) !important;
-}
-
-.Toastify__close-button--colored {
-  color: var(--text-color) !important;
+  display: none !important;
 }
 
 /* Reset and base styles */
