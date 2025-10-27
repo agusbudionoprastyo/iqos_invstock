@@ -1736,7 +1736,7 @@ const InventoryManagement = () => {
             {currentAuditProduct && (
               <div style={{
                 backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                border: '1px solid var(--primary-color)',
+                // border: '1px solid var(--primary-color)',
                 borderRadius: '0.5rem',
                 padding: '1rem',
                 marginBottom: '1.5rem'
@@ -1824,21 +1824,21 @@ const InventoryManagement = () => {
                   <button
                     onClick={() => setAuditFilter('all')}
                     className={`btn ${auditFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-                    style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                    style={{ fontSize: '0.75rem', padding: '0 1rem', borderRadius: '2rem' }}
                   >
                     Semua
                   </button>
                   <button
                     onClick={() => setAuditFilter('balance')}
                     className={`btn ${auditFilter === 'balance' ? 'btn-primary' : 'btn-secondary'}`}
-                    style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                    style={{ fontSize: '0.75rem', padding: '0 1rem', borderRadius: '2rem' }}
                   >
                     Balance
                   </button>
                   <button
                     onClick={() => setAuditFilter('variance')}
                     className={`btn ${auditFilter === 'variance' ? 'btn-primary' : 'btn-secondary'}`}
-                    style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                    style={{ fontSize: '0.75rem', padding: '0 1rem', borderRadius: '2rem' }}
                   >
                     Ada Selisih
                   </button>
@@ -1956,8 +1956,8 @@ const InventoryManagement = () => {
                             : `5px solid ${borderLeftColor}`,
                           cursor: 'pointer',
                           transition: 'all 0.2s ease',
-                          outline: isSelected ? '3px solid var(--primary-color)' : 'none',
-                          outlineOffset: isSelected ? '3px' : '0'
+                          outline: isSelected ? '3px dashed var(--secondary-color)' : 'none',
+                          outlineOffset: isSelected ? '2px' : '0'
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
