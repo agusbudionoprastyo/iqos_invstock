@@ -41,7 +41,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
 
       const config = {
         fps: 10,
-        qrbox: { width: 280, height: 230 },
+        // Remove qrbox restriction to allow scanning anywhere in camera view
         aspectRatio: 1.777,
         rememberLastUsedCamera: true,
         // Better focus and scanning
