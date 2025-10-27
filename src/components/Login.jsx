@@ -271,32 +271,44 @@ const Login = ({ onLogin }) => {
           <button
             type="submit"
             disabled={loading}
+            className="liquid-glass-btn"
             style={{
               width: '100%',
               padding: isMobile ? '0.65rem' : '0.75rem',
-              background: loading ? 'var(--secondary-color)' : 'linear-gradient(135deg,rgb(243, 6, 125) 0%,rgb(244, 139, 185) 100%)',
+              background: loading 
+                ? 'rgba(108, 117, 125, 0.3)' 
+                : 'linear-gradient(135deg, rgba(243, 6, 125, 0.25) 0%, rgba(244, 139, 185, 0.25) 100%)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
               color: 'white',
-              border: 'none',
+              border: loading ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(243, 6, 125, 0.4)',
               borderRadius: '0.5rem',
               fontSize: isMobile ? '0.8rem' : '0.875rem',
-              fontWeight: '500',
+              fontWeight: '600',
               cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s',
+              transition: 'all 0.3s ease',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0.5rem'
+              gap: '0.5rem',
+              boxShadow: loading 
+                ? 'none' 
+                : '0 4px 15px rgba(243, 6, 125, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+              position: 'relative',
+              overflow: 'hidden'
             }}
             onMouseOver={(e) => {
               if (!loading) {
-                e.target.style.transform = 'translateY(-1px)';
-                e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 20px rgba(243, 6, 125, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+                e.target.style.borderColor = 'rgba(243, 6, 125, 0.6)';
               }
             }}
             onMouseOut={(e) => {
               if (!loading) {
                 e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = 'none';
+                e.target.style.boxShadow = '0 4px 15px rgba(243, 6, 125, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+                e.target.style.borderColor = 'rgba(243, 6, 125, 0.4)';
               }
             }}
           >
@@ -338,6 +350,58 @@ const Login = ({ onLogin }) => {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes shimmer {
+          0% {
+            background-position: -1000px 0;
+          }
+          100% {
+            background-position: 1000px 0;
+          }
+        }
+        
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-5px);
+          }
+        }
+        
+        .liquid-glass-btn {
+          position: relative;
+        }
+        
+        .liquid-glass-btn::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent
+          );
+          transition: left 0.5s ease;
+        }
+        
+        .liquid-glass-btn:not(:disabled):hover::before {
+          left: 100%;
+        }
+        
+        .liquid-glass-btn:not(:disabled):hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 20px rgba(243, 6, 125, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+          border-color: rgba(243, 6, 125, 0.6) !important;
+        }
+        
+        .liquid-glass-btn:not(:disabled):active {
+          transform: translateY(0px) !important;
         }
       `}</style>
     </div>
