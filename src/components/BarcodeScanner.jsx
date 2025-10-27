@@ -41,12 +41,12 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
 
       const config = {
         fps: 10,
-        qrbox: { width: 280, height: 200 },
+        qrbox: { width: 280, height: 230 },
         aspectRatio: 1.777,
         rememberLastUsedCamera: true,
         // Better focus and scanning
         focusMode: 'continuous(maxFocusAreas=1)',
-        focusDistance: 0,
+        focusDistance: 10,
         // Support common barcodes used in retail
         formatsToSupport: [
           Html5QrcodeSupportedFormats.CODE_128,
