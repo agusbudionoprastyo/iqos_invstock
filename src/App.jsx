@@ -91,36 +91,6 @@ const Navigation = ({ onLogout }) => {
                 </li>
               );
             })}
-            {/* Desktop logout button */}
-            {/* <li className="desktop-only">
-              <button
-                onClick={handleLogout}
-                className="nav-link"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#6b7280',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '0.375rem',
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.color = '#ef4444';
-                  e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.color = '#6b7280';
-                  e.target.style.backgroundColor = 'transparent';
-                }}
-              >
-                <LogOut size={18} />
-                Logout
-              </button>
-            </li> */}
           </ul>
         </div>
       </nav>

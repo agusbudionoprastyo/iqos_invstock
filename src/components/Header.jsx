@@ -127,16 +127,6 @@ const Header = ({ onLogout }) => {
                 alignSelf: 'flex-start',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
-              onMouseOver={(e) => {
-                e.target.style.background = 'var(--background-color)';
-                e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-                e.target.style.transform = 'translateY(-1px)';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.background = 'var(--card-background)';
-                e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-                e.target.style.transform = 'translateY(0)';
-              }}
               title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
               {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
@@ -159,16 +149,6 @@ const Header = ({ onLogout }) => {
                 alignSelf: 'flex-start',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
-            onMouseOver={(e) => {
-              e.target.style.background = 'var(--background-color)';
-              e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-              e.target.style.transform = 'translateY(-1px)';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = 'var(--card-background)';
-              e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-              e.target.style.transform = 'translateY(0)';
-            }}
             title="Logout"
           >
             <LogOut size={16} />

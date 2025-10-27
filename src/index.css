@@ -156,10 +156,6 @@ code {
   position: relative;
 }
 
-.nav-link:hover {
-  color: var(--text-color);
-  border-bottom-color: var(--border-color);
-}
 
 .nav-link.active {
   color: var(--text-color);
