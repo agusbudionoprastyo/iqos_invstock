@@ -723,7 +723,7 @@ const InventoryManagement = () => {
         <div style={{
           backgroundColor: 'var(--background-color)',
           padding: window.innerWidth <= 768 ? '1rem 1rem' : '1rem 1.5rem',
-          borderBottom: '1px solid var(--border-color)',
+          // borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
           alignItems: window.innerWidth <= 768 ? 'stretch' : 'center',
@@ -1843,19 +1843,77 @@ const InventoryManagement = () => {
                     Ada Selisih
                   </button>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
+                {/* <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
                   Menampilkan maksimal 2 per halaman ({getFilteredAuditResults().length} total)
-                </div>
+                </div> */}
               </div>
             )}
 
             {/* Audit Results */}
             {auditResults.length > 0 && (
               <div>
-                <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem', margin: 0, color: 'var(--text-color)' }}>
-                  Hasil Audit ({auditResults.filter(r => r.status === 'completed').length}/{auditResults.length})
-                </h4>
-                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h4 style={{ fontSize: '1rem', fontWeight: '600', margin: 0, color: 'var(--text-color)' }}>
+                    Hasil Audit ({auditResults.filter(r => r.status === 'completed').length}/{auditResults.length})
+                  </h4>
+                  {/* Pagination for audit list */}
+                  {Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) > 1 && (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}>
+                      <button
+                        onClick={() => setAuditPage(prev => Math.max(prev - 1, 1))}
+                        disabled={auditPage === 1}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '0.4rem',
+                          borderRadius: '0.5rem',
+                          border: '1px solid var(--border-color)',
+                          background: 'transparent',
+                          color: auditPage === 1 ? 'var(--secondary-color)' : 'var(--text-color)',
+                          cursor: auditPage === 1 ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <ChevronLeft size={18} />
+                      </button>
+                      
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--secondary-color)',
+                        minWidth: '60px',
+                        textAlign: 'center'
+                      }}>
+                        {auditPage}/{Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))}
+                      </span>
+                      
+                      <button
+                        onClick={() => setAuditPage(prev => Math.min(prev + 1, Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))))}
+                        disabled={auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '0.4rem',
+                          borderRadius: '0.5rem',
+                          border: '1px solid var(--border-color)',
+                          background: 'transparent',
+                          color: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? 'var(--secondary-color)' : 'var(--text-color)',
+                          cursor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <ChevronRight size={18} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div style={{ maxHeight: '300px', padding: '0.25rem' }}>
                   {(() => {
                     const filtered = getFilteredAuditResults();
                     const start = (auditPage - 1) * itemsPerAuditPage;
@@ -1866,6 +1924,20 @@ const InventoryManagement = () => {
                     const hasDbDiscrepancy = dbVsFisik !== null && dbVsFisik !== 0;
                     const hasReadyDiscrepancy = readyVsFisik !== null && readyVsFisik !== 0;
                     const hasMinusVariance = (dbVsFisik !== null && dbVsFisik < 0) || (readyVsFisik !== null && readyVsFisik < 0);
+                    const hasVariance = hasDbDiscrepancy || hasReadyDiscrepancy;
+                    const isSelected = currentAuditProduct && currentAuditProduct.id === result.id;
+                    
+                    // Determine border left color based on status
+                    let borderLeftColor;
+                    if (result.status === 'pending') {
+                      borderLeftColor = 'var(--warning-color)';
+                    } else if (hasMinusVariance) {
+                      borderLeftColor = 'var(--error-color)';
+                    } else if (hasVariance) {
+                      borderLeftColor = 'var(--warning-color)';
+                    } else {
+                      borderLeftColor = 'var(--success-color)';
+                    }
                     
                     return (
                       <div 
@@ -1874,52 +1946,45 @@ const InventoryManagement = () => {
                         style={{
                           border: '1px solid var(--border-color)',
                           borderRadius: '0.5rem',
-                          padding: '0.75rem',
+                          padding: '0.5rem 0.75rem',
                           marginBottom: '0.5rem',
-                          backgroundColor: result.status === 'completed' 
-                            ? (hasMinusVariance ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)') 
-                            : 'rgba(245, 158, 11, 0.1)',
-                          borderLeft: hasDbDiscrepancy || hasReadyDiscrepancy ? '4px solid var(--error-color)' : '4px solid var(--success-color)',
+                          backgroundColor: result.status === 'pending' 
+                            ? 'rgba(245, 158, 11, 0.1)' 
+                            : (hasMinusVariance ? 'rgba(239, 68, 68, 0.1)' : hasVariance ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)'),
+                          borderLeft: isSelected 
+                            ? `5px solid ${borderLeftColor}` 
+                            : `5px solid ${borderLeftColor}`,
                           cursor: 'pointer',
                           transition: 'all 0.2s ease',
-                          ':hover': {
-                            backgroundColor: 'var(--background-color)'
-                          }
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = 'var(--background-color)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = result.status === 'completed' 
-                            ? (hasMinusVariance ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)') 
-                            : 'rgba(245, 158, 11, 0.1)';
+                          outline: isSelected ? '3px solid var(--primary-color)' : 'none',
+                          outlineOffset: isSelected ? '3px' : '0'
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div>
-                            <h5 style={{ fontSize: '0.875rem', fontWeight: '500', margin: 0, color: 'var(--text-color)' }}>
+                            <h5 style={{ fontSize: '0.8rem', fontWeight: '500', margin: 0, color: 'var(--text-color)' }}>
                               {result.name}
                             </h5>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', margin: 0 }}>
+                            <p style={{ fontSize: '0.7rem', color: 'var(--secondary-color)', margin: 0 }}>
                               {result.useBarcode !== false ? 'Barcode' : 'Manual'}
                             </p>
                             {result.status === 'pending' && (
-                              <p style={{ fontSize: '0.7rem', color: 'var(--warning-color)', margin: '0.25rem 0 0 0', fontWeight: '500' }}>
+                              <p style={{ fontSize: '0.65rem', color: 'var(--warning-color)', margin: '0.2rem 0 0 0', fontWeight: '500' }}>
                                 Klik untuk audit
                               </p>
                             )}
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--secondary-color)' }}>
                               Stock : {result.databaseStock}
                             </div>
                             {result.status === 'completed' ? (
                               <div>
-                                <div style={{ fontSize: '0.75rem', fontWeight: '500', color: 'var(--success-color)' }}>
+                                <div style={{ fontSize: '0.7rem', fontWeight: '500', color: 'var(--success-color)' }}>
                                   Fisik: {result.physicalStock}
                                 </div>
                                 {(hasDbDiscrepancy || hasReadyDiscrepancy) && (
-                                  <div style={{ fontSize: '0.7rem', marginTop: '0.25rem' }}>
+                                  <div style={{ fontSize: '0.65rem', marginTop: '0.2rem' }}>
                                     {hasReadyDiscrepancy && (
                                       <span style={{ 
                                         color: readyVsFisik > 0 ? 'var(--success-color)' : 'var(--error-color)',
@@ -1932,7 +1997,7 @@ const InventoryManagement = () => {
                                 )}
                               </div>
                             ) : (
-                              <div style={{ fontSize: '0.75rem', fontWeight: '500', color: 'var(--warning-color)' }}>
+                              <div style={{ fontSize: '0.7rem', fontWeight: '500', color: 'var(--warning-color)' }}>
                                 Pending
                               </div>
                             )}
@@ -1943,64 +2008,6 @@ const InventoryManagement = () => {
                   });
                   })()}
                 </div>
-                {/* Pagination for audit list */}
-                {Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) > 1 && (
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '1rem',
-                    marginTop: '1rem',
-                    padding: '1rem'
-                  }}>
-                    <button
-                      onClick={() => setAuditPage(prev => Math.max(prev - 1, 1))}
-                      disabled={auditPage === 1}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '0.5rem',
-                        borderRadius: '0.5rem',
-                        border: '1px solid var(--border-color)',
-                        backgroundColor: auditPage === 1 ? 'var(--background-color)' : 'var(--card-background)',
-                        color: auditPage === 1 ? 'var(--secondary-color)' : 'var(--text-color)',
-                        cursor: auditPage === 1 ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <ChevronLeft size={20} />
-                    </button>
-                    
-                    <span style={{
-                      fontSize: '0.875rem',
-                      color: 'var(--secondary-color)',
-                      minWidth: '100px',
-                      textAlign: 'center'
-                    }}>
-                      {auditPage} / {Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))}
-                    </span>
-                    
-                    <button
-                      onClick={() => setAuditPage(prev => Math.min(prev + 1, Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))))}
-                      disabled={auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage))}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '0.5rem',
-                        borderRadius: '0.5rem',
-                        border: '1px solid var(--border-color)',
-                        backgroundColor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? 'var(--background-color)' : 'var(--card-background)',
-                        color: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? 'var(--secondary-color)' : 'var(--text-color)',
-                        cursor: auditPage === Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <ChevronRight size={20} />
-                    </button>
-                  </div>
-                )}
               </div>
             )}
 
