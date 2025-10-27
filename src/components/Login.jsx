@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Lock, User, AlertCircle, X } from 'lucide-react';
+import { Eye, EyeOff, Lock, CircleUser, AlertCircle, X } from 'lucide-react';
 import { userService } from '../services/database';
 
 const Login = ({ onLogin }) => {
@@ -231,7 +231,7 @@ const Login = ({ onLogin }) => {
               Username
             </label>
             <div style={{ position: 'relative' }}>
-              <User style={{
+              <CircleUser style={{
                 position: 'absolute',
                 left: '0.75rem',
                 top: '50%',
