@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Lock, User, AlertCircle, X } from 'lucide-react';
 import { showToast } from '../utils/toast.jsx';
 import { userService } from '../services/database';
 
@@ -11,6 +11,7 @@ const Login = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     initializeDefaultUser();
@@ -45,13 +46,31 @@ const Login = ({ onLogin }) => {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    if (error) {
+      setError(null);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null); // Clear previous errors
 
     try {
+      // Validate input
+      if (!formData.username.trim()) {
+        setError('Username tidak boleh kosong');
+        setLoading(false);
+        return;
+      }
+
+      if (!formData.password.trim()) {
+        setError('Password tidak boleh kosong');
+        setLoading(false);
+        return;
+      }
+
       // Authenticate user from database
       const user = await userService.authenticateUser(formData.username, formData.password);
       
@@ -64,11 +83,11 @@ const Login = ({ onLogin }) => {
         
         onLogin(true);
       } else {
-        showToast.error('Username atau password salah.', 'Login Gagal!');
+        setError('Username atau password salah. Mohon periksa kembali.');
       }
     } catch (error) {
       console.error('Login error:', error);
-      showToast.error('Terjadi kesalahan saat login.', 'Error!');
+      setError('Terjadi kesalahan saat login. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }
@@ -149,6 +168,60 @@ const Login = ({ onLogin }) => {
           </h1>
         </div>
 
+        {/* Error Alert Box */}
+        {error && (
+          <div style={{
+            backgroundColor: '#fee2e2',
+            border: '1px solid #fca5a5',
+            borderRadius: '0.5rem',
+            padding: isMobile ? '0.75rem' : '1rem',
+            marginBottom: isMobile ? '1rem' : '1.5rem',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '0.75rem',
+            animation: 'slideDown 0.3s ease-out'
+          }}>
+            <AlertCircle 
+              size={20} 
+              color="#dc2626" 
+              style={{ 
+                flexShrink: 0,
+                marginTop: '2px'
+              }} 
+            />
+            <div style={{ flex: 1 }}>
+              <p style={{
+                margin: 0,
+                color: '#991b1b',
+                fontSize: isMobile ? '0.75rem' : '0.875rem',
+                lineHeight: '1.4'
+              }}>
+                {error}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#991b1b',
+                opacity: 0.7,
+                transition: 'opacity 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+              onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
+            >
+              <X size={18} />
+            </button>
+          </div>
+        )}
+
         {/* Login Form */}
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: isMobile ? '1rem' : '1.5rem' }}>
@@ -169,7 +242,7 @@ const Login = ({ onLogin }) => {
                 transform: 'translateY(-50%)',
                 width: isMobile ? '1.1rem' : '1.25rem',
                 height: isMobile ? '1.1rem' : '1.25rem',
-                color: 'var(--secondary-color)'
+                color: error ? '#dc2626' : 'var(--secondary-color)'
               }} />
               <input
                 type="text"
@@ -181,7 +254,7 @@ const Login = ({ onLogin }) => {
                 style={{
                   width: '100%',
                   padding: isMobile ? '0.6rem 0.75rem 0.6rem 3rem' : '0.75rem 0.75rem 0.75rem 3rem',
-                  border: '1px solid var(--border-color)',
+                  border: error ? '1px solid #dc2626' : '1px solid var(--border-color)',
                   borderRadius: '0.5rem',
                   fontSize: isMobile ? '0.8rem' : '0.875rem',
                   transition: 'all 0.2s',
@@ -219,7 +292,7 @@ const Login = ({ onLogin }) => {
                 transform: 'translateY(-50%)',
                 width: isMobile ? '1.1rem' : '1.25rem',
                 height: isMobile ? '1.1rem' : '1.25rem',
-                color: 'var(--secondary-color)'
+                color: error ? '#dc2626' : 'var(--secondary-color)'
               }} />
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -231,7 +304,7 @@ const Login = ({ onLogin }) => {
                 style={{
                   width: '100%',
                   padding: isMobile ? '0.6rem 3rem 0.6rem 3rem' : '0.75rem 3rem 0.75rem 3rem',
-                  border: '1px solid var(--border-color)',
+                  border: error ? '1px solid #dc2626' : '1px solid var(--border-color)',
                   borderRadius: '0.5rem',
                   fontSize: isMobile ? '0.8rem' : '0.875rem',
                   transition: 'all 0.2s',
@@ -244,7 +317,7 @@ const Login = ({ onLogin }) => {
                   e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = 'var(--border-color)';
+                  e.target.style.borderColor = error ? '#dc2626' : 'var(--border-color)';
                   e.target.style.boxShadow = 'none';
                 }}
               />
@@ -271,44 +344,32 @@ const Login = ({ onLogin }) => {
           <button
             type="submit"
             disabled={loading}
-            className="liquid-glass-btn"
             style={{
               width: '100%',
               padding: isMobile ? '0.65rem' : '0.75rem',
-              background: loading 
-                ? 'rgba(108, 117, 125, 0.3)' 
-                : 'linear-gradient(135deg, rgba(243, 6, 125, 0.25) 0%, rgba(244, 139, 185, 0.25) 100%)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
+              background: loading ? 'var(--secondary-color)' : 'linear-gradient(135deg,rgb(243, 6, 125) 0%,rgb(244, 139, 185) 100%)',
               color: 'white',
-              border: loading ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(243, 6, 125, 0.4)',
+              border: 'none',
               borderRadius: '0.5rem',
               fontSize: isMobile ? '0.8rem' : '0.875rem',
-              fontWeight: '600',
+              fontWeight: '500',
               cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s ease',
+              transition: 'all 0.2s',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0.5rem',
-              boxShadow: loading 
-                ? 'none' 
-                : '0 4px 15px rgba(243, 6, 125, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-              position: 'relative',
-              overflow: 'hidden'
+              gap: '0.5rem'
             }}
             onMouseOver={(e) => {
               if (!loading) {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 20px rgba(243, 6, 125, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
-                e.target.style.borderColor = 'rgba(243, 6, 125, 0.6)';
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
               }
             }}
             onMouseOut={(e) => {
               if (!loading) {
                 e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 15px rgba(243, 6, 125, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
-                e.target.style.borderColor = 'rgba(243, 6, 125, 0.4)';
+                e.target.style.boxShadow = 'none';
               }
             }}
           >
@@ -352,56 +413,15 @@ const Login = ({ onLogin }) => {
           100% { transform: rotate(360deg); }
         }
         
-        @keyframes shimmer {
-          0% {
-            background-position: -1000px 0;
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
           }
-          100% {
-            background-position: 1000px 0;
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
-        }
-        
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-5px);
-          }
-        }
-        
-        .liquid-glass-btn {
-          position: relative;
-        }
-        
-        .liquid-glass-btn::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.2),
-            transparent
-          );
-          transition: left 0.5s ease;
-        }
-        
-        .liquid-glass-btn:not(:disabled):hover::before {
-          left: 100%;
-        }
-        
-        .liquid-glass-btn:not(:disabled):hover {
-          transform: translateY(-2px) !important;
-          box-shadow: 0 6px 20px rgba(243, 6, 125, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-          border-color: rgba(243, 6, 125, 0.6) !important;
-        }
-        
-        .liquid-glass-btn:not(:disabled):active {
-          transform: translateY(0px) !important;
         }
       `}</style>
     </div>
