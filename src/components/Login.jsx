@@ -101,37 +101,46 @@ const Login = ({ onLogin }) => {
     );
   }
 
+  const isMobile = window.innerWidth <= 768;
+  
   return (
     <div style={{
       minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
       background: 'var(--background-color)',
-      padding: '1rem',
-      boxSizing: 'border-box'
+      padding: isMobile ? '0.5rem' : '1rem',
+      boxSizing: 'border-box',
+      overflow: 'hidden'
     }}>
       <div style={{
         flex: 1,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        paddingTop: isMobile ? '1rem' : '0',
+        maxHeight: isMobile ? 'calc(100vh - 3rem)' : '100%',
+        overflow: isMobile ? 'hidden' : 'visible'
       }}>
         <div style={{
-          background: window.innerWidth <= 768 ? 'transparent' : 'var(--card-background)',
-          borderRadius: window.innerWidth <= 768 ? '0' : '1rem',
-          boxShadow: window.innerWidth <= 768 ? 'none' : '0 10px 25px rgba(0, 0, 0, 0.1)',
-          padding: window.innerWidth <= 768 ? '1rem' : '2rem',
+          background: isMobile ? 'transparent' : 'var(--card-background)',
+          borderRadius: isMobile ? '0' : '1rem',
+          boxShadow: isMobile ? 'none' : '0 10px 25px rgba(0, 0, 0, 0.1)',
+          padding: isMobile ? '0.5rem' : '2rem',
           width: '100%',
           maxWidth: '400px',
-          border: window.innerWidth <= 768 ? 'none' : '1px solid var(--border-color)'
+          border: isMobile ? 'none' : '1px solid var(--border-color)',
+          maxHeight: isMobile ? 'calc(100vh - 5rem)' : 'none',
+          overflowY: isMobile ? 'auto' : 'visible',
+          overflowX: 'hidden'
         }}>
         {/* Logo/Header */}
         <div style={{
           textAlign: 'center',
-          marginBottom: '2rem'
+          marginBottom: isMobile ? '1rem' : '2rem'
         }}>
           <h1 style={{
-            fontSize: '1.5rem',
+            fontSize: isMobile ? '1.25rem' : '1.5rem',
             fontWeight: '600',
             color: 'var(--text-color)',
             margin: 0
@@ -142,10 +151,10 @@ const Login = ({ onLogin }) => {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ marginBottom: isMobile ? '1rem' : '1.5rem' }}>
             <label style={{
               display: 'block',
-              fontSize: '0.875rem',
+              fontSize: isMobile ? '0.8rem' : '0.875rem',
               fontWeight: '500',
               color: 'var(--text-color)',
               marginBottom: '0.5rem'
@@ -158,8 +167,8 @@ const Login = ({ onLogin }) => {
                 left: '0.75rem',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                width: '1.25rem',
-                height: '1.25rem',
+                width: isMobile ? '1.1rem' : '1.25rem',
+                height: isMobile ? '1.1rem' : '1.25rem',
                 color: 'var(--secondary-color)'
               }} />
               <input
@@ -171,10 +180,10 @@ const Login = ({ onLogin }) => {
                 required
                 style={{
                   width: '100%',
-                  padding: '0.75rem 0.75rem 0.75rem 3rem',
+                  padding: isMobile ? '0.6rem 0.75rem 0.6rem 3rem' : '0.75rem 0.75rem 0.75rem 3rem',
                   border: '1px solid var(--border-color)',
                   borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
+                  fontSize: isMobile ? '0.8rem' : '0.875rem',
                   transition: 'all 0.2s',
                   outline: 'none',
                   backgroundColor: 'var(--card-background)',
@@ -192,10 +201,10 @@ const Login = ({ onLogin }) => {
             </div>
           </div>
 
-          <div style={{ marginBottom: '2rem' }}>
+          <div style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
             <label style={{
               display: 'block',
-              fontSize: '0.875rem',
+              fontSize: isMobile ? '0.8rem' : '0.875rem',
               fontWeight: '500',
               color: 'var(--text-color)',
               marginBottom: '0.5rem'
@@ -208,8 +217,8 @@ const Login = ({ onLogin }) => {
                 left: '0.75rem',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                width: '1.25rem',
-                height: '1.25rem',
+                width: isMobile ? '1.1rem' : '1.25rem',
+                height: isMobile ? '1.1rem' : '1.25rem',
                 color: 'var(--secondary-color)'
               }} />
               <input
@@ -221,10 +230,10 @@ const Login = ({ onLogin }) => {
                 required
                 style={{
                   width: '100%',
-                  padding: '0.75rem 3rem 0.75rem 3rem',
+                  padding: isMobile ? '0.6rem 3rem 0.6rem 3rem' : '0.75rem 3rem 0.75rem 3rem',
                   border: '1px solid var(--border-color)',
                   borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
+                  fontSize: isMobile ? '0.8rem' : '0.875rem',
                   transition: 'all 0.2s',
                   outline: 'none',
                   backgroundColor: 'var(--card-background)',
@@ -254,7 +263,7 @@ const Login = ({ onLogin }) => {
                   padding: '0.25rem'
                 }}
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={isMobile ? 18 : 20} /> : <Eye size={isMobile ? 18 : 20} />}
               </button>
             </div>
           </div>
@@ -264,12 +273,12 @@ const Login = ({ onLogin }) => {
             disabled={loading}
             style={{
               width: '100%',
-              padding: '0.75rem',
+              padding: isMobile ? '0.65rem' : '0.75rem',
               background: loading ? 'var(--secondary-color)' : 'linear-gradient(135deg,rgb(243, 6, 125) 0%,rgb(244, 139, 185) 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '0.5rem',
-              fontSize: '0.875rem',
+              fontSize: isMobile ? '0.8rem' : '0.875rem',
               fontWeight: '500',
               cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s',
@@ -294,8 +303,8 @@ const Login = ({ onLogin }) => {
             {loading ? (
               <>
                 <div style={{
-                  width: '1rem',
-                  height: '1rem',
+                  width: isMobile ? '0.875rem' : '1rem',
+                  height: isMobile ? '0.875rem' : '1rem',
                   border: '2px solid transparent',
                   borderTop: '2px solid white',
                   borderRadius: '50%',
@@ -314,10 +323,10 @@ const Login = ({ onLogin }) => {
       {/* Footer */}
       <div style={{
         textAlign: 'center',
-        padding: '1rem'
+        padding: isMobile ? '0.5rem 1rem' : '1rem'
       }}>
         <p style={{
-          fontSize: '0.75rem',
+          fontSize: isMobile ? '0.7rem' : '0.75rem',
           color: 'var(--secondary-color)',
           margin: 0
         }}>
