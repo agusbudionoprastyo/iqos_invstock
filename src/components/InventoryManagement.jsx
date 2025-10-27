@@ -1956,11 +1956,11 @@ const InventoryManagement = () => {
                             : `5px solid ${borderLeftColor}`,
                           cursor: 'pointer',
                           transition: 'all 0.2s ease',
-                          outline: isSelected ? '3px dashed var(--secondary-color)' : 'none',
-                          outlineOffset: isSelected ? '2px' : '0'
+                          outline: isSelected ? '3px solid var(--secondary-color)' : 'none',
+                          outlineOffset: isSelected ? '3px' : '0'
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                           <div>
                             <h5 style={{ fontSize: '0.8rem', fontWeight: '500', margin: 0, color: 'var(--text-color)' }}>
                               {result.name}
