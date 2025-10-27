@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Plus, Minus, Trash2, Camera, Search, Receipt, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Camera, Search, Receipt, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { productService, salesService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
 import { showToast } from '../utils/toast.jsx';
@@ -424,16 +424,18 @@ const SalesModule = () => {
               overflowY: 'auto'
             }}>
               {paginatedProducts.map((product) => (
-                <div key={product.id} style={{
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '0.5rem',
-                  padding: '1rem',
-                  transition: 'box-shadow 0.2s',
-                  minHeight: '120px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between'
-                }}>
+                <div 
+                  key={product.id}
+                  style={{
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '0.5rem',
+                    padding: '1rem',
+                    transition: 'box-shadow 0.2s',
+                    minHeight: '120px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                  }}>
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -754,12 +756,15 @@ const SalesModule = () => {
         </div>
       ) : (
         /* Cart Page for Mobile */
-        <div style={{
-                  background: 'var(--card-background)',
-          borderRadius: '1.5rem',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-          padding: '1rem'
-        }}>
+        <div 
+          data-cart-container
+          style={{
+            background: 'var(--card-background)',
+            borderRadius: '1.5rem',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            padding: '1rem',
+            animation: 'slideInFromRight 0.3s ease-out'
+          }}>
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -777,18 +782,29 @@ const SalesModule = () => {
               Keranjang
             </h2>
             <button
-              onClick={() => setShowCartPage(false)}
+              onClick={() => {
+                const cartElement = document.querySelector('[data-cart-container]');
+                if (cartElement) {
+                  cartElement.style.animation = 'slideOutToRight 0.3s ease-in';
+                  setTimeout(() => setShowCartPage(false), 300);
+                } else {
+                  setShowCartPage(false);
+                }
+              }}
               style={{
                 backgroundColor: 'transparent',
                 color: 'var(--secondary-color)',
                 padding: '0.5rem',
-                borderRadius: '0.5rem',
-                border: 'none',
+                borderRadius: '1rem',
+                border: '1px solid var(--border-color)',
                 cursor: 'pointer',
-                fontSize: '0.875rem'
+                fontSize: '0.875rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem'
               }}
             >
-              Kembali
+              <ArrowRight size={16} />
             </button>
           </div>
 
@@ -809,24 +825,24 @@ const SalesModule = () => {
                 padding: '0.5rem 0',
                 borderBottom: '1px solid var(--border-color)'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: '600', minWidth: '60px' }}>
-                    Rp {item.total.toLocaleString('id-ID')}
-                  </span>
-                  <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: 'var(--text-color)', margin: 0, flex: 1 }}>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: 'var(--text-color)', margin: 0 }}>
                     {item.productName}
                   </h4>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--primary-color)' }}>
+                    Rp {item.total.toLocaleString('id-ID')}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   {item.quantity === 1 ? (
                     <button
                       onClick={() => removeFromCart(item.productId)}
                       style={{
-                        backgroundColor: 'e5e7eb',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
                         color: 'var(--error-color)',
                         padding: '0.25rem',
                         borderRadius: '0.5rem',
-                        border: 'none',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
                         cursor: 'pointer',
                         fontSize: '1rem'
                       }}
@@ -838,13 +854,16 @@ const SalesModule = () => {
                     <button
                       onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                       style={{
-                        backgroundColor: 'var(--border-color)',
-                          color: 'var(--text-color)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                        color: 'var(--text-color)',
                         padding: '0.25rem',
                         borderRadius: '0.5rem',
-                        border: 'none',
+                        border: '1px solid rgba(0, 0, 0, 0.1)',
                         cursor: 'pointer',
-                        fontSize: '1rem'
+                        fontSize: '1rem',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)',
+                        transition: 'all 0.2s ease'
                       }}
                       aria-label="Kurangi qty"
                     >
@@ -858,15 +877,16 @@ const SalesModule = () => {
                     onClick={() => handleIncreaseQuantity(item.productId)}
                     disabled={item.quantity >= (readyStockData[item.productId] || 0)}
                     style={{
-                      backgroundColor: item.quantity >= (readyStockData[item.productId] || 0) ? 'transparent' : 'transparent',
+                      backgroundColor: item.quantity >= (readyStockData[item.productId] || 0) ? 'rgba(0, 0, 0, 0.02)' : 'rgba(0, 0, 0, 0.05)',
                       color: item.quantity >= (readyStockData[item.productId] || 0) ? 'var(--secondary-color)' : 'var(--text-color)',
                       padding: '0.25rem',
                       borderRadius: '0.5rem',
-                      border: 'dashed',
-                      borderColor: 'var(--border-color)',
-                      borderWidth: '1px',
+                      border: '1px solid rgba(0, 0, 0, 0.1)',
                       cursor: item.quantity >= (readyStockData[item.productId] || 0) ? 'not-allowed' : 'pointer',
-                      fontSize: '1rem'
+                      fontSize: '1rem',
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)',
+                      transition: 'all 0.2s ease'
                     }}
                     title={item.quantity >= (readyStockData[item.productId] || 0) ? 'Stok tidak cukup' : 'Tambah quantity'}
                   >
@@ -1026,6 +1046,52 @@ const SalesModule = () => {
           </div>
         </div>
       )}
+      
+      <style jsx>{`
+        @keyframes slideInFromRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        
+        @keyframes slideOutToRight {
+          from {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes slideInFromBottom {
+          from {
+            transform: translateY(30px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        
+        @keyframes slideOutToBottom {
+          from {
+            transform: translateY(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateY(30px);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 };

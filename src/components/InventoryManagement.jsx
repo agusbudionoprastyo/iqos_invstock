@@ -1854,8 +1854,8 @@ const InventoryManagement = () => {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                   <h4 style={{ fontSize: '1rem', fontWeight: '600', margin: 0, color: 'var(--text-color)' }}>
-                    Hasil Audit ({auditResults.filter(r => r.status === 'completed').length}/{auditResults.length})
-                  </h4>
+                  Hasil Audit ({auditResults.filter(r => r.status === 'completed').length}/{auditResults.length})
+                </h4>
                   {/* Pagination for audit list */}
                   {Math.max(1, Math.ceil(getFilteredAuditResults().length / itemsPerAuditPage)) > 1 && (
                     <div style={{
