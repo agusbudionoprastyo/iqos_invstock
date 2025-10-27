@@ -231,16 +231,24 @@ const Login = ({ onLogin }) => {
               Username
             </label>
             <div style={{ position: 'relative' }}>
-              <User 
-                size={isMobile ? 18 : 20}
-                style={{
-                  position: 'absolute',
-                  left: '0.75rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: error ? '#dc2626' : 'var(--secondary-color)'
-                }} 
-              />
+              <div style={{
+                position: 'absolute',
+                left: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 1,
+                pointerEvents: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: isMobile ? '18px' : '20px',
+                height: isMobile ? '18px' : '20px'
+              }}>
+                <User 
+                  size={isMobile ? 18 : 20}
+                  color={error ? '#dc2626' : 'var(--secondary-color)'}
+                />
+              </div>
               <input
                 type="text"
                 name="username"
@@ -282,16 +290,24 @@ const Login = ({ onLogin }) => {
               Password
             </label>
             <div style={{ position: 'relative' }}>
-              <Lock 
-                size={isMobile ? 18 : 20}
-                style={{
-                  position: 'absolute',
-                  left: '0.75rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: error ? '#dc2626' : 'var(--secondary-color)'
-                }} 
-              />
+              <div style={{
+                position: 'absolute',
+                left: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 1,
+                pointerEvents: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: isMobile ? '18px' : '20px',
+                height: isMobile ? '18px' : '20px'
+              }}>
+                <Lock 
+                  size={isMobile ? 18 : 20}
+                  color={error ? '#dc2626' : 'var(--secondary-color)'}
+                />
+              </div>
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
