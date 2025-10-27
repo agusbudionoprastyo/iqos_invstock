@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Lock, User, AlertCircle, X } from 'lucide-react';
-import { showToast } from '../utils/toast.jsx';
 import { userService } from '../services/database';
 
 const Login = ({ onLogin }) => {
@@ -124,42 +123,39 @@ const Login = ({ onLogin }) => {
   
   return (
     <div style={{
-      minHeight: '100vh',
+      height: '100vh',
       display: 'flex',
       flexDirection: 'column',
       background: 'var(--background-color)',
-      padding: isMobile ? '0.5rem' : '1rem',
+      padding: isMobile ? '0.25rem' : '1rem',
       boxSizing: 'border-box',
       overflow: 'hidden'
     }}>
       <div style={{
         flex: 1,
         display: 'flex',
-        alignItems: isMobile ? 'flex-start' : 'center',
+        alignItems: isMobile ? 'center' : 'center',
         justifyContent: 'center',
-        paddingTop: isMobile ? '1rem' : '0',
-        maxHeight: isMobile ? 'calc(100vh - 3rem)' : '100%',
-        overflow: isMobile ? 'hidden' : 'visible'
+        paddingTop: isMobile ? '0' : '0',
+        overflow: 'hidden'
       }}>
         <div style={{
           background: isMobile ? 'transparent' : 'var(--card-background)',
           borderRadius: isMobile ? '0' : '1rem',
           boxShadow: isMobile ? 'none' : '0 10px 25px rgba(0, 0, 0, 0.1)',
-          padding: isMobile ? '0.5rem' : '2rem',
+          padding: isMobile ? '2rem' : '2rem',
           width: '100%',
           maxWidth: '400px',
           border: isMobile ? 'none' : '1px solid var(--border-color)',
-          maxHeight: isMobile ? 'calc(100vh - 5rem)' : 'none',
-          overflowY: isMobile ? 'auto' : 'visible',
-          overflowX: 'hidden'
+          overflow: 'hidden'
         }}>
         {/* Logo/Header */}
         <div style={{
-          textAlign: 'center',
-          marginBottom: isMobile ? '1rem' : '2rem'
+          textAlign: 'right',
+          marginBottom: isMobile ? '0.75rem' : '2rem'
         }}>
           <h1 style={{
-            fontSize: isMobile ? '1.25rem' : '1.5rem',
+            fontSize: isMobile ? '1.1rem' : '1.5rem',
             fontWeight: '600',
             color: 'var(--text-color)',
             margin: 0
@@ -174,8 +170,8 @@ const Login = ({ onLogin }) => {
             backgroundColor: '#fee2e2',
             border: '1px solid #fca5a5',
             borderRadius: '0.5rem',
-            padding: isMobile ? '0.75rem' : '1rem',
-            marginBottom: isMobile ? '1rem' : '1.5rem',
+            padding: isMobile ? '0.5rem' : '1rem',
+            marginBottom: isMobile ? '0.75rem' : '1.5rem',
             display: 'flex',
             alignItems: 'flex-start',
             gap: '0.75rem',
@@ -224,7 +220,7 @@ const Login = ({ onLogin }) => {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: isMobile ? '1rem' : '1.5rem' }}>
+          <div style={{ marginBottom: isMobile ? '0.75rem' : '1.5rem' }}>
             <label style={{
               display: 'block',
               fontSize: isMobile ? '0.8rem' : '0.875rem',
@@ -303,7 +299,7 @@ const Login = ({ onLogin }) => {
                 required
                 style={{
                   width: '100%',
-                  padding: isMobile ? '0.6rem 3rem 0.6rem 3rem' : '0.75rem 3rem 0.75rem 3rem',
+                  padding: isMobile ? '0.5rem 3rem 0.5rem 3rem' : '0.75rem 3rem 0.75rem 3rem',
                   border: error ? '1px solid #dc2626' : '1px solid var(--border-color)',
                   borderRadius: '0.5rem',
                   fontSize: isMobile ? '0.8rem' : '0.875rem',
@@ -346,7 +342,7 @@ const Login = ({ onLogin }) => {
             disabled={loading}
             style={{
               width: '100%',
-              padding: isMobile ? '0.65rem' : '0.75rem',
+              padding: isMobile ? '0.5rem' : '0.75rem',
               background: loading ? 'var(--secondary-color)' : 'linear-gradient(135deg,rgb(243, 6, 125) 0%,rgb(244, 139, 185) 100%)',
               color: 'white',
               border: 'none',
@@ -396,7 +392,7 @@ const Login = ({ onLogin }) => {
       {/* Footer */}
       <div style={{
         textAlign: 'center',
-        padding: isMobile ? '0.5rem 1rem' : '1rem'
+        padding: isMobile ? '0.25rem 1rem' : '1rem'
       }}>
         <p style={{
           fontSize: isMobile ? '0.7rem' : '0.75rem',
