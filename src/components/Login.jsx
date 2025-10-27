@@ -116,7 +116,7 @@ const Login = ({ onLogin }) => {
       <div style={{
         flex: 1,
         display: 'flex',
-        alignItems: 'center',
+        alignItems: isMobile ? 'flex-start' : 'center',
         justifyContent: 'center',
         paddingTop: isMobile ? '1rem' : '0',
         maxHeight: isMobile ? 'calc(100vh - 3rem)' : '100%',
