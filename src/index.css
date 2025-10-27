@@ -928,6 +928,143 @@ code {
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
   }
+  
+  /* Safari iPhone Touch Indicator Styling */
+  /* Remove default touch highlight */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Custom touch indicator for interactive elements */
+  button,
+  .btn,
+  .nav-link,
+  a,
+  input[type="button"],
+  input[type="submit"],
+  [role="button"] {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+    -webkit-tap-highlight-color: transparent; /* Disable default */
+    position: relative;
+  }
+  
+  /* Custom touch indicator with border radius */
+  button:active,
+  .btn:active,
+  .nav-link:active,
+  a:active,
+  input[type="button"]:active,
+  input[type="submit"]:active,
+  [role="button"]:active {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.3);
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  /* Specific styling for navigation links */
+  .nav-link:active {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+    background-color: rgba(59, 130, 246, 0.1);
+    border-radius: 0.5rem;
+    transform: scale(0.95);
+  }
+  
+  /* Touch indicator for mobile navbar */
+  @media (max-width: 768px) {
+    .nav-link:active {
+      background-color: rgba(59, 130, 246, 0.15);
+      border-radius: 1rem;
+      transform: scale(0.9);
+    }
+  }
+  
+  /* Additional touch indicator customization */
+  /* Custom touch highlight with specific border radius */
+  .nav-link {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+    border-radius: 0.5rem;
+    transition: all 0.1s ease;
+  }
+  
+  /* Touch feedback for buttons */
+  button:active,
+  .btn:active {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-radius: 0.5rem;
+    transform: scale(0.98);
+  }
+  
+  /* Touch feedback for header buttons */
+  .header-responsive button:active {
+    background-color: rgba(59, 130, 246, 0.15);
+    border-radius: 1rem;
+    transform: scale(0.95);
+  }
+  
+  /* Disable text selection on touch */
+  .nav-link,
+  button,
+  .btn {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+}
+
+/* Touch Indicator Customization for Safari iPhone */
+/* Global touch indicator settings */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom touch indicators with border radius */
+.nav-link,
+button,
+.btn,
+a[role="button"],
+input[type="button"],
+input[type="submit"] {
+  -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+  border-radius: 0.5rem;
+  transition: all 0.1s ease;
+  position: relative;
+}
+
+/* Active state touch feedback */
+.nav-link:active,
+button:active,
+.btn:active,
+a[role="button"]:active,
+input[type="button"]:active,
+input[type="submit"]:active {
+  background-color: rgba(59, 130, 246, 0.15);
+  transform: scale(0.98);
+  border-radius: 0.5rem;
+}
+
+/* Mobile-specific touch indicators */
+@media (max-width: 768px) {
+  .nav-link:active {
+    background-color: rgba(59, 130, 246, 0.2);
+    border-radius: 1rem;
+    transform: scale(0.95);
+  }
+  
+  button:active,
+  .btn:active {
+    background-color: rgba(59, 130, 246, 0.15);
+    border-radius: 0.75rem;
+    transform: scale(0.96);
+  }
+  
+  /* Header buttons touch feedback */
+  .header-responsive button:active {
+    background-color: rgba(59, 130, 246, 0.2);
+    border-radius: 1rem;
+    transform: scale(0.92);
+  }
 }
 
 /* Custom scrollbar */
