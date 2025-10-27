@@ -103,24 +103,28 @@ const Login = ({ onLogin }) => {
 
   return (
     <div style={{
-      height: '100vh',
+      minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
       background: 'var(--background-color)',
       padding: '1rem',
       boxSizing: 'border-box'
     }}>
       <div style={{
-        background: window.innerWidth <= 768 ? 'transparent' : 'var(--card-background)',
-        borderRadius: window.innerWidth <= 768 ? '0' : '1rem',
-        boxShadow: window.innerWidth <= 768 ? 'none' : '0 10px 25px rgba(0, 0, 0, 0.1)',
-        padding: window.innerWidth <= 768 ? '1rem' : '2rem',
-        width: '100%',
-        maxWidth: '400px',
-        border: window.innerWidth <= 768 ? 'none' : '1px solid var(--border-color)'
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}>
+        <div style={{
+          background: window.innerWidth <= 768 ? 'transparent' : 'var(--card-background)',
+          borderRadius: window.innerWidth <= 768 ? '0' : '1rem',
+          boxShadow: window.innerWidth <= 768 ? 'none' : '0 10px 25px rgba(0, 0, 0, 0.1)',
+          padding: window.innerWidth <= 768 ? '1rem' : '2rem',
+          width: '100%',
+          maxWidth: '400px',
+          border: window.innerWidth <= 768 ? 'none' : '1px solid var(--border-color)'
+        }}>
         {/* Logo/Header */}
         <div style={{
           textAlign: 'center',
@@ -304,14 +308,13 @@ const Login = ({ onLogin }) => {
             )}
           </button>
         </form>
-
+        </div>
       </div>
 
       {/* Footer */}
       <div style={{
         textAlign: 'center',
-        padding: '1rem',
-        marginTop: 'auto'
+        padding: '1rem'
       }}>
         <p style={{
           fontSize: '0.75rem',
