@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Lock, CircleUser, AlertCircle, X } from 'lucide-react';
+import { Eye, EyeOff, Lock, User, AlertCircle, X } from 'lucide-react';
 import { userService } from '../services/database';
 
 const Login = ({ onLogin }) => {
@@ -231,15 +231,16 @@ const Login = ({ onLogin }) => {
               Username
             </label>
             <div style={{ position: 'relative' }}>
-              <CircleUser style={{
-                position: 'absolute',
-                left: '0.75rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: isMobile ? '1.1rem' : '1.25rem',
-                height: isMobile ? '1.1rem' : '1.25rem',
-                color: error ? '#dc2626' : 'var(--secondary-color)'
-              }} />
+              <User 
+                size={isMobile ? 18 : 20}
+                style={{
+                  position: 'absolute',
+                  left: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: error ? '#dc2626' : 'var(--secondary-color)'
+                }} 
+              />
               <input
                 type="text"
                 name="username"
@@ -281,15 +282,16 @@ const Login = ({ onLogin }) => {
               Password
             </label>
             <div style={{ position: 'relative' }}>
-              <Lock style={{
-                position: 'absolute',
-                left: '0.75rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: isMobile ? '1.1rem' : '1.25rem',
-                height: isMobile ? '1.1rem' : '1.25rem',
-                color: error ? '#dc2626' : 'var(--secondary-color)'
-              }} />
+              <Lock 
+                size={isMobile ? 18 : 20}
+                style={{
+                  position: 'absolute',
+                  left: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: error ? '#dc2626' : 'var(--secondary-color)'
+                }} 
+              />
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
