@@ -44,9 +44,9 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
         // Remove qrbox restriction to allow scanning anywhere in camera view
         aspectRatio: 1.777,
         rememberLastUsedCamera: true,
-        // Better focus and scanning
+        // Better focus and scanning - optimized for inventory use
         focusMode: 'continuous(maxFocusAreas=1)',
-        focusDistance: 10,
+        focusDistance: 0.1, // Auto-focus for better barcode detection at various distances
         // Support common barcodes used in retail
         formatsToSupport: [
           Html5QrcodeSupportedFormats.CODE_128,
