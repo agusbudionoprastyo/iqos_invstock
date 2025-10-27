@@ -1,7 +1,9 @@
 /* CSS Variables */
 :root {
-  --primary-color: #3b82f6;
-  --primary-hover: #2563eb;
+  /* --primary-color: #3b82f6; */
+  /* --primary-hover: #2563eb; */
+  --primary-color: #ff2a85;
+  --primary-hover: #fa046f;
   --secondary-color: #6b7280;
   --success-color: #10b981;
   --warning-color: #f59e0b;
@@ -14,8 +16,9 @@
 }
 
 .dark-mode {
-  --primary-color: #60a5fa;
-  --primary-hover: #3b82f6;
+   /* --primary-color: #3b82f6; */
+  --primary-color: #ff2a85;
+  --primary-hover: #fa046f;
   --secondary-color: #b0b6c3;
   --success-color: #34d399;
   --warning-color: #fbbf24;
@@ -70,7 +73,7 @@ code {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  box-shadow: 0 8px 32px 0 rgba(255,42,133, 0.37);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -79,7 +82,7 @@ code {
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid var(--border-color);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  box-shadow: 0 8px 32px 0 rgba(255,42,133, 0.37);
   border-radius: 1.25rem;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
@@ -89,7 +92,7 @@ code {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  box-shadow: 0 8px 32px 0 rgba(255,42,133, 0.37);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -99,7 +102,7 @@ code {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  box-shadow: 0 8px 32px 0 rgba(255,42,133, 0.37);
   padding: 1rem;
   position: sticky;
   top: 0;
@@ -155,6 +158,17 @@ code {
   font-size: 0.875rem;
   font-weight: 500;
   position: relative;
+}
+
+/* Uniform touch/focus ring overlay (does not change layout/padding) */
+.nav-link::before {
+  content: '';
+  position: absolute;
+  inset: 4px; /* unified ring size across devices */
+  border-radius: 0.75rem;
+  border: 2px solid transparent;
+  pointer-events: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 
@@ -235,7 +249,7 @@ code {
 
 .btn-primary:hover {
   background: var(--primary-hover);
-  box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.4);
+  box-shadow: 0 6px 20px 0 rgba(255, 42, 133, 0.4);
   transform: translateY(-1px);
 }
 
@@ -304,7 +318,7 @@ code {
 .form-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 42, 133, 0.1);
   background: var(--card-background);
 }
 
@@ -327,7 +341,7 @@ code {
 .form-select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 42, 133, 0.1);
   background: var(--card-background);
 }
 
@@ -517,7 +531,7 @@ code {
 }
 
 .text-blue-600 {
-  color: #2563eb;
+  color: var(--primary-color);
 }
 
 .text-green-600 {
@@ -542,7 +556,7 @@ code {
 }
 
 .bg-blue-500 {
-  background-color: #3b82f6;
+  background-color: var(--primary-color);
 }
 
 .bg-green-500 {
@@ -707,9 +721,9 @@ code {
     top: auto;
     left: 1rem;
     right: 1rem;
-    border-radius: 2rem;
+    border-radius: 1.5rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    padding: 1rem;
+    padding: 0.75rem;
     background: var(--header-background);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
@@ -727,24 +741,35 @@ code {
   }
   
   .nav-menu {
-    gap: 1.5rem;
-    justify-content: center;
+    gap: 0;
+    justify-content: space-between;
     width: 100%;
     padding: 0;
+    display: flex;
+  }
+  
+  .nav-menu li {
+    list-style: none;
+    flex: 1;
+    min-width: 0;
   }
   
   .nav-link {
-    padding: 0.5rem;
-    font-size: 0.75rem;
+    padding: 0.375rem 0.25rem;
+    font-size: 0.7rem;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    min-width: 50px;
+    gap: 0.125rem;
+    flex: 1;
+    min-width: 0;
+    text-align: center;
   }
   
   .nav-link svg {
     margin-right: 0;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
+    width: 18px;
+    height: 18px;
   }
   
   .nav-link.active::after {
@@ -755,12 +780,12 @@ code {
   
   /* Add bottom padding to body to prevent content from being hidden behind navbar */
   body {
-    padding-bottom: 100px;
+    padding-bottom: 80px;
   }
   
   /* Ensure all main content has proper margin above navbar */
   .container {
-    margin-bottom: 120px;
+    margin-bottom: 100px;
   }
   
   .audit-inputs {
@@ -785,11 +810,16 @@ code {
   button:focus,
   input:focus,
   select:focus,
-  textarea:focus,
-  .nav-link:focus {
+  textarea:focus {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 42, 133, 0.1);
+  }
+
+  /* Keep nav-link highlight inside without changing perceived padding */
+  .nav-link:focus {
+    outline: none;
+    outline-offset: 0;
   }
   
   /* Touch target minimum size */
@@ -946,8 +976,7 @@ code {
   input[type="button"],
   input[type="submit"],
   [role="button"] {
-    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
-    -webkit-tap-highlight-color: transparent; /* Disable default */
+    -webkit-tap-highlight-color: rgba(255, 42, 133, 0.2);
     position: relative;
   }
   
@@ -959,32 +988,32 @@ code {
   input[type="button"]:active,
   input[type="submit"]:active,
   [role="button"]:active {
-    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.3);
+    -webkit-tap-highlight-color: rgba(255, 42, 133, 0.3);
     transform: scale(0.98);
     transition: transform 0.1s ease;
   }
   
   /* Specific styling for navigation links */
   .nav-link:active {
-    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
-    background-color: rgba(59, 130, 246, 0.1);
-    border-radius: 0.5rem;
-    transform: scale(0.95);
+    -webkit-tap-highlight-color: rgba(255, 42, 133, 0.2);
+    background-color: transparent; /* handled by ::before ring */
+    border-radius: 0.75rem;
+    transform: none;
   }
   
   /* Touch indicator for mobile navbar */
   @media (max-width: 768px) {
     .nav-link:active {
-      background-color: rgba(59, 130, 246, 0.15);
-      border-radius: 1rem;
-      transform: scale(0.9);
+    background-color: transparent; /* handled by ::before ring */
+    border-radius: 1rem;
+    transform: none;
     }
   }
   
   /* Additional touch indicator customization */
   /* Custom touch highlight with specific border radius */
   .nav-link {
-    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+    -webkit-tap-highlight-color: rgba(255, 42, 133, 0.2);
     border-radius: 0.5rem;
     transition: all 0.1s ease;
   }
@@ -992,14 +1021,14 @@ code {
   /* Touch feedback for buttons */
   button:active,
   .btn:active {
-    background-color: rgba(59, 130, 246, 0.1);
+    background-color: rgba(255, 42, 133, 0.1);
     border-radius: 0.5rem;
     transform: scale(0.98);
   }
   
   /* Touch feedback for header buttons */
   .header-responsive button:active {
-    background-color: rgba(59, 130, 246, 0.15);
+    background-color: rgba(255, 42, 133, 0.15);
     border-radius: 1rem;
     transform: scale(0.95);
   }
@@ -1028,7 +1057,7 @@ button,
 a[role="button"],
 input[type="button"],
 input[type="submit"] {
-  -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+  -webkit-tap-highlight-color: rgba(255, 42, 133, 0.2);
   border-radius: 0.5rem;
   transition: all 0.1s ease;
   position: relative;
@@ -1041,31 +1070,30 @@ button:active,
 a[role="button"]:active,
 input[type="button"]:active,
 input[type="submit"]:active {
-  background-color: rgba(59, 130, 246, 0.15);
-  transform: scale(0.98);
+  transform: none;
   border-radius: 0.5rem;
 }
 
 /* Mobile-specific touch indicators */
 @media (max-width: 768px) {
   .nav-link:active {
-    background-color: rgba(59, 130, 246, 0.2);
+    background-color: rgba(255, 42, 133, 0.2);
     border-radius: 1rem;
-    transform: scale(0.95);
+    transform: none;
   }
   
   button:active,
   .btn:active {
-    background-color: rgba(59, 130, 246, 0.15);
+    background-color: rgba(255, 42, 133, 0.15);
     border-radius: 0.75rem;
-    transform: scale(0.96);
+    transform: none;
   }
   
   /* Header buttons touch feedback */
   .header-responsive button:active {
-    background-color: rgba(59, 130, 246, 0.2);
+    background-color: rgba(255, 42, 133, 0.2);
     border-radius: 1rem;
-    transform: scale(0.92);
+    transform: none;
   }
 }
 
