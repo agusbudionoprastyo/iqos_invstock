@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus, Trash2, Camera, Search, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { productService, salesService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
+import QRISPaymentModal from './QRISPaymentModal';
 import { showToast } from '../utils/toast.jsx';
 
 const SalesModule = () => {
@@ -25,6 +26,8 @@ const SalesModule = () => {
   const [lastSale, setLastSale] = useState(null);
   const [showCartPage, setShowCartPage] = useState(false);
   const [flyingItems, setFlyingItems] = useState([]);
+  const [showQRISPayment, setShowQRISPayment] = useState(false);
+  const [qrisPaymentData, setQrisPaymentData] = useState(null);
 
   useEffect(() => {
     loadProducts();
@@ -234,6 +237,19 @@ const SalesModule = () => {
       return;
     }
 
+    if (paymentMethod === 'qris') {
+      // Show QRIS payment modal
+      setQrisPaymentData({
+        items: cart,
+        totalAmount: getTotalAmount(),
+        customerName: customerInfo.name,
+        customerPhone: customerInfo.phone
+      });
+      setShowQRISPayment(true);
+      return;
+    }
+
+    // Handle cash payment
     try {
       const saleData = {
         items: cart,
@@ -257,6 +273,45 @@ const SalesModule = () => {
     } catch (error) {
       console.error('Error creating sale:', error);
       showToast.error('Gagal melakukan penjualan.', 'Error!');
+    }
+  };
+
+  // Handle QRIS payment success
+  const handleQRISPaymentSuccess = async (paymentResult) => {
+    try {
+      const saleData = {
+        items: qrisPaymentData.items,
+        totalAmount: qrisPaymentData.totalAmount,
+        customerName: qrisPaymentData.customerName,
+        customerPhone: qrisPaymentData.customerPhone,
+        paymentMethod: 'qris',
+        qrisData: {
+          referenceNo: paymentResult.referenceNo,
+          approvalCode: paymentResult.approvalCode,
+          paidTime: paymentResult.paidTime,
+          customerName: paymentResult.customerName,
+          issuerName: paymentResult.issuerName
+        }
+      };
+
+      const sale = await salesService.createSale(saleData);
+      setLastSale(sale);
+      setShowReceipt(true);
+      
+      // Reset form
+      setCart([]);
+      setCustomerInfo({ name: '', phone: '' });
+      setPaymentMethod('qris');
+      setShowQRISPayment(false);
+      setQrisPaymentData(null);
+      
+      // Reload products to update stock
+      loadProducts();
+      
+      showToast.success('Pembayaran QRIS berhasil!', 'Berhasil');
+    } catch (error) {
+      console.error('Error creating sale after QRIS payment:', error);
+      showToast.error('Gagal menyimpan data penjualan.', 'Error!');
     }
   };
 
@@ -382,27 +437,27 @@ const SalesModule = () => {
                       >
                         <div style={{ position: 'relative' }}>
                           <ShoppingCart size={24} />
-                          {cart.length > 0 && (
-                            <span style={{
-                              position: 'absolute',
+                        {cart.length > 0 && (
+                          <span style={{
+                            position: 'absolute',
                               top: '-10px',
                               right: '-10px',
                               backgroundColor: 'var(--primary-color)',
-                              color: 'white',
-                              borderRadius: '50%',
-                              width: '20px',
-                              height: '20px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
+                            color: 'white',
+                            borderRadius: '50%',
+                            width: '20px',
+                            height: '20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                               fontSize: '0.65rem',
                               fontWeight: '600',
                               border: '1px solid var(--card-background)',
                               boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)'
-                            }}>
-                              {cart.reduce((total, item) => total + item.quantity, 0)}
-                            </span>
-                          )}
+                          }}>
+                            {cart.reduce((total, item) => total + item.quantity, 0)}
+                          </span>
+                        )}
                         </div>
                       </button>
                     )}
@@ -1185,7 +1240,7 @@ const SalesModule = () => {
           }}
         />
       ))}
-
+      
       <style jsx>{`
         @keyframes flyToCart {
           0% {
@@ -1246,6 +1301,19 @@ const SalesModule = () => {
           }
         }
       `}</style>
+
+      {/* QRIS Payment Modal */}
+      {showQRISPayment && qrisPaymentData && (
+        <QRISPaymentModal
+          isOpen={showQRISPayment}
+          onClose={() => {
+            setShowQRISPayment(false);
+            setQrisPaymentData(null);
+          }}
+          paymentData={qrisPaymentData}
+          onPaymentSuccess={handleQRISPaymentSuccess}
+        />
+      )}
     </div>
   );
 };

@@ -19,6 +19,7 @@ import ExportReport from './components/ExportReport';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
+import QRISCallbackHandler from './components/QRISCallbackHandler';
 import { DarkModeProvider, useDarkMode } from './contexts/DarkModeContext';
 
 // Component to update PWA theme color based on dark mode
@@ -167,6 +168,7 @@ const App = () => {
                   <ExportReport />
                 </ProtectedRoute>
               } />
+              <Route path="/payment/callback" element={<QRISCallbackHandler />} />
             </Routes>
           </main>
           

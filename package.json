@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@zxing/library": "^0.21.3",
+    "crypto-js": "^4.2.0",
     "datatables.net-dt": "^2.3.4",
     "datatables.net-react": "^1.0.1",
     "date-fns": "^2.30.0",
