@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Plus, Minus, Trash2, Camera, Search, Receipt, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Camera, Search, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { productService, salesService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
 import { showToast } from '../utils/toast.jsx';
@@ -20,10 +20,11 @@ const SalesModule = () => {
     name: '',
     phone: ''
   });
-  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [paymentMethod, setPaymentMethod] = useState('qris');
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastSale, setLastSale] = useState(null);
   const [showCartPage, setShowCartPage] = useState(false);
+  const [flyingItems, setFlyingItems] = useState([]);
 
   useEffect(() => {
     loadProducts();
@@ -80,9 +81,72 @@ const SalesModule = () => {
     setScanningProductId(null);
   };
 
-  const addToCart = (product) => {
+  const createFlyingAnimation = (startElement, endElement) => {
+    const startRect = startElement.getBoundingClientRect();
+    const endRect = endElement.getBoundingClientRect();
+    
+    const flyingItem = {
+      id: Date.now() + Math.random(),
+      startX: startRect.left + startRect.width / 2,
+      startY: startRect.top + startRect.height / 2,
+      endX: endRect.left + endRect.width / 2,
+      endY: endRect.top + endRect.height / 2,
+    };
+    
+    setFlyingItems(prev => [...prev, flyingItem]);
+    
+    // Remove the flying item after animation completes
+    setTimeout(() => {
+      setFlyingItems(prev => prev.filter(item => item.id !== flyingItem.id));
+    }, 800);
+  };
+
+  const handleAddToCart = (product, event) => {
+    if (product.useBarcode !== false) {
+      // Product uses barcode - require scanning
+      setScanningMode('add');
+      setScanningProductId(product.id);
+      setShowScanner(true);
+    } else {
+      // Product doesn't use barcode - direct add
+      addToCart(product, event?.currentTarget);
+    }
+  };
+
+  const addToCart = (product, buttonElement = null) => {
     const existingItem = cart.find(item => item.productId === product.id);
     
+    // Trigger flying animation first if button element is provided
+    if (buttonElement) {
+      const cartButton = document.querySelector('[data-cart-button]');
+      if (cartButton) {
+        createFlyingAnimation(buttonElement, cartButton);
+        
+        // Delay cart update until animation completes
+        setTimeout(() => {
+          if (existingItem) {
+            // If product already in cart, increase quantity
+            increaseQuantity(product.id);
+          } else {
+            const readyStock = readyStockData[product.id] || 0;
+            if (readyStock <= 0) {
+              showToast.warning('Stok siap jual untuk produk ini habis.', 'Stok Habis');
+              return;
+            }
+            setCart(prevCart => [...prevCart, {
+              productId: product.id,
+              productName: product.name,
+              quantity: 1,
+              price: product.price,
+              total: product.price
+            }]);
+          }
+        }, 400); // Half of animation duration for smoother effect
+        return;
+      }
+    }
+    
+    // If no animation, update cart immediately
     if (existingItem) {
       // If product already in cart, increase quantity
       increaseQuantity(product.id);
@@ -151,18 +215,6 @@ const SalesModule = () => {
     return cart.reduce((total, item) => total + item.total, 0);
   };
 
-  const handleAddToCart = (product) => {
-    if (product.useBarcode !== false) {
-      // Product uses barcode - require scanning
-      setScanningMode('add');
-      setScanningProductId(product.id);
-      setShowScanner(true);
-    } else {
-      // Product doesn't use barcode - direct add
-      addToCart(product);
-    }
-  };
-
   const handleIncreaseQuantity = (productId) => {
     const product = products.find(p => p.id === productId);
     if (product && product.useBarcode !== false) {
@@ -198,7 +250,7 @@ const SalesModule = () => {
       // Reset form
       setCart([]);
       setCustomerInfo({ name: '', phone: '' });
-      setPaymentMethod('cash');
+      setPaymentMethod('qris');
       
       // Reload products to update stock
       loadProducts();
@@ -295,7 +347,7 @@ const SalesModule = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '0.5rem',
-                        fontSize: '0.875rem',
+                        fontSize: '0.75rem',
                         fontWeight: '500',
                         flex: 1
                       }}
@@ -311,38 +363,47 @@ const SalesModule = () => {
                           color: 'var(--text-color)',
                           padding: '0.5rem 1rem',
                           borderRadius: '0.5rem',
-                          border: '2px dashed var(--border-color)',
+                          border: 'none',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           gap: '0.5rem',
-                          fontSize: '0.875rem',
+                          fontSize: '1.25rem',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
                           fontWeight: '500',
                           position: 'relative',
                           flex: 1
                         }}
+                        data-cart-button
                       >
-                        <ShoppingCart size={20} />
-                        {cart.length > 0 && (
-                          <span style={{
-                            position: 'absolute',
-                            top: '-4px',
-                            right: '-4px',
-                            backgroundColor: 'var(--error-color)',
-                            color: 'white',
-                            borderRadius: '50%',
-                            width: '20px',
-                            height: '20px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.75rem',
-                            fontWeight: '600'
-                          }}>
-                            {cart.reduce((total, item) => total + item.quantity, 0)}
-                          </span>
-                        )}
+                        <div style={{ position: 'relative' }}>
+                          <ShoppingCart size={24} />
+                          {cart.length > 0 && (
+                            <span style={{
+                              position: 'absolute',
+                              top: '-10px',
+                              right: '-10px',
+                              backgroundColor: 'var(--primary-color)',
+                              color: 'white',
+                              borderRadius: '50%',
+                              width: '20px',
+                              height: '20px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '0.65rem',
+                              fontWeight: '600',
+                              border: '1px solid var(--card-background)',
+                              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)'
+                            }}>
+                              {cart.reduce((total, item) => total + item.quantity, 0)}
+                            </span>
+                          )}
+                        </div>
                       </button>
                     )}
                   </div>
@@ -384,8 +445,8 @@ const SalesModule = () => {
                   style={{
                     backgroundColor: categoryFilter === 'all' ? 'var(--primary-color)' : 'var(--background-color)',
                     color: categoryFilter === 'all' ? 'white' : 'var(--text-color)',
-                    padding: '0.375rem 0.75rem',
-                    borderRadius: '0.375rem',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '9999px',
                     border: 'none',
                     cursor: 'pointer',
                     fontSize: '0.75rem',
@@ -401,8 +462,8 @@ const SalesModule = () => {
                     style={{
                       backgroundColor: categoryFilter === category ? 'var(--primary-color)' : 'var(--background-color)',
                       color: categoryFilter === category ? 'white' : 'var(--text-color)',
-                      padding: '0.375rem 0.75rem',
-                      borderRadius: '0.375rem',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '9999px',
                       border: 'none',
                       cursor: 'pointer',
                       fontSize: '0.75rem',
@@ -442,28 +503,19 @@ const SalesModule = () => {
                     alignItems: 'flex-start',
                     marginBottom: '0.5rem'
                   }}>
-                    <h3 style={{ fontWeight: '500', color: 'var(--text-color)', margin: 0, fontSize: '0.875rem' }}>
-                      {product.name}
+                    <h3 style={{ fontWeight: '500', color: 'var(--text-color)', margin: 0, fontSize: '0.875rem'}}>
+                      {product.name} 
                     </h3>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
-                      {product.category}
+                    <span style={{
+                        fontSize: '0.75rem',
+                        color: (readyStockData[product.id] || 0) > 0 ? 'var(--secondary-color)' : 'var(--error-color)'
+                      }}>
+                        Stock : {readyStockData[product.id] || 0}
                     </span>
                   </div>
-                  <div style={{ marginBottom: '0.5rem' }}>
-                    {/* <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
-                      Barcode: {product.useBarcode !== false ? 'Per unit' : (product.barcode || '-')}
-                    </p> */}
-                    {/* <span style={{
-                      fontSize: '0.625rem',
-                      padding: '0.125rem 0.375rem',
-                      borderRadius: '0.25rem',
-                      backgroundColor: product.useBarcode !== false ? 'var(--primary-color)' : 'var(--background-color)',
-                      color: product.useBarcode !== false ? 'var(--primary-color)' : 'var(--secondary-color)',
-                      fontWeight: '500'
-                    }}>
-                      {product.useBarcode !== false ? 'Dengan Barcode' : 'Manual'}
-                    </span> */}
-                  </div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', gap: '0.5rem'}}>
+                        {product.category}
+                  </span> 
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -473,27 +525,26 @@ const SalesModule = () => {
                       Rp {product.price.toLocaleString('id-ID')}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{
-                        fontSize: '0.75rem',
-                        color: (readyStockData[product.id] || 0) > 0 ? 'var(--success-color)' : 'var(--error-color)'
-                      }}>
-                        Ready: {readyStockData[product.id] || 0}
-                      </span>
                       <button
-                        onClick={() => handleAddToCart(product)}
+                        onClick={(e) => handleAddToCart(product, e)}
                         disabled={(readyStockData[product.id] || 0) <= 0}
                         style={{
-                          backgroundColor: (readyStockData[product.id] || 0) <= 0 ? 'var(--border-color)' : 'var(--primary-color)',
-                          color: 'white',
-                          padding: '0.25rem',
-                          borderRadius: '0.25rem',
+                          backgroundColor: (readyStockData[product.id] || 0) <= 0 ? 'var(--border-color)' : 'var(--card-color)',
+                          color: 'var(--text-color)',
+                          padding: '0.2rem 1rem',
+                          borderRadius: '0.5rem',
                           border: 'none',
                           cursor: (readyStockData[product.id] || 0) <= 0 ? 'not-allowed' : 'pointer',
-                          fontSize: '0.75rem'
+                          fontSize: '0.75rem',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '0.2rem'
                         }}
                         title={(readyStockData[product.id] || 0) <= 0 ? 'Stok habis' : (product.useBarcode !== false ? 'Scan barcode untuk menambah' : 'Tambah ke keranjang')}
                       >
-                        <Plus size={16} />
+                        <Plus size={10} />
+                        <ShoppingCart size={16} />
                       </button>
                     </div>
                   </div>
@@ -659,6 +710,7 @@ const SalesModule = () => {
                         title={item.quantity >= (readyStockData[item.productId] || 0) ? 'Stok tidak cukup' : 'Tambah quantity'}
                       >
                         <Plus size={12} />
+                        <ShoppingCart size={12} />
                       </button>
                     </div>
                     <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>
@@ -699,17 +751,50 @@ const SalesModule = () => {
                 <label className="form-label">
                   Metode Pembayaran
                 </label>
-                <select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="form-select"
-                  style={{ fontSize: '0.75rem' }}
-                >
-                  <option value="cash">Tunai</option>
-                  <option value="qris">QRIS</option>
-                  <option value="card">Kartu</option>
-                  <option value="transfer">Transfer</option>
-                </select>
+                <div style={{
+                  display: 'flex',
+                  gap: '0.5rem',
+                  marginTop: '0.5rem'
+                }}>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('qris')}
+                    style={{
+                      flex: 1,
+                      padding: '0.5rem',
+                      borderRadius: '0.5rem',
+                      border: '2px solid',
+                      borderColor: paymentMethod === 'qris' ? 'var(--primary-color)' : 'var(--border-color)',
+                      backgroundColor: paymentMethod === 'qris' ? 'rgba(229, 37, 53, 0.1)' : 'transparent',
+                      color: paymentMethod === 'qris' ? 'var(--primary-color)' : 'var(--text-color)',
+                      fontWeight: paymentMethod === 'qris' ? '600' : '500',
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    QRIS
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('cash')}
+                    style={{
+                      flex: 1,
+                      padding: '0.5rem',
+                      borderRadius: '0.5rem',
+                      border: '2px solid',
+                      borderColor: paymentMethod === 'cash' ? 'var(--primary-color)' : 'var(--border-color)',
+                      backgroundColor: paymentMethod === 'cash' ? 'rgba(229, 37, 53, 0.1)' : 'transparent',
+                      color: paymentMethod === 'cash' ? 'var(--primary-color)' : 'var(--text-color)',
+                      fontWeight: paymentMethod === 'cash' ? '600' : '500',
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Tunai
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -796,7 +881,7 @@ const SalesModule = () => {
                 color: 'var(--secondary-color)',
                 padding: '0.5rem',
                 borderRadius: '1rem',
-                border: '1px solid var(--border-color)',
+                border: 'none',
                 cursor: 'pointer',
                 fontSize: '0.875rem',
                 display: 'flex',
@@ -804,7 +889,7 @@ const SalesModule = () => {
                 gap: '0.25rem'
               }}
             >
-              <ArrowRight size={16} />
+              <ChevronRight size={16} />
             </button>
           </div>
 
@@ -927,17 +1012,50 @@ const SalesModule = () => {
               <label className="form-label">
                 Metode Pembayaran
               </label>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="form-select"
-                style={{ fontSize: '0.75rem' }}
-              >
-                <option value="cash">Tunai</option>
-                <option value="qris">QRIS</option>
-                <option value="card">Kartu</option>
-                <option value="transfer">Transfer</option>
-              </select>
+              <div style={{
+                display: 'flex',
+                gap: '0.5rem',
+                marginTop: '0.5rem'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('qris')}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    borderRadius: '0.5rem',
+                    border: '2px solid',
+                    borderColor: paymentMethod === 'qris' ? 'var(--primary-color)' : 'var(--border-color)',
+                    backgroundColor: paymentMethod === 'qris' ? 'rgba(229, 37, 53, 0.1)' : 'transparent',
+                    color: paymentMethod === 'qris' ? 'var(--primary-color)' : 'var(--text-color)',
+                    fontWeight: paymentMethod === 'qris' ? '600' : '500',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  QRIS
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('cash')}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    borderRadius: '0.5rem',
+                    border: '2px solid',
+                    borderColor: paymentMethod === 'cash' ? 'var(--primary-color)' : 'var(--border-color)',
+                    backgroundColor: paymentMethod === 'cash' ? 'rgba(229, 37, 53, 0.1)' : 'transparent',
+                    color: paymentMethod === 'cash' ? 'var(--primary-color)' : 'var(--text-color)',
+                    fontWeight: paymentMethod === 'cash' ? '600' : '500',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  Tunai
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1047,7 +1165,43 @@ const SalesModule = () => {
         </div>
       )}
       
+      {/* Flying Animation Elements */}
+      {flyingItems.map((item) => (
+        <div
+          key={item.id}
+          style={{
+            position: 'fixed',
+            left: item.startX - 6,
+            top: item.startY - 6,
+            width: '8px',
+            height: '8px',
+            backgroundColor: 'var(--primary-color)',
+            borderRadius: '50%',
+            zIndex: 9999,
+            pointerEvents: 'none',
+            animation: `flyToCart 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`,
+            '--end-x': `${item.endX - item.startX}px`,
+            '--end-y': `${item.endY - item.startY}px`
+          }}
+        />
+      ))}
+
       <style jsx>{`
+        @keyframes flyToCart {
+          0% {
+            transform: translate(0, 0) scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: translate(calc(var(--end-x) * 0.5), calc(var(--end-y) * 0.5)) scale(1.2);
+            opacity: 0.8;
+          }
+          100% {
+            transform: translate(var(--end-x), var(--end-y)) scale(0.5);
+            opacity: 0;
+          }
+        }
+        
         @keyframes slideInFromRight {
           from {
             transform: translateX(100%);

@@ -12,11 +12,11 @@ const Header = ({ onLogout }) => {
       case '/':
         return 'Dashboard';
       case '/inventory':
-        return 'Inventory Management';
+        return 'Inventory';
       case '/sales':
-        return 'Sales Module';
+        return 'Penjualan';
       case '/export':
-        return 'Export Report';
+        return 'Report';
       default:
         return 'IQOS Inventory';
     }

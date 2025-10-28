@@ -770,7 +770,7 @@ const InventoryManagement = () => {
               <button
                 onClick={startStockAudit}
                 style={{
-                  backgroundColor: 'var(--success-color)',
+                  backgroundColor: 'var(--primary-color)',
                   color: 'white',
                   padding: '0.75rem 1rem',
                   borderRadius: '0.5rem',
@@ -1171,16 +1171,10 @@ const InventoryManagement = () => {
                   {/* <Package size={16} style={{ color: 'var(--secondary-color)', marginRight: '0.5rem' }} /> */}
                   <div>
                     <div style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-color)' }}>
-                      {product.name}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)' }}>
-                      {product.category}
+                      {product.name} <span style={{ fontSize: '0.875rem', color: 'var(--secondary-color)' }}>• {product.category}</span>
                     </div>
                   </div>
                 </div>
-                {/* <div style={{ fontSize: '0.75rem', color: 'var(--secondary-color)', marginBottom: '0.25rem' }}>
-                  ID: {product.id}
-                </div> */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div>
                     <span style={{
@@ -1206,7 +1200,7 @@ const InventoryManagement = () => {
                 <button
                   onClick={() => handleEdit(product)}
                   style={{
-                    color: 'var(--primary-color)',
+                    color: 'var(--secondary-color)',
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
@@ -1223,11 +1217,15 @@ const InventoryManagement = () => {
                     style={{
                       color: 'var(--success-color)',
                       background: 'none',
-                      border: '1px dashed var(--success-color)',
-                      borderRadius: '0.25rem',
+                      border: 'none',
+                      borderRadius: '.5rem',
                       cursor: 'pointer',
-                      padding: '0.25rem',
-                      fontSize: '0.75rem'
+                      padding: '.5rem',
+                      fontSize: '0.75rem',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      display: 'flex'
                     }}
                     title="Assign Barcode"
                   >
@@ -1409,11 +1407,11 @@ const InventoryManagement = () => {
                     <div style={{
                       marginTop: '0.5rem',
                       padding: '0.75rem',
-                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                      border: '1px solid var(--primary-color)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid var(--secondary-color)',
                       borderRadius: '0.375rem',
                       fontSize: '0.75rem',
-                      color: 'var(--primary-color)'
+                      color: 'var(--secondary-color)'
                     }}>
                       <strong>Info:</strong> Stok akan dihitung otomatis dari jumlah unit yang memiliki barcode. Field "Stok Awal" akan di-disable.
                     </div>

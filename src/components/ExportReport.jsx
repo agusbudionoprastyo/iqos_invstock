@@ -761,14 +761,6 @@ const ExportReport = () => {
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
         overflow: 'hidden'
       }}>
-        <div style={{
-          padding: '1.5rem',
-          borderBottom: '1px solid var(--border-color)'
-        }}>
-          <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: 'var(--text-color)', margin: 0 }}>
-            Preview Data
-          </h3>
-        </div>
         
         <div style={{ padding: '1.5rem' }}>
           {loading ? (
@@ -841,7 +833,7 @@ const ExportReport = () => {
                     <tbody>
                       {salesData.slice(0, 10).map((sale) => 
                         sale.items.map((item, itemIndex) => (
-                          <tr key={`${sale.id}-${itemIndex}`} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <tr key={`${sale.id}-${itemIndex}`} style={{ borderTop: '1px solid var(--border-color)' }}>
                             <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                             <div>
                               <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
@@ -1042,8 +1034,8 @@ const ExportReport = () => {
                 ) : (
                   /* Mobile Table - 2 columns only */
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <thead>
+                        <tr style={{ borderBottom: 'none' }}>
                         <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-color)' }}>
                           Produk
                         </th>
@@ -1073,7 +1065,7 @@ const ExportReport = () => {
                         const variance = hasPhysical ? (auditResult.physicalStock - systemStock) : '-';
                         
                         return (
-                          <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <tr key={index} style={{ borderTop: '1px solid var(--border-color)' }}>
                             <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                               <div>
                                 <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
