@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Plus, Minus, Trash2, Camera, Search, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, ScanBarcodeIcon, Search, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { productService, salesService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
 import QRISPaymentModal from './QRISPaymentModal';
@@ -385,32 +385,33 @@ const SalesModule = () => {
                 boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                 padding: '1.5rem'
               }}>
-                <div style={{
-                  marginBottom: '1.5rem'
-                }}>
-                  <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
-                    <button
-                      onClick={() => setShowScanner(true)}
-                      style={{
-                        backgroundColor: 'var(--success-color)',
-                        color: 'white',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '0.5rem',
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        fontSize: '0.75rem',
-                        fontWeight: '500',
-                        flex: 1
-                      }}
-                    >
-                      <Camera size={20} />
-                      Scan Barcode
-                    </button>
-                    {window.innerWidth <= 768 && (
+                {/* Mobile Cart Button */}
+                {window.innerWidth <= 768 && (
+                  <div style={{
+                    marginBottom: '1.5rem'
+                  }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                      <button
+                        onClick={() => setShowScanner(true)}
+                        style={{
+                          backgroundColor: 'var(--success-color)',
+                          color: 'white',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '0.5rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.75rem',
+                          fontWeight: '500',
+                          flex: 1
+                        }}
+                      >
+                        <ScanBarcodeIcon size={20} />
+                        Scan Barcode
+                      </button>
                       <button
                         onClick={() => setShowCartPage(true)}
                         style={{
@@ -460,15 +461,43 @@ const SalesModule = () => {
                         )}
                         </div>
                       </button>
-                    )}
+                    </div>
                   </div>
-                </div>
+                )}
             {/* Search Bar */}
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
+                {/* Scan QR Button - Desktop Only */}
+                {window.innerWidth > 768 && (
+                  <button
+                    onClick={() => setShowScanner(true)}
+                    style={{
+                      position: 'absolute',
+                      left: '0.25rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      backgroundColor: 'var(--card-background)',
+                      color: 'var(--text-color)',
+                      borderRadius: '0',
+                      borderLeft: 'none',
+                      borderTop: 'none',
+                      borderBottom: 'none',
+                      borderRight: '1px solid var(--border-color)',
+                      padding: '0.5rem 1rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 1
+                    }}
+                    title="Scan Barcode"
+                  >
+                    <ScanBarcodeIcon size={20} /> <span style={{ fontSize: '0.875rem', fontWeight: '500', marginLeft: '0.5rem' }}>Scan Barcode</span>
+                  </button>
+                )}
                 <Search size={20} style={{
                   position: 'absolute',
-                  left: '0.75rem',
+                  left: window.innerWidth > 768 ? '11rem' : '0.75rem',
                   top: '50%',
                   transform: 'translateY(-50%)',
                   color: 'var(--secondary-color)'
@@ -480,10 +509,10 @@ const SalesModule = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{
                     width: '100%',
-                    paddingLeft: '2.5rem',
+                    paddingLeft: window.innerWidth > 768 ? '12.5rem' : '2.5rem',
                     paddingRight: '1rem',
-                    paddingTop: '0.5rem',
-                    paddingBottom: '0.5rem',
+                    paddingTop: '1rem',
+                    paddingBottom: '1rem',
                     border: '1px solid var(--border-color)',
                     borderRadius: '0.5rem',
                     fontSize: '0.875rem',
@@ -586,7 +615,7 @@ const SalesModule = () => {
                         style={{
                           backgroundColor: (readyStockData[product.id] || 0) <= 0 ? 'var(--border-color)' : 'var(--card-color)',
                           color: 'var(--text-color)',
-                          padding: '0.2rem 1rem',
+                          padding: '0.5rem 1rem',
                           borderRadius: '0.5rem',
                           border: 'none',
                           cursor: (readyStockData[product.id] || 0) <= 0 ? 'not-allowed' : 'pointer',
@@ -765,7 +794,6 @@ const SalesModule = () => {
                         title={item.quantity >= (readyStockData[item.productId] || 0) ? 'Stok tidak cukup' : 'Tambah quantity'}
                       >
                         <Plus size={12} />
-                        <ShoppingCart size={12} />
                       </button>
                     </div>
                     <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>
@@ -871,9 +899,9 @@ const SalesModule = () => {
                 disabled={cart.length === 0}
                 style={{
                   width: '100%',
-                  backgroundColor: cart.length === 0 ? 'var(--border-color)' : 'var(--success-color)',
+                  backgroundColor: cart.length === 0 ? 'var(--border-color)' : 'var(--primary-color)',
                   color: 'white',
-                  padding: '0.5rem 1rem',
+                  padding: '1rem 1rem',
                   borderRadius: '0.5rem',
                   border: 'none',
                   cursor: cart.length === 0 ? 'not-allowed' : 'pointer',
@@ -1132,7 +1160,7 @@ const SalesModule = () => {
               disabled={cart.length === 0}
               style={{
                 width: '100%',
-                backgroundColor: cart.length === 0 ? 'var(--secondary-color)' : 'var(--success-color)',
+                backgroundColor: cart.length === 0 ? 'var(--secondary-color)' : 'var(--primary-color)',
                 color: 'white',
                 padding: '0.75rem 1rem',
                 borderRadius: '0.5rem',

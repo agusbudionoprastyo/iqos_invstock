@@ -628,7 +628,7 @@ code {
 .modal {
   background: var(--card-background);
   border: 1px solid var(--border-color);
-  border-radius: 1rem;
+  border-radius: 1.5rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
   width: 100%;

@@ -3,15 +3,13 @@ import CryptoJS from 'crypto-js';
 
 class QRISService {
   constructor() {
-    // API Configuration - replace with actual credentials
-    // this.baseURL = 'https://api.yokke.co.id:7778'; // Production URL
-    this.baseURL = 'https://dev.yokke.co.id:7778'; // Development URL
-    // this.baseURL = 'https://tst.yokke.co.id:7778'; // Test URL
-    this.clientKey = 'YOUR_CLIENT_KEY'; // X-CLIENT-KEY from registration
-    this.clientSecret = 'YOUR_CLIENT_SECRET'; // Client secret for signature
-    this.merchantId = '00007100010926'; // Example merchant ID
-    this.terminalId = '72001126'; // Example terminal ID
-    this.partnerId = 'MTI-STORE'; // Partner identifier
+    // API Configuration - Sandbox/Testing parameters from Postman collection
+    this.baseURL = 'https://tst.yokke.co.id:8280/qrissnapmpm/1.0.11'; // Test URL with version
+    this.clientKey = 'if8J8F9Ew1LniSL9EDkzw4NEQTYa'; // X-CLIENT-KEY from Postman
+    this.clientSecret = 'YOUR_CLIENT_SECRET'; // Client secret for signature (need from Yokke)
+    this.merchantId = '463763743'; // Merchant ID from Postman
+    this.terminalId = '12387341'; // Terminal ID from Postman
+    this.partnerId = 'PTKG1'; // Partner ID from Postman
     this.channelId = '02'; // POS channel
     this.accessToken = null;
     this.tokenExpiry = null;
@@ -56,7 +54,8 @@ class QRISService {
           'X-SIGNATURE': signature,
           'X-EXTERNAL-ID': externalId,
           'X-PARTNER-ID': this.partnerId,
-          'CHANNEL-ID': this.channelId
+          'CHANNEL-ID': this.channelId,
+          'X-PLATFORM': 'PORTAL'
         },
         body: requestBody
       });
@@ -108,9 +107,9 @@ class QRISService {
       };
 
       const requestBody = JSON.stringify(payload);
-      const signature = this.generateSignature('POST', '/v3.0/qr/qr-mpm-query', requestBody, timestamp);
+      const signature = this.generateSignature('POST', '/v2.0/qr/qr-mpm-query', requestBody, timestamp);
 
-      const response = await fetch(`${this.baseURL}/v3.0/qr/qr-mpm-query`, {
+      const response = await fetch(`${this.baseURL}/v2.0/qr/qr-mpm-query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +118,8 @@ class QRISService {
           'X-SIGNATURE': signature,
           'X-EXTERNAL-ID': externalId,
           'X-PARTNER-ID': this.partnerId,
-          'CHANNEL-ID': this.channelId
+          'CHANNEL-ID': this.channelId,
+          'X-PLATFORM': 'PORTAL'
         },
         body: requestBody
       });
@@ -165,7 +165,8 @@ class QRISService {
           'Content-Type': 'application/json',
           'X-TIMESTAMP': timestamp,
           'X-CLIENT-KEY': this.clientKey,
-          'X-SIGNATURE': signature
+          'X-SIGNATURE': signature,
+          'X-PLATFORM': 'PORTAL'
         },
         body: JSON.stringify({
           grantType: 'client_credentials'
@@ -281,9 +282,9 @@ class QRISService {
       };
 
       const requestBody = JSON.stringify(payload);
-      const signature = this.generateSignature('POST', '/v3.0/qr/qr-mpm-cancel', requestBody, timestamp);
+      const signature = this.generateSignature('POST', '/v2.0/qr/qr-mpm-cancel', requestBody, timestamp);
 
-      const response = await fetch(`${this.baseURL}/v3.0/qr/qr-mpm-cancel`, {
+      const response = await fetch(`${this.baseURL}/v2.0/qr/qr-mpm-cancel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -292,7 +293,8 @@ class QRISService {
           'X-SIGNATURE': signature,
           'X-EXTERNAL-ID': externalId,
           'X-PARTNER-ID': this.partnerId,
-          'CHANNEL-ID': this.channelId
+          'CHANNEL-ID': this.channelId,
+          'X-PLATFORM': 'PORTAL'
         },
         body: requestBody
       });

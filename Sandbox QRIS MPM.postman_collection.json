@@ -1,0 +1,315 @@
+{
+	"info": {
+		"_postman_id": "7b2ff1fd-5ad9-4e40-bdcb-1536e45d193a",
+		"name": "Sandbox QRIS MPM",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24639373",
+		"_collection_link": "https://yokke3.postman.co/workspace/My-Workspace~cf4407aa-6c7f-4829-8482-6ff44f1b78fd/collection/24639373-7b2ff1fd-5ad9-4e40-bdcb-1536e45d193a?action=share&source=collection_link&creator=24639373"
+	},
+	"item": [
+		{
+			"name": "QRIS-SNAP-MPM",
+			"item": [
+				{
+					"name": "GET ACCESS TOKEN",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseBody = pm.response.json();\r",
+									"var accessToken = responseBody.accessToken;\r",
+									"pm.environment.set('access_token', accessToken);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-CLIENT-KEY",
+								"value": "if8J8F9Ew1LniSL9EDkzw4NEQTYa",
+								"type": "text"
+							},
+							{
+								"key": "X-TIMESTAMP",
+								"value": "2024-07-12T14:51:58+07:00",
+								"type": "text"
+							},
+							{
+								"key": "X-SIGNATURE",
+								"value": "C94w/a2rvKcJn2EZ6wkuWaEc9SGiQLWYcUjqp70lWGTP4jNQ3bUw4FkdHyCGJwlPVvcLNShkGPr/AjHVJpQAHQ==",
+								"type": "text"
+							},
+							{
+								"key": "X-PLATFORM",
+								"value": "PORTAL",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"grantType\": \"client_credentials\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://tst.yokke.co.id:8280/qrissnapmpm/1.0.11/qr/v2.0/access-token/b2b",
+							"protocol": "https",
+							"host": [
+								"tst",
+								"yokke",
+								"co",
+								"id"
+							],
+							"port": "8280",
+							"path": [
+								"qrissnapmpm",
+								"1.0.11",
+								"qr",
+								"v2.0",
+								"access-token",
+								"b2b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "QR GENERATION",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-TIMESTAMP",
+								"value": "2024-07-12T16:31:58+07:00",
+								"type": "text"
+							},
+							{
+								"key": "X-SIGNATURE",
+								"value": "C94w/a2rvKcJn2EZ6wkuWaEc9SGiQLWYcUjqp70lWGTP4jNQ3bUw4FkdHyCGJwlPVvcLNShkGPr/AjHVJpQAHQ==",
+								"type": "text"
+							},
+							{
+								"key": "X-EXTERNAL-ID",
+								"value": "866330434635474",
+								"type": "text"
+							},
+							{
+								"key": "X-PARTNER-ID",
+								"value": "PTKG1",
+								"type": "text"
+							},
+							{
+								"key": "CHANNEL-ID",
+								"value": "02",
+								"type": "text"
+							},
+							{
+								"key": "x-platform",
+								"value": "PORTAL",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"merchantId\": \"463763743\",\r\n  \"terminalId\": \"12387341\",\r\n  \"partnerReferenceNo\": \"230218123798002\",\r\n  \"amount\": {\r\n    \"value\": \"1000.00\",\r\n    \"currency\": \"IDR\"\r\n  },\r\n  \"feeAmount\": {\r\n    \"value\": \"1000.00\",\r\n    \"currency\": \"IDR\"\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://tst.yokke.co.id:8280/qrissnapmpm/1.0.11/v2.0/qr/qr-mpm-generate",
+							"protocol": "https",
+							"host": [
+								"tst",
+								"yokke",
+								"co",
+								"id"
+							],
+							"port": "8280",
+							"path": [
+								"qrissnapmpm",
+								"1.0.11",
+								"v2.0",
+								"qr",
+								"qr-mpm-generate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "QR INQUIRY",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-TIMESTAMP",
+								"value": "2024-07-12T16:31:58+07:00",
+								"type": "text"
+							},
+							{
+								"key": "X-SIGNATURE",
+								"value": "C94w/a2rvKcJn2EZ6wkuWaEc9SGiQLWYcUjqp70lWGTP4jNQ3bUw4FkdHyCGJwlPVvcLNShkGPr/AjHVJpQAHQ==",
+								"type": "text"
+							},
+							{
+								"key": "X-EXTERNAL-ID",
+								"value": "866330434635474",
+								"type": "text"
+							},
+							{
+								"key": "X-PARTNER-ID",
+								"value": "PTKG1",
+								"type": "text"
+							},
+							{
+								"key": "CHANNEL-ID",
+								"value": "02",
+								"type": "text"
+							},
+							{
+								"key": "x-platform",
+								"value": "PORTAL",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"originalReferenceNo\": \"908718002196\",\r\n  \"originalExternalId\": \"884759048588060\",\r\n  \"serviceCode\": \"47\",\r\n  \"merchantId\": \"463763743\",\r\n  \"additionalInfo\": {\r\n    \"originalTransactionDate\": \"20240715\",\r\n    \"terminalId\": \"1238734111111\"\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/qrissnapmpm/1.0.6/v2.0/qr/qr-mpm-query",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"qrissnapmpm",
+								"1.0.6",
+								"v2.0",
+								"qr",
+								"qr-mpm-query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "QR REFUND",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJ4NXQiOiJNV0l5TkRJNVlqRTJaV1kxT0RNd01XSTNOR1ptTVRZeU5UTTJOVFZoWlRnMU5UTTNaVE5oTldKbVpERTFPVEE0TldFMVlUaGxNak5sTldFellqSXlZUSIsImtpZCI6Ik1XSXlOREk1WWpFMlpXWTFPRE13TVdJM05HWm1NVFl5TlRNMk5UVmhaVGcxTlRNM1pUTmhOV0ptWkRFMU9UQTROV0UxWVRobE1qTmxOV0V6WWpJeVlRX1JTMjU2IiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIzMWNjMzIzNC0wYjJkLTRlNmYtYjUzYS1kMDY3ZDU2ZTE5MDgiLCJhdXQiOiJBUFBMSUNBVElPTiIsImF1ZCI6ImlmOEo4RjlFdzFMbmlTTDlFRGt6dzRORVFUWWEiLCJuYmYiOjE3Mjk4NzU2MzIsImF6cCI6ImlmOEo4RjlFdzFMbmlTTDlFRGt6dzRORVFUWWEiLCJzY29wZSI6ImRlZmF1bHQiLCJpc3MiOiJodHRwczpcL1wvMTcyLjE2LjU0LjE3OTo5NDQzXC9vYXV0aDJcL3Rva2VuIiwiZXhwIjoxNzI5ODc5MjMyLCJpYXQiOjE3Mjk4NzU2MzIsImp0aSI6ImM3ZTBkNjgzLTZkNDYtNGFiMC04ZGE3LTYyYzkyZWMwYzA0YSIsImNsaWVudF9pZCI6ImlmOEo4RjlFdzFMbmlTTDlFRGt6dzRORVFUWWEifQ.JZwPNG_Y8KgBhirrh5Zc-_5j2V0Ypncyq9aV0FiX9hL9HTIkgskXBwlH_PF88jT33ka-FcTXDRrDvdplJ-8tg-3tQpme49fh9E3_1rtdfbcx5ToMzwaySvwfDdF3_QwvYnBBjQpOWn2khcH5pGqSPeTrlHVZ72BLtbqm4taWIrTzOGb3bTXxzSdip8iB-oi0m5jk5SycfUpcELk9s3zoXcgSoHqKFQPAmC0U5fn4YLdEGdAAO0kPpuHZREcbavk8wJWYx0v9J0-QC_klVN1og-DfI2_LrGgh47aB-BF1_orhFJIan_1CPCBn4w33NgqJ1IVZj7Xeccg0pIsGBGx26Q",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-TIMESTAMP",
+								"value": "2024-10-26T00:10:58+07:00",
+								"type": "text"
+							},
+							{
+								"key": "X-SIGNATURE",
+								"value": "C94w/a2rvKcJn2EZ6wkuWaEc9SGiQLWYcUjqp70lWGTP4jNQ3bUw4FkdHyCGJwlPVvcLNShkGPr/AjHVJpQAHQ==",
+								"type": "text"
+							},
+							{
+								"key": "X-EXTERNAL-ID",
+								"value": "866330434635474",
+								"type": "text"
+							},
+							{
+								"key": "X-PARTNER-ID",
+								"value": "PTKG1",
+								"type": "text"
+							},
+							{
+								"key": "CHANNEL-ID",
+								"value": "02",
+								"type": "text"
+							},
+							{
+								"key": "x-platform",
+								"value": "PORTAL",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"originalReferenceNo\": \"955975998009\",\r\n  \"originalPartnerReferenceNo\": \"230218123798000\",\r\n  \"originalExternalId\": \"955975998009001\",\r\n  \"merchantId\": \"463763743\",\r\n  \"reason\": \"Customer\",\r\n  \"refundAmount\": {\r\n    \"value\": \"1000.00\",\r\n    \"currency\": \"IDR\"\r\n  },\r\n  \"additionalInfo\": {\r\n    \"originalTransactionDate\": \"20241026\",\r\n    \"terminalId\": \"12387341\",\r\n    \"originalApprovalCode\": \"142403\"\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://tst.yokke.co.id:8280/qrissnapmpm/1.0.11/v2.0/qr/qr-mpm-cancel",
+							"protocol": "https",
+							"host": [
+								"tst",
+								"yokke",
+								"co",
+								"id"
+							],
+							"port": "8280",
+							"path": [
+								"qrissnapmpm",
+								"1.0.11",
+								"v2.0",
+								"qr",
+								"qr-mpm-cancel"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
