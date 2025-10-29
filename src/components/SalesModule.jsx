@@ -28,6 +28,7 @@ const SalesModule = () => {
   const [flyingItems, setFlyingItems] = useState([]);
   const [showQRISPayment, setShowQRISPayment] = useState(false);
   const [qrisPaymentData, setQrisPaymentData] = useState(null);
+  const [scannedItems, setScannedItems] = useState(new Set()); // Track scanned items
 
   useEffect(() => {
     loadProducts();
@@ -68,6 +69,9 @@ const SalesModule = () => {
         } else if (scanningMode === 'increase' && scanningProductId) {
           // Mode increase quantity
           increaseQuantity(scanningProductId);
+        } else if (scanningMode === 'validate') {
+          // Mode validate barcode for checkout
+          validateBarcodeForCheckout(product, barcode);
         } else {
           // Default mode - add to cart
           addToCart(product);
@@ -105,15 +109,8 @@ const SalesModule = () => {
   };
 
   const handleAddToCart = (product, event) => {
-    if (product.useBarcode !== false) {
-      // Product uses barcode - require scanning
-      setScanningMode('add');
-      setScanningProductId(product.id);
-      setShowScanner(true);
-    } else {
-      // Product doesn't use barcode - direct add
-      addToCart(product, event?.currentTarget);
-    }
+    // All products can be added directly to cart
+    addToCart(product, event?.currentTarget);
   };
 
   const addToCart = (product, buttonElement = null) => {
@@ -171,6 +168,16 @@ const SalesModule = () => {
 
   const removeFromCart = (productId) => {
     setCart(cart.filter(item => item.productId !== productId));
+    // Remove scanned items for this product
+    setScannedItems(prev => {
+      const newSet = new Set(prev);
+      Array.from(newSet).forEach(key => {
+        if (key.startsWith(`${productId}-`)) {
+          newSet.delete(key);
+        }
+      });
+      return newSet;
+    });
   };
 
   const increaseQuantity = (productId) => {
@@ -207,6 +214,30 @@ const SalesModule = () => {
       return;
     }
     
+    const currentItem = cart.find(item => item.productId === productId);
+    if (currentItem && newQuantity < currentItem.quantity) {
+      // Quantity decreased, remove excess scanned items
+      const scannedCount = Array.from(scannedItems).filter(scannedKey => 
+        scannedKey.startsWith(`${productId}-`)
+      ).length;
+      
+      if (scannedCount > newQuantity) {
+        // Remove excess scanned items
+        const itemsToRemove = scannedCount - newQuantity;
+        let removedCount = 0;
+        setScannedItems(prev => {
+          const newSet = new Set(prev);
+          Array.from(newSet).forEach(key => {
+            if (key.startsWith(`${productId}-`) && removedCount < itemsToRemove) {
+              newSet.delete(key);
+              removedCount++;
+            }
+          });
+          return newSet;
+        });
+      }
+    }
+    
     setCart(cart.map(item =>
       item.productId === productId
         ? { ...item, quantity: newQuantity, total: newQuantity * item.price }
@@ -219,21 +250,65 @@ const SalesModule = () => {
   };
 
   const handleIncreaseQuantity = (productId) => {
-    const product = products.find(p => p.id === productId);
-    if (product && product.useBarcode !== false) {
-      // Product uses barcode - require scanning
-      setScanningMode('increase');
-      setScanningProductId(productId);
-      setShowScanner(true);
+    // All products can increase quantity directly
+    increaseQuantity(productId);
+  };
+
+  // Validate barcode for checkout
+  const validateBarcodeForCheckout = (product, barcode) => {
+    const cartItem = cart.find(item => item.productId === product.id);
+    if (cartItem) {
+      // Count how many times this product has been scanned
+      const scannedCount = Array.from(scannedItems).filter(scannedKey => 
+        scannedKey.startsWith(`${product.id}-`)
+      ).length;
+      
+      // If we haven't scanned enough barcodes for the quantity, add this scan
+      if (scannedCount < cartItem.quantity) {
+        setScannedItems(prev => new Set([...prev, `${product.id}-${barcode}-${Date.now()}`]));
+        showToast.success(`Barcode ${product.name} berhasil divalidasi! (${scannedCount + 1}/${cartItem.quantity})`, 'Validasi Berhasil');
+      } else {
+        showToast.warning(`Semua barcode untuk ${product.name} sudah divalidasi!`, 'Sudah Valid');
+      }
     } else {
-      // Product doesn't use barcode - direct increase
-      increaseQuantity(productId);
+      showToast.warning('Produk tidak ditemukan di keranjang.', 'Error Validasi');
     }
+  };
+
+  // Check if all barcode items are scanned
+  const getUnscannedBarcodeItems = () => {
+    return cart.filter(item => {
+      const product = products.find(p => p.id === item.productId);
+      if (!product || product.useBarcode === false) return false;
+      
+      // Count how many times this product has been scanned
+      const scannedCount = Array.from(scannedItems).filter(scannedKey => 
+        scannedKey.startsWith(`${item.productId}-`)
+      ).length;
+      
+      // Return true if not enough scans for the quantity
+      return scannedCount < item.quantity;
+    });
   };
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
       showToast.warning('Tambahkan produk ke keranjang terlebih dahulu.', 'Keranjang Kosong');
+      return;
+    }
+
+    // Check if there are unscanned barcode items
+    const unscannedItems = getUnscannedBarcodeItems();
+    if (unscannedItems.length > 0) {
+      const unscannedNames = unscannedItems.map(item => item.productName).join(', ');
+      showToast.warning(
+        `Silakan scan barcode untuk produk: ${unscannedNames}`, 
+        'Validasi Barcode Diperlukan'
+      );
+      
+      // Show scanner for validation
+      setScanningMode('validate');
+      setShowScanner(true);
       return;
     }
 
@@ -256,7 +331,8 @@ const SalesModule = () => {
         totalAmount: getTotalAmount(),
         customerName: customerInfo.name,
         customerPhone: customerInfo.phone,
-        paymentMethod: paymentMethod
+        paymentMethod: paymentMethod,
+        scannedBarcodes: Array.from(scannedItems)
       };
 
       const sale = await salesService.createSale(saleData);
@@ -267,6 +343,7 @@ const SalesModule = () => {
       setCart([]);
       setCustomerInfo({ name: '', phone: '' });
       setPaymentMethod('qris');
+      setScannedItems(new Set());
       
       // Reload products to update stock
       loadProducts();
@@ -291,7 +368,8 @@ const SalesModule = () => {
           paidTime: paymentResult.paidTime,
           customerName: paymentResult.customerName,
           issuerName: paymentResult.issuerName
-        }
+        },
+        scannedBarcodes: Array.from(scannedItems)
       };
 
       const sale = await salesService.createSale(saleData);
@@ -302,6 +380,7 @@ const SalesModule = () => {
       setCart([]);
       setCustomerInfo({ name: '', phone: '' });
       setPaymentMethod('qris');
+      setScannedItems(new Set());
       setShowQRISPayment(false);
       setQrisPaymentData(null);
       
@@ -625,7 +704,7 @@ const SalesModule = () => {
                           justifyContent: 'space-between',
                           gap: '0.2rem'
                         }}
-                        title={(readyStockData[product.id] || 0) <= 0 ? 'Stok habis' : (product.useBarcode !== false ? 'Scan barcode untuk menambah' : 'Tambah ke keranjang')}
+                        title={(readyStockData[product.id] || 0) <= 0 ? 'Stok habis' : 'Tambah ke keranjang'}
                       >
                         <Plus size={10} />
                         <ShoppingCart size={16} />
@@ -727,39 +806,77 @@ const SalesModule = () => {
               maxHeight: '16rem',
               overflowY: 'auto'
             }}>
-              {cart.map((item) => (
-                <div key={item.productId} style={{
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '0.5rem',
-                  padding: '0.75rem'
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: '0.5rem'
+              {cart.map((item) => {
+                const product = products.find(p => p.id === item.productId);
+                const needsBarcode = product && product.useBarcode !== false;
+                const scannedCount = needsBarcode ? Array.from(scannedItems).filter(scannedKey => 
+                  scannedKey.startsWith(`${item.productId}-`)
+                ).length : item.quantity;
+                const isFullyScanned = scannedCount >= item.quantity;
+                
+                return (
+                  <div key={item.productId} style={{
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem',
+                    backgroundColor: needsBarcode && !isFullyScanned ? 'rgba(239, 68, 68, 0.05)' : 'transparent'
                   }}>
-                    <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: 'var(--text-color)', margin: 0 }}>
-                      {item.productName}
-                    </h4>
-                    <button
-                      onClick={() => removeFromCart(item.productId)}
-                      style={{
-                        color: 'var(--error-color)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: '0.25rem'
-                      }}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      marginBottom: '0.5rem'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: 'var(--text-color)', margin: 0 }}>
+                          {item.productName}
+                        </h4>
+                        {needsBarcode && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
+                            {isFullyScanned ? (
+                              <span style={{ 
+                                fontSize: '0.65rem', 
+                                color: 'var(--success-color)', 
+                                fontWeight: '500',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.25rem'
+                              }}>
+                                ✓ Barcode sudah di-scan ({scannedCount}/{item.quantity})
+                              </span>
+                            ) : (
+                              <span style={{ 
+                                fontSize: '0.65rem', 
+                                color: 'var(--error-color)', 
+                                fontWeight: '500',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.25rem'
+                              }}>
+                                ⚠ Perlu scan barcode ({scannedCount}/{item.quantity})
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(item.productId)}
+                        style={{
+                          color: 'var(--error-color)',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0.25rem'
+                        }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <button
                         onClick={() => updateQuantity(item.productId, item.quantity - 1)}
@@ -796,13 +913,47 @@ const SalesModule = () => {
                         <Plus size={12} />
                       </button>
                     </div>
-                    <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>
-                      Rp {item.total.toLocaleString('id-ID')}
-                    </span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>
+                        Rp {item.total.toLocaleString('id-ID')}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
+
+            {/* Scan Barcode Button for Validation */}
+            {cart.some(item => {
+              const product = products.find(p => p.id === item.productId);
+              return product && product.useBarcode !== false;
+            }) && (
+              <div style={{ marginBottom: '1rem' }}>
+                <button
+                  onClick={() => {
+                    setScanningMode('validate');
+                    setShowScanner(true);
+                  }}
+                  style={{
+                    width: '100%',
+                    backgroundColor: 'var(--warning-color)',
+                    color: 'white',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '500'
+                  }}
+                >
+                  <ScanBarcodeIcon size={20} />
+                  Scan Barcode untuk Validasi
+                </button>
+              </div>
+            )}
 
             {/* Customer Info */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
@@ -912,9 +1063,15 @@ const SalesModule = () => {
                   fontSize: '0.875rem',
                   fontWeight: '500'
                 }}
+                title={cart.length === 0 ? 'Keranjang kosong' : 
+                  getUnscannedBarcodeItems().length > 0 ? 
+                    'Scan semua barcode terlebih dahulu' : 
+                    'Lanjutkan ke pembayaran'}
               >
-                {/* <Receipt size={20} /> */}
-               Checkout
+                {getUnscannedBarcodeItems().length > 0 ? 
+                  `Scan Barcode (${getUnscannedBarcodeItems().length} item)` : 
+                  'Checkout'
+                }
               </button>
             </div>
           </div>
@@ -985,22 +1142,52 @@ const SalesModule = () => {
             maxHeight: '20rem',
             overflowY: 'auto'
           }}>
-            {cart.map((item) => (
-              <div key={item.productId} style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0.5rem 0',
-                borderBottom: '1px solid var(--border-color)'
-              }}>
-                <div style={{ flex: 1 }}>
-                  <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: 'var(--text-color)', margin: 0 }}>
-                    {item.productName}
-                  </h4>
-                  <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--primary-color)' }}>
-                    Rp {item.total.toLocaleString('id-ID')}
-                  </span>
-                </div>
+            {cart.map((item) => {
+              const product = products.find(p => p.id === item.productId);
+              const needsBarcode = product && product.useBarcode !== false;
+              const scannedCount = needsBarcode ? Array.from(scannedItems).filter(scannedKey => 
+                scannedKey.startsWith(`${item.productId}-`)
+              ).length : item.quantity;
+              const isFullyScanned = scannedCount >= item.quantity;
+              
+              return (
+                <div key={item.productId} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.5rem 0',
+                  borderBottom: '1px solid var(--border-color)',
+                  backgroundColor: needsBarcode && !isFullyScanned ? 'rgba(239, 68, 68, 0.05)' : 'transparent'
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ fontWeight: '500', fontSize: '0.75rem', color: 'var(--text-color)', margin: 0 }}>
+                      {item.productName}
+                    </h4>
+                    {needsBarcode && (
+                      <div style={{ marginTop: '0.25rem' }}>
+                        {isFullyScanned ? (
+                          <span style={{ 
+                            fontSize: '0.65rem', 
+                            color: 'var(--success-color)', 
+                            fontWeight: '500'
+                          }}>
+                            ✓ Barcode sudah di-scan ({scannedCount}/{item.quantity})
+                          </span>
+                        ) : (
+                          <span style={{ 
+                            fontSize: '0.65rem', 
+                            color: 'var(--error-color)', 
+                            fontWeight: '500'
+                          }}>
+                            ⚠ Perlu scan barcode ({scannedCount}/{item.quantity})
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--primary-color)' }}>
+                      Rp {item.total.toLocaleString('id-ID')}
+                    </span>
+                  </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   {item.quantity === 1 ? (
                     <button
@@ -1062,8 +1249,42 @@ const SalesModule = () => {
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
+
+          {/* Scan Barcode Button for Validation - Mobile */}
+          {cart.some(item => {
+            const product = products.find(p => p.id === item.productId);
+            return product && product.useBarcode !== false;
+          }) && (
+            <div style={{ marginBottom: '1rem' }}>
+              <button
+                onClick={() => {
+                  setScanningMode('validate');
+                  setShowScanner(true);
+                }}
+                style={{
+                  width: '100%',
+                  backgroundColor: 'var(--warning-color)',
+                  color: 'white',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}
+              >
+                <ScanBarcodeIcon size={20} />
+                Scan Barcode untuk Validasi
+              </button>
+            </div>
+          )}
 
           {/* Customer Info */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
@@ -1173,8 +1394,15 @@ const SalesModule = () => {
                 fontSize: '0.875rem',
                 fontWeight: '500'
               }}
+              title={cart.length === 0 ? 'Keranjang kosong' : 
+                getUnscannedBarcodeItems().length > 0 ? 
+                  'Scan semua barcode terlebih dahulu' : 
+                  'Lanjutkan ke pembayaran'}
             >
-              Checkout
+              {getUnscannedBarcodeItems().length > 0 ? 
+                `Scan Barcode (${getUnscannedBarcodeItems().length} item)` : 
+                'Checkout'
+              }
             </button>
           </div>
         </div>
@@ -1189,6 +1417,10 @@ const SalesModule = () => {
           setScanningMode(null); 
           setScanningProductId(null); 
         }}
+        title={scanningMode === 'validate' ? 'Scan Barcode untuk Validasi' : 
+               scanningMode === 'add' ? 'Scan Barcode untuk Menambah' :
+               scanningMode === 'increase' ? 'Scan Barcode untuk Menambah Quantity' :
+               'Scan Barcode'}
       />
 
       {/* Receipt Modal */}
@@ -1222,12 +1454,27 @@ const SalesModule = () => {
 
             <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', marginBottom: '1rem' }}>
               <h4 style={{ fontWeight: '500', marginBottom: '0.5rem', margin: 0 }}>Item:</h4>
-              {lastSale.items.map((item, index) => (
-                <div key={index} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-                  <span>{item.productName} x{item.quantity}</span>
-                  <span>Rp {item.total.toLocaleString('id-ID')}</span>
-                </div>
-              ))}
+              {lastSale.items.map((item, index) => {
+                const product = products.find(p => p.id === item.productId);
+                const needsBarcode = product && product.useBarcode !== false;
+                const scannedBarcodes = needsBarcode ? Array.from(scannedItems).filter(scannedKey => 
+                  scannedKey.startsWith(`${item.productId}-`)
+                ) : [];
+                
+                return (
+                  <div key={index} style={{ marginBottom: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                      <span>{item.productName} x{item.quantity}</span>
+                      <span>Rp {item.total.toLocaleString('id-ID')}</span>
+                    </div>
+                    {needsBarcode && scannedBarcodes.length > 0 && (
+                      <div style={{ fontSize: '0.65rem', color: 'var(--secondary-color)', marginTop: '0.25rem' }}>
+                        Barcode: {scannedBarcodes.map(key => key.split('-')[1]).join(', ')}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', marginBottom: '1rem' }}>
