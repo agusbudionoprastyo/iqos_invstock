@@ -5,7 +5,7 @@ import CryptoJS from 'crypto-js';
 class QRISService {
   constructor() {
     // API Configuration - Production credentials from Yokke
-    this.baseURL = 'https://tst.yokke.co.id:8280/qrissnapmpm/1.0.11'; // Test URL with version 1.0.11
+    this.baseURL = 'https://tst.yokke.co.id:30123'; // Updated to match official documentation
     this.clientKey = 'p_qSZvutLH1xXym6CY6xWYif55oa'; // Client key from Yokke
     this.clientSecret = 'CRWFqBa9tyWbLJIPcmiCsXWvU7ga'; // Secret key from Yokke
     this.merchantId = '463763743'; // Merchant ID from Yokke
