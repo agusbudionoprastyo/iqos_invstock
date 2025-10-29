@@ -54,10 +54,18 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
     setError(null);
     
     try {
+      // Calculate total amount from cart items
+      const calculatedTotal = paymentData.items.reduce((total, item) => total + item.total, 0);
+      
+      console.log('Payment Data:', paymentData);
+      console.log('Calculated Total:', calculatedTotal);
+      console.log('Payment Total Amount:', paymentData.totalAmount);
+      
+      // Generate actual QR code
       const orderId = qrisService.generateOrderId();
       const result = await qrisService.generateQRCode({
         orderId: orderId,
-        amount: paymentData.totalAmount,
+        amount: calculatedTotal, // Use calculated total instead of paymentData.totalAmount
         description: `Pembayaran IQOS - ${paymentData.items.length} item`
       });
 
@@ -87,23 +95,20 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
         }
         
         setPaymentStatus('pending');
-        setStatusMessage('Silakan scan QR code untuk melakukan pembayaran. Tunggu callback dari Yokke...');
+        setStatusMessage(`Silakan scan QR code untuk pembayaran Rp ${calculatedTotal.toLocaleString('id-ID')}`);
         
-        // Disable automatic polling for now - use callback instead
-        console.log('QR Code generated successfully. Waiting for callback...');
-        console.log('Callback URL:', result.callbackUrl);
-        
-        // Show manual confirmation button instead of automatic polling
+        // Show manual confirmation button for testing
         setShowManualConfirm(true);
       } else {
         setError(result.error);
         setPaymentStatus('failed');
         setStatusMessage('Gagal membuat QR code');
       }
+      
     } catch (err) {
       setError(err.message);
       setPaymentStatus('failed');
-      setStatusMessage('Terjadi kesalahan saat membuat QR code');
+      setStatusMessage('Terjadi kesalahan saat memproses pembayaran');
     } finally {
       setLoading(false);
     }
@@ -169,8 +174,11 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
   };
 
   const handleManualConfirm = () => {
+    // Calculate total amount from cart items
+    const calculatedTotal = paymentData.items.reduce((total, item) => total + item.total, 0);
+    
     // Open callback URL in popup window for testing
-    const callbackUrl = `${window.location.origin}/payment/callback?referenceNo=${qrData.referenceNo}&status=success&amount=${paymentData.totalAmount}`;
+    const callbackUrl = `${window.location.origin}/payment/callback?referenceNo=${qrData.referenceNo}&status=success&amount=${calculatedTotal}`;
     
     // Open popup window
     const popup = window.open(callbackUrl, 'paymentCallback', 'width=500,height=600,scrollbars=yes,resizable=yes');
@@ -301,31 +309,23 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
             </div>
           ) : qrData ? (
             <div className="text-center">
-              {/* QR Code Image */}
+              {/* QR Code Image Only */}
               {qrImageUrl ? (
-                <div className="bg-white p-4 rounded-lg border-2 border-gray-200 mb-4 inline-block">
+                <div className="bg-white p-6 rounded-lg border-2 border-gray-200 mb-6 inline-block shadow-lg">
                   <img 
                     src={qrImageUrl} 
-                    alt="QR Code" 
+                    alt="QR Code Pembayaran" 
                     className="mx-auto"
                     style={{ maxWidth: '300px', height: 'auto' }}
                   />
                 </div>
               ) : (
-                <div className="bg-white p-4 rounded-lg border-2 border-gray-200 mb-4 inline-block">
-                  <div className="font-mono text-xs break-all max-w-xs">
-                    {qrData.qrContent}
+                <div className="bg-white p-6 rounded-lg border-2 border-gray-200 mb-6 inline-block shadow-lg">
+                  <div className="text-gray-500 text-sm">
+                    QR Code sedang dimuat...
                   </div>
                 </div>
               )}
-
-              {/* QR Code Text (fallback) */}
-              <div className="text-xs text-gray-500 mb-2">
-                Atau gunakan kode QR berikut:
-              </div>
-              <div className="bg-gray-100 p-2 rounded text-xs font-mono break-all max-w-xs mx-auto">
-                {qrData.qrContent}
-              </div>
 
               {/* Instructions */}
               <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
