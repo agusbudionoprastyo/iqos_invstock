@@ -506,9 +506,6 @@ const SalesModule = () => {
                           gap: '0.5rem',
                           fontSize: '1.25rem',
                           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '0.5rem',
                           fontWeight: '500',
                           position: 'relative',
                           flex: 1
@@ -922,39 +919,6 @@ const SalesModule = () => {
               })}
             </div>
 
-            {/* Scan Barcode Button for Validation */}
-            {cart.some(item => {
-              const product = products.find(p => p.id === item.productId);
-              return product && product.useBarcode !== false;
-            }) && (
-              <div style={{ marginBottom: '1rem' }}>
-                <button
-                  onClick={() => {
-                    setScanningMode('validate');
-                    setShowScanner(true);
-                  }}
-                  style={{
-                    width: '100%',
-                    backgroundColor: 'var(--warning-color)',
-                    color: 'white',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    fontSize: '0.875rem',
-                    fontWeight: '500'
-                  }}
-                >
-                  <ScanBarcodeIcon size={20} />
-                  Scan Barcode untuk Validasi
-                </button>
-              </div>
-            )}
-
             {/* Customer Info */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
               <div>
@@ -1069,11 +1033,15 @@ const SalesModule = () => {
                     'Lanjutkan ke pembayaran'}
               >
                 {getUnscannedBarcodeItems().length > 0 ? 
-                  `Scan Barcode (${getUnscannedBarcodeItems().length} item)` : 
+                
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <ScanBarcodeIcon size={20} />
+                    <span>Scan Barcode {getUnscannedBarcodeItems().length} items</span>
+                  </div> : 
                   'Checkout'
                 }
               </button>
-            </div>
+            </div>  
           </div>
         </div>
       )}

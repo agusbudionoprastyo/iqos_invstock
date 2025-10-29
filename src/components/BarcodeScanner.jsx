@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Camera, X, CheckCircle, AlertCircle } from 'lucide-react';
 
-const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
+const BarcodeScanner = ({ onScan, onClose, isOpen, title = 'Scan Barcode' }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedCode, setScannedCode] = useState('');
   const [error, setError] = useState('');
@@ -13,13 +13,25 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
 
   useEffect(() => {
     if (isOpen) {
+      clearState();
       initializeScanner();
+    } else {
+      clearState();
+      stopScanner();
     }
     
     return () => {
       stopScanner();
     };
   }, [isOpen]);
+
+  const clearState = () => {
+    setScannedCode('');
+    setError('');
+    setManualCode('');
+    setIsScanning(false);
+    setHasPermission(false);
+  };
 
   const initializeScanner = async () => {
     try {
@@ -65,7 +77,10 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
           if (!decodedText) return;
           setScannedCode(decodedText);
           onScan(decodedText);
-          stopScanner();
+          // Auto close after successful scan
+          setTimeout(() => {
+            handleClose();
+          }, 1000);
         },
         (err) => {
           // Ignore frequent decode errors while scanning
@@ -96,13 +111,13 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
   };
 
   const handleClose = () => {
+    clearState();
     stopScanner();
     onClose();
   };
 
   const handleRetry = () => {
-    setError('');
-    setScannedCode('');
+    clearState();
     initializeScanner();
   };
 
@@ -246,6 +261,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
             <button
               onClick={() => {
                 onScan(manualCode);
+                setManualCode('');
                 handleClose();
               }}
               style={{
@@ -288,6 +304,29 @@ const BarcodeScanner = ({ onScan, onClose, isOpen }) => {
             <button
               onClick={() => {
                 onScan(scannedCode);
+                setScannedCode('');
+                handleClose();
+              }}
+              style={{
+                flex: 1,
+                backgroundColor: 'var(--primary-color)',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}
+            >
+              Gunakan
+            </button>
+          )}
+          {scannedCode && (
+            <button
+              onClick={() => {
+                onScan(scannedCode);
+                setScannedCode('');
                 handleClose();
               }}
               style={{

@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { X, QrCode, Clock, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import qrisService from '../services/qrisService';
+import QRCode from 'qrcode';
 
 const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) => {
   const [qrData, setQrData] = useState(null);
+  const [qrImageUrl, setQrImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState('pending');
   const [statusMessage, setStatusMessage] = useState('Menunggu pembayaran...');
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutes in seconds
   const [pollingInterval, setPollingInterval] = useState(null);
+  const [showManualConfirm, setShowManualConfirm] = useState(false);
 
   useEffect(() => {
     if (isOpen && paymentData) {
@@ -22,6 +25,8 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = prevOverflow || '';
+        // Cleanup QR image URL when modal closes
+        setQrImageUrl(null);
       };
     }
     return () => {
@@ -61,11 +66,35 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
           qrContent: result.qrContent,
           referenceNo: result.referenceNo,
           partnerReferenceNo: result.partnerReferenceNo,
-          orderId: orderId
+          orderId: orderId,
+          callbackUrl: result.callbackUrl
         });
+        
+        // Generate QR code image
+        try {
+          const qrImageUrl = await QRCode.toDataURL(result.qrContent, {
+            width: 300,
+            margin: 2,
+            color: {
+              dark: '#000000',
+              light: '#FFFFFF'
+            }
+          });
+          setQrImageUrl(qrImageUrl);
+        } catch (qrError) {
+          console.error('Error generating QR image:', qrError);
+          setQrImageUrl(null);
+        }
+        
         setPaymentStatus('pending');
-        setStatusMessage('Silakan scan QR code untuk melakukan pembayaran');
-        startStatusPolling(result.referenceNo, result.partnerReferenceNo);
+        setStatusMessage('Silakan scan QR code untuk melakukan pembayaran. Tunggu callback dari Yokke...');
+        
+        // Disable automatic polling for now - use callback instead
+        console.log('QR Code generated successfully. Waiting for callback...');
+        console.log('Callback URL:', result.callbackUrl);
+        
+        // Show manual confirmation button instead of automatic polling
+        setShowManualConfirm(true);
       } else {
         setError(result.error);
         setPaymentStatus('failed');
@@ -84,9 +113,11 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
     const interval = setInterval(async () => {
       try {
         const originalTransactionDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        // For checkPaymentStatus, we need originalExternalId
+        // Use referenceNo as originalExternalId (this is the external ID from QR generation)
         const result = await qrisService.checkPaymentStatus(
           referenceNo, 
-          partnerReferenceNo, 
+          referenceNo, // Use referenceNo as originalExternalId
           originalTransactionDate
         );
 
@@ -135,6 +166,37 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleManualConfirm = () => {
+    // Open callback URL in popup window for testing
+    const callbackUrl = `${window.location.origin}/payment/callback?referenceNo=${qrData.referenceNo}&status=success&amount=${paymentData.totalAmount}`;
+    
+    // Open popup window
+    const popup = window.open(callbackUrl, 'paymentCallback', 'width=500,height=600,scrollbars=yes,resizable=yes');
+    
+    // Listen for message from popup
+    const messageHandler = (event) => {
+      if (event.origin !== window.location.origin) return;
+      
+      if (event.data.type === 'PAYMENT_SUCCESS') {
+        setPaymentStatus('success');
+        setStatusMessage('Pembayaran berhasil!');
+        onPaymentSuccess(event.data.data);
+        window.removeEventListener('message', messageHandler);
+      } else if (event.data.type === 'PAYMENT_FAILED') {
+        setPaymentStatus('failed');
+        setStatusMessage('Pembayaran gagal');
+        window.removeEventListener('message', messageHandler);
+      }
+    };
+    
+    window.addEventListener('message', messageHandler);
+    
+    // Cleanup listener after 30 seconds
+    setTimeout(() => {
+      window.removeEventListener('message', messageHandler);
+    }, 30000);
   };
 
   const getStatusIcon = () => {
@@ -239,10 +301,37 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
             </div>
           ) : qrData ? (
             <div className="text-center">
-              {/* QR Code */}
-              <div className="bg-white p-4 rounded-lg border-2 border-gray-200 mb-4 inline-block">
-                <div className="font-mono text-xs break-all max-w-xs">
-                  {qrData.qrContent}
+              {/* QR Code Image */}
+              {qrImageUrl ? (
+                <div className="bg-white p-4 rounded-lg border-2 border-gray-200 mb-4 inline-block">
+                  <img 
+                    src={qrImageUrl} 
+                    alt="QR Code" 
+                    className="mx-auto"
+                    style={{ maxWidth: '300px', height: 'auto' }}
+                  />
+                </div>
+              ) : (
+                <div className="bg-white p-4 rounded-lg border-2 border-gray-200 mb-4 inline-block">
+                  <div className="font-mono text-xs break-all max-w-xs">
+                    {qrData.qrContent}
+                  </div>
+                </div>
+              )}
+
+              {/* QR Code Text (fallback) */}
+              <div className="text-xs text-gray-500 mb-2">
+                Atau gunakan kode QR berikut:
+              </div>
+              <div className="bg-gray-100 p-2 rounded text-xs font-mono break-all max-w-xs mx-auto">
+                {qrData.qrContent}
+              </div>
+
+              {/* Instructions */}
+              <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                <div className="flex items-center justify-center gap-2">
+                  <QrCode className="w-4 h-4" />
+                  <span>Scan QR code dengan aplikasi e-wallet Anda</span>
                 </div>
               </div>
 
@@ -259,6 +348,24 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
                 <div className="text-sm text-gray-600 dark:text-gray-300">
                   <Clock className="w-4 h-4 inline mr-1" />
                   Sisa waktu: {formatTime(timeLeft)}
+                </div>
+              )}
+
+              {/* Manual Confirmation Button for Testing */}
+              {showManualConfirm && paymentStatus === 'pending' && (
+                <div className="mt-4">
+                  <button
+                    onClick={handleManualConfirm}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 mr-2"
+                  >
+                    ✓ Simulasi Pembayaran (Popup)
+                  </button>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Callback URL: {qrData.callbackUrl}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    Tombol ini akan membuka popup untuk simulasi callback
+                  </div>
                 </div>
               )}
 

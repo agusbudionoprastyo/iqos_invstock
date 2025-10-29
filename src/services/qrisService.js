@@ -1,33 +1,47 @@
-// QRIS Payment Service using Yokke SNAP API
+// QRIS Payment Service using Yokke SNAP API v1.0.11
+// Updated to match Yokke documentation specifications
 import CryptoJS from 'crypto-js';
 
 class QRISService {
   constructor() {
-    // API Configuration - Sandbox/Testing parameters from Postman collection
-    this.baseURL = 'https://tst.yokke.co.id:8280/qrissnapmpm/1.0.11'; // Test URL with version
-    this.clientKey = 'if8J8F9Ew1LniSL9EDkzw4NEQTYa'; // X-CLIENT-KEY from Postman
-    this.clientSecret = 'YOUR_CLIENT_SECRET'; // Client secret for signature (need from Yokke)
-    this.merchantId = '463763743'; // Merchant ID from Postman
-    this.terminalId = '12387341'; // Terminal ID from Postman
-    this.partnerId = 'PTKG1'; // Partner ID from Postman
-    this.channelId = '02'; // POS channel
+    // API Configuration - Production credentials from Yokke
+    this.baseURL = 'https://tst.yokke.co.id:8280/qrissnapmpm/1.0.11'; // Test URL with version 1.0.11
+    this.clientKey = 'p_qSZvutLH1xXym6CY6xWYif55oa'; // Client key from Yokke
+    this.clientSecret = 'CRWFqBa9tyWbLJIPcmiCsXWvU7ga'; // Secret key from Yokke
+    this.merchantId = '463763743'; // Merchant ID from Yokke
+    this.terminalId = '12387341'; // Terminal ID from Yokke (8 digits like sample)
+    this.partnerId = 'PTKG1'; // Partner ID from documentation
+    this.channelId = '02'; // Channel ID from documentation
     this.accessToken = null;
     this.tokenExpiry = null;
+    this.generatingQR = false; // Prevent multiple simultaneous calls
   }
 
   // Generate QR Code for payment (MPM - Merchant Presented Mode)
   async generateQRCode(paymentData) {
     try {
+      // Prevent multiple simultaneous calls
+      if (this.generatingQR) {
+        console.log('QR generation already in progress, skipping...');
+        return { success: false, error: 'QR generation already in progress' };
+      }
+      
+      this.generatingQR = true;
+      console.log('QRIS Service - Received paymentData:', paymentData);
+      console.log('generateQRCode called at:', new Date().toISOString());
       // Ensure we have valid access token
       await this.ensureValidToken();
 
       const externalId = this.generateExternalId();
       const timestamp = this.getCurrentTimestamp();
       
+      // Generate callback URL - use frontend endpoint directly
+      const callbackUrl = `${window.location.origin}/payment/callback`;
+      
       const payload = {
         merchantId: this.merchantId,
         terminalId: this.terminalId,
-        partnerReferenceNo: paymentData.orderId,
+        partnerReferenceNo: paymentData.orderId.toString(), // Ensure it's a string
         amount: {
           value: paymentData.amount.toFixed(2),
           currency: 'IDR'
@@ -37,47 +51,71 @@ class QRISService {
           currency: 'IDR'
         },
         additionalInfo: {
-          memberBank: '999', // Default bank code
-          callbackUrl: `${window.location.origin}/payment/callback` // Callback URL for payment notifications
+          callbackUrl: callbackUrl
         }
       };
+      
+      console.log('Partner Reference No:', paymentData.orderId, 'Type:', typeof paymentData.orderId, 'Length:', paymentData.orderId.toString().length);
+      console.log('Callback URL:', callbackUrl);
 
       const requestBody = JSON.stringify(payload);
+      console.log('Generate QR Payload:', payload);
       const signature = this.generateSignature('POST', '/v2.0/qr/qr-mpm-generate', requestBody, timestamp);
+      console.log('Generated Signature:', signature);
+      console.log('Request Body:', requestBody);
 
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.accessToken}`,
+        'X-TIMESTAMP': timestamp,
+        'X-SIGNATURE': signature,
+        'X-EXTERNAL-ID': externalId,
+        'X-PARTNER-ID': this.partnerId,
+        'CHANNEL-ID': this.channelId,
+        'X-PLATFORM': 'PORTAL'
+      };
+      
+      console.log('Request Headers:', headers);
+      
       const response = await fetch(`${this.baseURL}/v2.0/qr/qr-mpm-generate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.accessToken}`,
-          'X-TIMESTAMP': timestamp,
-          'X-SIGNATURE': signature,
-          'X-EXTERNAL-ID': externalId,
-          'X-PARTNER-ID': this.partnerId,
-          'CHANNEL-ID': this.channelId,
-          'X-PLATFORM': 'PORTAL'
-        },
+        headers: headers,
         body: requestBody
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.log('Generate QR Error Response:', errorText);
         throw new Error(`QR Generation failed: ${response.statusText}`);
       }
 
       const result = await response.json();
+      console.log('Generate QR Response:', result);
       
       if (result.responseCode === '2004700') {
+        this.generatingQR = false; // Reset flag on success
+        console.log('QR Generation Success - Returning:', {
+          success: true,
+          qrContent: result.qrContent,
+          referenceNo: result.referenceNo,
+          partnerReferenceNo: result.partnerReferenceNo,
+          terminalId: result.terminalId,
+          callbackUrl: callbackUrl
+        });
         return {
           success: true,
           qrContent: result.qrContent,
           referenceNo: result.referenceNo,
           partnerReferenceNo: result.partnerReferenceNo,
-          terminalId: result.terminalId
+          terminalId: result.terminalId,
+          callbackUrl: callbackUrl
         };
       } else {
+        this.generatingQR = false; // Reset flag on error
         throw new Error(`QR Generation failed: ${result.responseMessage}`);
       }
     } catch (error) {
+      this.generatingQR = false; // Reset flag on exception
       console.error('QRIS Generation Error:', error);
       return {
         success: false,
@@ -94,17 +132,24 @@ class QRISService {
       const externalId = this.generateExternalId();
       const timestamp = this.getCurrentTimestamp();
       
+      console.log('Check Payment Status - Parameters:', {
+        referenceNo,
+        originalExternalId,
+        originalTransactionDate
+      });
+      
       const payload = {
         originalReferenceNo: referenceNo,
         originalExternalId: originalExternalId,
-        serviceCode: '47', // QR Generation service code
+        serviceCode: '47', // Correct service code from Postman collection
         merchantId: this.merchantId,
         additionalInfo: {
           originalTransactionDate: originalTransactionDate,
-          terminalId: this.terminalId,
-          memberBank: '999'
+          terminalId: this.terminalId
         }
       };
+
+      console.log('Check Payment Status - Payload:', payload);
 
       const requestBody = JSON.stringify(payload);
       const signature = this.generateSignature('POST', '/v2.0/qr/qr-mpm-query', requestBody, timestamp);
@@ -159,6 +204,10 @@ class QRISService {
       const timestamp = this.getCurrentTimestamp();
       const signature = this.generateAuthSignature(timestamp);
 
+      const requestBody = JSON.stringify({
+        grantType: 'client_credentials'
+      });
+ 
       const response = await fetch(`${this.baseURL}/qr/v2.0/access-token/b2b`, {
         method: 'POST',
         headers: {
@@ -168,9 +217,7 @@ class QRISService {
           'X-SIGNATURE': signature,
           'X-PLATFORM': 'PORTAL'
         },
-        body: JSON.stringify({
-          grantType: 'client_credentials'
-        })
+        body: requestBody
       });
 
       if (!response.ok) {
@@ -181,7 +228,7 @@ class QRISService {
       
       if (result.responseCode === '2007300') {
         this.accessToken = result.accessToken;
-        this.tokenExpiry = Date.now() + (parseInt(result.expiresIn) * 1000);
+        this.tokenExpiry = Date.now() + (parseInt(result.expiredIn) * 1000);
         return result.accessToken;
       } else {
         throw new Error(`Authentication failed: ${result.responseMessage}`);
@@ -202,15 +249,14 @@ class QRISService {
   // Generate signature for API requests
   generateSignature(method, endpoint, requestBody, timestamp) {
     const stringToSign = `${method}:${endpoint}:${this.accessToken}:${CryptoJS.SHA256(requestBody).toString(CryptoJS.enc.Hex).toLowerCase()}:${timestamp}`;
-    const signature = CryptoJS.HmacSHA512(stringToSign, this.clientSecret).toString(CryptoJS.enc.Base64);
+    const signature = CryptoJS.HmacSHA256(stringToSign, this.clientSecret).toString(CryptoJS.enc.Base64);
     return signature;
   }
 
   // Generate signature for authentication
   generateAuthSignature(timestamp) {
     const stringToSign = `${this.clientKey}|${timestamp}`;
-    // Note: This should use RSA-SHA256 with private key in production
-    // For now, using HMAC-SHA256 as placeholder
+    // Using HMAC-SHA256 as per documentation
     const signature = CryptoJS.HmacSHA256(stringToSign, this.clientSecret).toString(CryptoJS.enc.Hex);
     return signature;
   }
@@ -227,11 +273,16 @@ class QRISService {
     return (timestamp + random).slice(-15);
   }
 
-  // Generate order ID (20 characters)
+  // Generate order ID (20 characters) - numeric format like sample data
   generateOrderId() {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 8);
-    return `IQOS_${timestamp}_${random}`.toUpperCase().slice(0, 20);
+    // For sandbox testing, use valid test case from documentation
+    // Try different test cases to see which one works for status check
+    // From documentation: 230218123798000 (success), 230218123798001 (failed), etc.
+    // Try test case that might work for both QR generation and status check
+    const testCase = '230218123798000';
+    console.log('Using test case Order ID:', testCase);
+    console.log('generateOrderId called at:', new Date().toISOString());
+    return testCase;
   }
 
   // Format amount for API (remove decimal formatting)
@@ -269,15 +320,14 @@ class QRISService {
         originalExternalId: originalExternalId,
         merchantId: this.merchantId,
         reason: reason,
-        amount: {
+        refundAmount: {
           value: this.formatAmount(amount),
           currency: 'IDR'
         },
         additionalInfo: {
           originalTransactionDate: originalTransactionDate,
           terminalId: this.terminalId,
-          originalApprovalCode: '', // Should be provided from original transaction
-          memberBank: '999'
+          originalApprovalCode: '' // Should be provided from original transaction
         }
       };
 
