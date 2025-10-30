@@ -11,9 +11,9 @@ class QRISService {
     this.useProxy = false; // Call directly (note: browser may hit CORS)
     this.clientKey = 'p_qSZvutLH1xXym6CY6xWYif55oa'; // Client key from Yokke
     this.clientSecret = 'CRWFqBa9tyWbLJIPcmiCsXWvU7ga'; // Secret key from Yokke
-    this.merchantId = '463763743'; // Merchant ID from Yokke (sandbox credentials)
-    this.terminalId = '12387341'; // Terminal ID from Yokke (8 digits - as per Postman example)
-    this.partnerId = 'PTKG1'; // Partner ID from documentation
+    this.merchantId = '463763743'; // Merchant ID (from provided MID)
+    this.terminalId = '123873439497343'; // Terminal ID (from provided TID)
+    this.partnerId = 'DafamHotelSMG'; // X-PARTNER-ID (Token Requestor ID)
     this.channelId = '02'; // Channel ID from documentation
     this.accessToken = null;
     this.tokenExpiry = null;
@@ -78,6 +78,7 @@ class QRISService {
 
       const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'Authorization': `Bearer ${this.accessToken}`,
         'X-TIMESTAMP': timestamp,
         'X-SIGNATURE': signature,
@@ -174,6 +175,7 @@ class QRISService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'Authorization': `Bearer ${this.accessToken}`,
           'X-TIMESTAMP': timestamp,
           'X-SIGNATURE': signature,
@@ -484,6 +486,7 @@ class QRISService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'Authorization': `Bearer ${this.accessToken}`,
           'X-TIMESTAMP': timestamp,
           'X-SIGNATURE': signature,
