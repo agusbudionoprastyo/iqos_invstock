@@ -91,6 +91,14 @@ export default defineConfig({
   ],
   server: {
     port: 3000,
-    host: true
+    host: true,
+    proxy: {
+      '/yokke': {
+        target: 'https://tst.yokke.co.id:8280',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/yokke/, '')
+      }
+    }
   }
 })

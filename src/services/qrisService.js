@@ -5,16 +5,30 @@ import CryptoJS from 'crypto-js';
 class QRISService {
   constructor() {
     // API Configuration - Production credentials from Yokke
-    this.baseURL = 'https://tst.yokke.co.id:30123'; // Updated to match official documentation
+    // Use Vite dev proxy in dev to avoid browser CORS (same-origin)
+    const isBrowser = typeof window !== 'undefined';
+    const isDevHost = isBrowser && /(:3000)$/.test(window.location.host);
+    this.baseURL = isDevHost ? '/yokke/qrissnapmpm/1.0.11' : 'https://tst.yokke.co.id:8280/qrissnapmpm/1.0.11';
+    this.proxyURL = null; // No proxy
+    this.useProxy = false; // Call directly (note: browser may hit CORS)
     this.clientKey = 'p_qSZvutLH1xXym6CY6xWYif55oa'; // Client key from Yokke
     this.clientSecret = 'CRWFqBa9tyWbLJIPcmiCsXWvU7ga'; // Secret key from Yokke
-    this.merchantId = '463763743'; // Merchant ID from Yokke
-    this.terminalId = '12387341'; // Terminal ID from Yokke (8 digits like sample)
+    this.merchantId = '463763743'; // Merchant ID from Yokke (sandbox credentials)
+    this.terminalId = '12387341'; // Terminal ID from Yokke (8 digits - as per Postman example)
     this.partnerId = 'PTKG1'; // Partner ID from documentation
     this.channelId = '02'; // Channel ID from documentation
     this.accessToken = null;
     this.tokenExpiry = null;
     this.generatingQR = false; // Prevent multiple simultaneous calls
+    // Manual token for dev/testing (if auth fails)
+    this.manualToken = null; // Set this to valid token if needed
+    // Optional RSA private key (PEM) for token signature as per APIDOC (asymmetric)
+    this.privateKeyPem = null; // Fill with PKCS#8 PEM if provided by provider
+  }
+
+  // Reset generation lock (useful when switching transactions)
+  resetGenerationLock() {
+    this.generatingQR = false;
   }
 
   // Generate QR Code for payment (MPM - Merchant Presented Mode)
@@ -60,7 +74,7 @@ class QRISService {
 
       const requestBody = JSON.stringify(payload);
       console.log('Generate QR Payload:', payload);
-      const signature = this.generateSignature('POST', '/v2.0/qr/qr-mpm-generate', requestBody, timestamp);
+      const signature = this.generateSignature('POST', '/qrissnapmpm/1.0.11/v2.0/qr/qr-mpm-generate', requestBody, timestamp);
       console.log('Generated Signature:', signature);
       console.log('Request Body:', requestBody);
 
@@ -77,7 +91,9 @@ class QRISService {
       
       console.log('Request Headers:', headers);
       
-      const response = await fetch(`${this.baseURL}/v2.0/qr/qr-mpm-generate`, {
+      let response;
+      // Direct call (browser may block via CORS if not allowed by server)
+      response = await fetch(`${this.baseURL}/v2.0/qr/qr-mpm-generate`, {
         method: 'POST',
         headers: headers,
         body: requestBody
@@ -100,7 +116,8 @@ class QRISService {
           referenceNo: result.referenceNo,
           partnerReferenceNo: result.partnerReferenceNo,
           terminalId: result.terminalId,
-          callbackUrl: callbackUrl
+          callbackUrl: callbackUrl,
+          externalId: externalId
         });
         return {
           success: true,
@@ -108,7 +125,8 @@ class QRISService {
           referenceNo: result.referenceNo,
           partnerReferenceNo: result.partnerReferenceNo,
           terminalId: result.terminalId,
-          callbackUrl: callbackUrl
+          callbackUrl: callbackUrl,
+          externalId: externalId
         };
       } else {
         this.generatingQR = false; // Reset flag on error
@@ -152,7 +170,7 @@ class QRISService {
       console.log('Check Payment Status - Payload:', payload);
 
       const requestBody = JSON.stringify(payload);
-      const signature = this.generateSignature('POST', '/v2.0/qr/qr-mpm-query', requestBody, timestamp);
+      const signature = this.generateSignature('POST', '/qrissnapmpm/1.0.11/v2.0/qr/qr-mpm-query', requestBody, timestamp);
 
       const response = await fetch(`${this.baseURL}/v2.0/qr/qr-mpm-query`, {
         method: 'POST',
@@ -200,15 +218,50 @@ class QRISService {
 
   // Get access token for API authentication
   async getAccessToken() {
-    try {
-      const timestamp = this.getCurrentTimestamp();
-      const signature = this.generateAuthSignature(timestamp);
-
-      const requestBody = JSON.stringify({
-        grantType: 'client_credentials'
+    const timestamp = this.getCurrentTimestamp();
+    const requestBodyStr = JSON.stringify({ grantType: 'client_credentials' });
+    const requestBody = { grantType: 'client_credentials' };
+    
+    // Verify proxy is accessible first
+    if (this.useProxy) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        const healthCheck = await fetch(`${this.proxyURL}/api/qris/test`, { 
+          method: 'GET',
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        if (!healthCheck.ok) {
+          throw new Error(`Proxy server not accessible. Status: ${healthCheck.status}`);
+        }
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          throw new Error('Proxy server timeout. Please ensure proxy server is running with: npm run proxy');
+        }
+        throw new Error(`Proxy server not accessible: ${error.message}. Please run: npm run proxy`);
+      }
+    }
+    
+    
+    const signature = await this.generateAuthSignatureAsync(timestamp, requestBodyStr);
+    
+    let response;
+    if (this.useProxy) {
+      response = await fetch(`${this.proxyURL}/api/qris/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          timestamp,
+          clientKey: this.clientKey,
+          signature,
+          requestBody: requestBodyStr
+        })
       });
- 
-      const response = await fetch(`${this.baseURL}/qr/v2.0/access-token/b2b`, {
+    } else {
+      response = await fetch(`${this.baseURL}/qr/v2.0/access-token/b2b`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -217,26 +270,25 @@ class QRISService {
           'X-SIGNATURE': signature,
           'X-PLATFORM': 'PORTAL'
         },
-        body: requestBody
+        body: requestBodyStr
       });
-
-      if (!response.ok) {
-        throw new Error('Authentication failed');
-      }
-
-      const result = await response.json();
-      
-      if (result.responseCode === '2007300') {
-        this.accessToken = result.accessToken;
-        this.tokenExpiry = Date.now() + (parseInt(result.expiredIn) * 1000);
-        return result.accessToken;
-      } else {
-        throw new Error(`Authentication failed: ${result.responseMessage}`);
-      }
-    } catch (error) {
-      console.error('Authentication Error:', error);
-      throw error;
     }
+
+    const responseText = await response.text();
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      throw new Error(`Authentication failed: Non-JSON response (${response.status}).`);
+    }
+
+    if (response.ok && result.responseCode === '2007300') {
+      this.accessToken = result.accessToken;
+      this.tokenExpiry = Date.now() + (parseInt(result.expiredIn) * 1000);
+      return result.accessToken;
+    }
+    
+    throw new Error(`Authentication failed: ${result.responseMessage || response.statusText}`);
   }
 
   // Ensure we have a valid access token
@@ -248,22 +300,111 @@ class QRISService {
 
   // Generate signature for API requests
   generateSignature(method, endpoint, requestBody, timestamp) {
-    const stringToSign = `${method}:${endpoint}:${this.accessToken}:${CryptoJS.SHA256(requestBody).toString(CryptoJS.enc.Hex).toLowerCase()}:${timestamp}`;
-    const signature = CryptoJS.HmacSHA256(stringToSign, this.clientSecret).toString(CryptoJS.enc.Base64);
+    // Minify request body (remove whitespace) for SHA256 calculation
+    const minifiedBody = JSON.stringify(JSON.parse(requestBody));
+    const bodyHash = CryptoJS.SHA256(minifiedBody).toString(CryptoJS.enc.Hex).toLowerCase();
+    
+    // Format: METHOD:ENDPOINT:ACCESS_TOKEN:BODY_HASH:TIMESTAMP
+    const stringToSign = `${method}:${endpoint}:${this.accessToken}:${bodyHash}:${timestamp}`;
+    
+    // Use HMAC-SHA512 as per Yokke documentation example
+    const signature = CryptoJS.HmacSHA512(stringToSign, this.clientSecret).toString(CryptoJS.enc.Base64);
+    
+    console.log('Signature Generation Debug:', {
+      method,
+      endpoint,
+      bodyHash,
+      timestamp,
+      stringToSignLength: stringToSign.length,
+      signature
+    });
+    
     return signature;
   }
 
-  // Generate signature for authentication
-  generateAuthSignature(timestamp) {
-    const stringToSign = `${this.clientKey}|${timestamp}`;
-    // Using HMAC-SHA256 as per documentation
-    const signature = CryptoJS.HmacSHA256(stringToSign, this.clientSecret).toString(CryptoJS.enc.Hex);
+  // Generate authentication signature (prefers RSA as per APIDOC; falls back to HMAC if no key)
+  async generateAuthSignatureAsync(timestamp, requestBody = '{"grantType":"client_credentials"}') {
+    if (this.privateKeyPem) {
+      const stringToSign = `${this.clientKey}|${timestamp}`; // Asymmetric per APIDOC
+      const signatureArrayBuffer = await this.rsaSignSHA256(this.privateKeyPem, stringToSign);
+      const signature = this.arrayBufferToBase64(signatureArrayBuffer);
+      console.log('Auth Signature Generation (RSA-SHA256):', { stringToSignPreview: stringToSign.substring(0, 160), signature });
+      return signature;
+    }
+    // Fallback to HMAC-SHA512 using endpoint path per Postman collection
+    const bodyHash = CryptoJS.SHA256(requestBody).toString(CryptoJS.enc.Hex).toLowerCase();
+    const endpoint = '/qrissnapmpm/1.0.11/qr/v2.0/access-token/b2b';
+    const stringToSign = `POST:${endpoint}:${this.clientKey}:${bodyHash}:${timestamp}`;
+    const signature = CryptoJS.HmacSHA512(stringToSign, this.clientSecret).toString(CryptoJS.enc.Base64);
+    console.log('Auth Signature Generation (HMAC fallback):', { endpoint, bodyHash, timestamp, stringToSignPreview: stringToSign.substring(0, 160), signature });
     return signature;
   }
 
-  // Get current timestamp in ISO format
+  // Helpers for RSA signing using Web Crypto API
+  async rsaSignSHA256(privateKeyPem, data) {
+    const key = await this.importPrivateKey(privateKeyPem);
+    const enc = new TextEncoder();
+    return await crypto.subtle.sign(
+      { name: 'RSASSA-PKCS1-v1_5' },
+      key,
+      enc.encode(data)
+    );
+  }
+
+  async importPrivateKey(pem) {
+    const binaryDer = this.pemToArrayBuffer(pem);
+    return await crypto.subtle.importKey(
+      'pkcs8',
+      binaryDer,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+  }
+
+  pemToArrayBuffer(pem) {
+    const b64 = pem.replace(/-----BEGIN PRIVATE KEY-----/g, '')
+                  .replace(/-----END PRIVATE KEY-----/g, '')
+                  .replace(/\s+/g, '');
+    const raw = atob(b64);
+    const buffer = new ArrayBuffer(raw.length);
+    const view = new Uint8Array(buffer);
+    for (let i = 0; i < raw.length; i++) {
+      view[i] = raw.charCodeAt(i);
+    }
+    return buffer;
+  }
+
+  arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
+  // Get current timestamp in ISO format with timezone WIB (+07:00)
+  // Format: 2024-03-07T09:21:46+07:00 (no milliseconds for auth signature)
   getCurrentTimestamp() {
-    return new Date().toISOString();
+    const now = new Date();
+    
+    // Convert to WIB timezone (UTC+7)
+    const wibOffset = 7 * 60; // 7 hours in minutes
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const wibTime = new Date(utc + (wibOffset * 60000));
+    
+    // Format: YYYY-MM-DDTHH:mm:ss+07:00
+    const year = wibTime.getFullYear();
+    const month = String(wibTime.getMonth() + 1).padStart(2, '0');
+    const day = String(wibTime.getDate()).padStart(2, '0');
+    const hours = String(wibTime.getHours()).padStart(2, '0');
+    const minutes = String(wibTime.getMinutes()).padStart(2, '0');
+    const seconds = String(wibTime.getSeconds()).padStart(2, '0');
+    
+    // Format without milliseconds: 2024-03-07T09:21:46+07:00
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}+07:00`;
   }
 
   // Generate external ID (15 digit numeric string)
@@ -275,14 +416,21 @@ class QRISService {
 
   // Generate order ID (20 characters) - numeric format like sample data
   generateOrderId() {
-    // For sandbox testing, use valid test case from documentation
-    // Try different test cases to see which one works for status check
-    // From documentation: 230218123798000 (success), 230218123798001 (failed), etc.
-    // Try test case that might work for both QR generation and status check
-    const testCase = '230218123798000';
-    console.log('Using test case Order ID:', testCase);
-    console.log('generateOrderId called at:', new Date().toISOString());
-    return testCase;
+    // Generate unique numeric partnerReferenceNo per transaction (≤ 20 digits)
+    // With real sandbox credentials, we can use unique IDs instead of test cases
+    const now = new Date();
+    const pad2 = (n) => n.toString().padStart(2, '0');
+    const y = now.getFullYear().toString().slice(-2); // YY
+    const MM = pad2(now.getMonth() + 1);
+    const dd = pad2(now.getDate());
+    const hh = pad2(now.getHours());
+    const mm = pad2(now.getMinutes());
+    const ss = pad2(now.getSeconds());
+    const ms = now.getMilliseconds().toString().padStart(3, '0');
+    const rand = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const orderId = `${y}${MM}${dd}${hh}${mm}${ss}${ms}${rand}`; // 18 digits
+    console.log('Generated Order ID:', orderId);
+    return orderId;
   }
 
   // Format amount for API (remove decimal formatting)
@@ -306,7 +454,7 @@ class QRISService {
   }
 
   // Cancel payment (QR Payment Credit Cancel)
-  async cancelPayment(originalReferenceNo, originalPartnerReferenceNo, originalExternalId, reason, amount) {
+  async cancelPayment(originalReferenceNo, originalPartnerReferenceNo, originalExternalId, reason, amount, approvalCode) {
     try {
       await this.ensureValidToken();
 
@@ -327,12 +475,12 @@ class QRISService {
         additionalInfo: {
           originalTransactionDate: originalTransactionDate,
           terminalId: this.terminalId,
-          originalApprovalCode: '' // Should be provided from original transaction
+          originalApprovalCode: approvalCode || ''
         }
       };
 
       const requestBody = JSON.stringify(payload);
-      const signature = this.generateSignature('POST', '/v2.0/qr/qr-mpm-cancel', requestBody, timestamp);
+      const signature = this.generateSignature('POST', '/qrissnapmpm/1.0.11/v2.0/qr/qr-mpm-cancel', requestBody, timestamp);
 
       const response = await fetch(`${this.baseURL}/v2.0/qr/qr-mpm-cancel`, {
         method: 'POST',

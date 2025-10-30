@@ -7,6 +7,7 @@ import QRCode from 'qrcode';
 const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) => {
   const [qrData, setQrData] = useState(null);
   const [qrImageUrl, setQrImageUrl] = useState(null);
+  const [lastPaymentResult, setLastPaymentResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState('pending');
@@ -17,6 +18,14 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
 
   useEffect(() => {
     if (isOpen && paymentData) {
+      // Reset previous state and service lock before generating new QR
+      try {
+        qrisService.resetGenerationLock?.();
+      } catch {}
+      setQrData(null);
+      setQrImageUrl(null);
+      setPaymentStatus('pending');
+      setStatusMessage('Menunggu pembayaran...');
       generateQRCode();
     }
     // Lock body scroll while modal open
@@ -75,7 +84,8 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
           referenceNo: result.referenceNo,
           partnerReferenceNo: result.partnerReferenceNo,
           orderId: orderId,
-          callbackUrl: result.callbackUrl
+          callbackUrl: result.callbackUrl,
+          externalId: result.externalId
         });
         
         // Generate QR code image
@@ -190,6 +200,7 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
       if (event.data.type === 'PAYMENT_SUCCESS') {
         setPaymentStatus('success');
         setStatusMessage('Pembayaran berhasil!');
+        setLastPaymentResult(event.data.data);
         onPaymentSuccess(event.data.data);
         window.removeEventListener('message', messageHandler);
       } else if (event.data.type === 'PAYMENT_FAILED') {
@@ -217,6 +228,70 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
         return <XCircle className="w-8 h-8 text-red-500" />;
       default:
         return <Clock className="w-8 h-8 text-blue-500" />;
+    }
+  };
+
+  const handleCancelPayment = async () => {
+    try {
+      const calculatedTotal = paymentData.items.reduce((total, item) => total + item.total, 0);
+      setLoading(true);
+      setStatusMessage('Memproses pembatalan/refund...');
+
+      const result = await qrisService.cancelPayment(
+        qrData.referenceNo,
+        qrData.partnerReferenceNo,
+        qrData.externalId,
+        'Customer request',
+        calculatedTotal,
+        lastPaymentResult?.approvalCode
+      );
+
+      if (result.success) {
+        setStatusMessage('Transaksi berhasil dibatalkan / refund berhasil.');
+        setPaymentStatus('refunded');
+      } else {
+        setStatusMessage(`Gagal membatalkan: ${result.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      setStatusMessage(`Gagal membatalkan: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAbortBeforePayment = async () => {
+    try {
+      // If we have QR references, try cancel endpoint; otherwise just close
+      const calculatedTotal = paymentData.items.reduce((total, item) => total + item.total, 0);
+      setLoading(true);
+      setStatusMessage('Membatalkan transaksi yang belum dibayar...');
+
+      if (qrData?.referenceNo && qrData?.partnerReferenceNo && qrData?.externalId) {
+        const result = await qrisService.cancelPayment(
+          qrData.referenceNo,
+          qrData.partnerReferenceNo,
+          qrData.externalId,
+          'User cancelled before payment',
+          calculatedTotal,
+          undefined
+        );
+
+        if (result.success) {
+          setStatusMessage('Transaksi dibatalkan.');
+          setPaymentStatus('cancelled');
+        } else {
+          // Some gateways may not allow cancel before paid; treat as local cancel
+          setStatusMessage('Tidak dapat batalkan via API, ditutup secara lokal.');
+        }
+      }
+    } catch (err) {
+      setStatusMessage('Tidak dapat batalkan via API, ditutup secara lokal.');
+    } finally {
+      setLoading(false);
+      // Close modal after short delay
+      setTimeout(() => {
+        onClose?.();
+      }, 500);
     }
   };
 
@@ -342,6 +417,32 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
                   {statusMessage}
                 </span>
               </div>
+
+              {/* Refund Button - visible after success */}
+              {paymentStatus === 'success' && (
+                <div className="mt-2">
+                  <button
+                    onClick={handleCancelPayment}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                    disabled={loading}
+                  >
+                    Batalkan / Refund Transaksi
+                  </button>
+                </div>
+              )}
+
+              {/* Abort Button - visible while pending */}
+              {paymentStatus === 'pending' && (
+                <div className="mt-2">
+                  <button
+                    onClick={handleAbortBeforePayment}
+                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
+                    disabled={loading}
+                  >
+                    Batalkan (Belum Dibayar)
+                  </button>
+                </div>
+              )}
 
               {/* Timer */}
               {paymentStatus === 'pending' && (
