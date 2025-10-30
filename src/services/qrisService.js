@@ -12,14 +12,19 @@ class QRISService {
     this.clientKey = 'p_qSZvutLH1xXym6CY6xWYif55oa'; // Client key from Yokke
     this.clientSecret = 'CRWFqBa9tyWbLJIPcmiCsXWvU7ga'; // Secret key from Yokke
     this.merchantId = '463763743'; // Merchant ID (from provided MID)
-    this.terminalId = '123873439497343'; // Terminal ID (from provided TID)
+    this.terminalId = '12387341'; // Terminal ID (8 digits as per spec)
     this.partnerId = 'DafamHotelSMG'; // X-PARTNER-ID (Token Requestor ID)
     this.channelId = '02'; // Channel ID from documentation
+    // Sandbox behavior toggles (align with Postman sandbox expectations)
+    this.sandboxMode = true; // set false for real flows
+    this.sandboxPartnerId = 'PTKG1';
+    this.testPartnerReferenceNo = '230218123798000';
+    this.includeFeeAmountInSandbox = true;
     this.accessToken = null;
     this.tokenExpiry = null;
     this.generatingQR = false; // Prevent multiple simultaneous calls
     // Manual token for dev/testing (if auth fails)
-    this.manualToken = null; // Set this to valid token if needed
+    this.manualToken = null;
     // Optional RSA private key (PEM) for token signature as per APIDOC (asymmetric)
     this.privateKeyPem = null; // Fill with PKCS#8 PEM if provided by provider
   }
@@ -53,19 +58,18 @@ class QRISService {
       const payload = {
         merchantId: this.merchantId,
         terminalId: this.terminalId,
-        partnerReferenceNo: paymentData.orderId.toString(), // Ensure it's a string
+        partnerReferenceNo: (this.sandboxMode && this.testPartnerReferenceNo)
+          ? this.testPartnerReferenceNo
+          : paymentData.orderId.toString(),
         amount: {
           value: paymentData.amount.toFixed(2),
           currency: 'IDR'
-        },
-        feeAmount: {
-          value: '0.00',
-          currency: 'IDR'
-        },
-        additionalInfo: {
-          callbackUrl: callbackUrl
         }
       };
+
+      if (this.sandboxMode && this.includeFeeAmountInSandbox) {
+        payload.feeAmount = { value: '0.00', currency: 'IDR' };
+      }
       
       console.log('Partner Reference No:', paymentData.orderId, 'Type:', typeof paymentData.orderId, 'Length:', paymentData.orderId.toString().length);
       console.log('Callback URL:', callbackUrl);
@@ -83,7 +87,7 @@ class QRISService {
         'X-TIMESTAMP': timestamp,
         'X-SIGNATURE': signature,
         'X-EXTERNAL-ID': externalId,
-        'X-PARTNER-ID': this.partnerId,
+        'X-PARTNER-ID': this.sandboxMode ? this.sandboxPartnerId : this.partnerId,
         'CHANNEL-ID': this.channelId,
         'X-PLATFORM': 'PORTAL'
       };
@@ -169,9 +173,9 @@ class QRISService {
       console.log('Check Payment Status - Payload:', payload);
 
       const requestBody = JSON.stringify(payload);
-      const signature = this.generateSignature('POST', '/qrissnapmpm/1.0.11/v2.0/qr/qr-mpm-query', requestBody, timestamp);
+      const signature = this.generateSignature('POST', '/qrissnapmpm/1.0.11/v3.0/qr/qr-mpm-query', requestBody, timestamp);
 
-      const response = await fetch(`${this.baseURL}/v2.0/qr/qr-mpm-query`, {
+      const response = await fetch(`${this.baseURL}/v3.0/qr/qr-mpm-query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -468,7 +472,7 @@ class QRISService {
         originalExternalId: originalExternalId,
         merchantId: this.merchantId,
         reason: reason,
-        refundAmount: {
+        amount: {
           value: this.formatAmount(amount),
           currency: 'IDR'
         },
@@ -480,9 +484,9 @@ class QRISService {
       };
 
       const requestBody = JSON.stringify(payload);
-      const signature = this.generateSignature('POST', '/qrissnapmpm/1.0.11/v2.0/qr/qr-mpm-cancel', requestBody, timestamp);
+      const signature = this.generateSignature('POST', '/qrissnapmpm/1.0.11/v3.0/qr/qr-mpm-cancel', requestBody, timestamp);
 
-      const response = await fetch(`${this.baseURL}/v2.0/qr/qr-mpm-cancel`, {
+      const response = await fetch(`${this.baseURL}/v3.0/qr/qr-mpm-cancel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { X, QrCode, Clock, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import qrisService from '../services/qrisService';
 import QRCode from 'qrcode';
+import qrisLogo from '../logo/512px-QRIS_Logo.png';
 
 const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) => {
   const [qrData, setQrData] = useState(null);
@@ -311,178 +312,73 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(
-    <div className="modal-overlay" style={{ zIndex: 2147483647 }}>
-      <div className="modal" style={{ maxWidth: '36rem', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
-        {/* Close Button - top right corner */}
-        <button
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '0.5rem',
-            right: '0.5rem',
-            margin: 0,
-            background: 'none',
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-color)',
-            cursor: 'pointer',
-            padding: '0.25rem'
-          }}
-          aria-label="Close"
-        >
-          <X size={20} />
-        </button>
-
+    <div className="modal-overlay" style={{ zIndex: 2147483647 }} onClick={onClose}>
+      {loading && (
+        <div className="qris-global-loading" onClick={(e) => e.stopPropagation()}>
+          <div className="spinner"></div>
+        </div>
+      )}
+      <div
+        className="modal"
+        style={{
+          width: 'min(92vw, 360px)',
+          maxWidth: '360px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          position: 'relative',
+          background: 'white',
+          boxShadow: 'none',
+          border: 'none',
+          padding: 0,
+          margin: '0 auto'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Content */}
-        <div className="p-6">
-          {/* Payment Info (with details) */}
-          <div className="text-center mb-4">
-            <h3 className="text-base font-medium text-gray-900 dark:text-white">
-              Total Pembayaran
-            </h3>
-            <p className="text-2xl font-bold text-primary">
-              Rp {paymentData.totalAmount.toLocaleString('id-ID')}
-            </p>
+        <div>
+
+
+      {/* QR Code Section */}
+      {loading ? null : error ? (
+        <div className="text-center py-8">
+          <p className="text-gray-600 dark:text-gray-300">{error}</p>
+        </div>
+      ) : qrData ? (
+        <div className="qris-wrap">
+          <div className="qris-overlay-header">
+            <div className="qris-header-left"><img src={qrisLogo} alt="QRIS" className="qris-header-logo" /></div>
+            <div className="qris-header-right">Hotel Dafam Semarang</div>
           </div>
-
-          {/* Item Details */}
-          {paymentData?.items?.length > 0 && (
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-gray-900 dark:text-white">Detail Item</h4>
-                <span className="text-xs text-gray-500 dark:text-gray-300">
-                  {paymentData.items.length} item
-                </span>
-              </div>
-              <div className="space-y-2 max-h-48 overflow-auto pr-1">
-                {paymentData.items.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-sm">
-                    <div className="text-gray-800 dark:text-gray-200">
-                      <span className="font-medium">{item.productName}</span>
-                      <span className="text-gray-500 dark:text-gray-400"> × {item.quantity}</span>
-                    </div>
-                    <div className="text-gray-800 dark:text-gray-200">
-                      Rp {Number(item.total).toLocaleString('id-ID')}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <div className="qris-card">
+          <div className="qris-card-body">
+            <div className="qris-user">
+              <div className="qris-user-name">{paymentData?.customerName || 'Pelanggan'}</div>
+              <div className="qris-user-bank">628{((paymentData?.customerPhone || '').slice(-4) || '0000').replace(/(\d{4})$/, '**********')} {(paymentData?.customerPhone || '').slice(-4) || '  '}</div>
             </div>
-          )}
 
-          {/* QR Code Section */}
-          {loading ? (
-            <div className="text-center py-8">
-              <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-300">Membuat QR Code...</p>
-            </div>
-          ) : error ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600 dark:text-gray-300">{error}</p>
-            </div>
-          ) : qrData ? (
-            <div className="text-center">
-              {/* QR Code Image Only */}
-              {qrImageUrl ? (
-                <div className="bg-white p-6 rounded-lg border-2 border-gray-200 mb-6 inline-block shadow-lg">
-                  <img 
-                    src={qrImageUrl} 
-                    alt="QR Code Pembayaran" 
-                    className="mx-auto"
-                    style={{ maxWidth: '300px', height: 'auto' }}
-                  />
-                </div>
-              ) : (
-                <div className="bg-white p-6 rounded-lg border-2 border-gray-200 mb-6 inline-block shadow-lg">
-                  <div className="text-gray-500 text-sm">
-                    QR Code sedang dimuat...
-                  </div>
-                </div>
-              )}
-
-              {/* Instructions */}
-              <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                <div className="flex items-center justify-center gap-2">
-                  <QrCode className="w-4 h-4" />
-                  <span>Scan QR code dengan aplikasi e-wallet Anda</span>
-                </div>
+            {qrImageUrl ? (
+              <div className="qris-qr-wrapper">
+                <img src={qrImageUrl} alt="QRIS" className="qris-qr-img" />
+                <div className="qris-qr-code">{qrData?.referenceNo || ''}</div>
               </div>
+            ) : null}
+            <div className="qris-amount">Rp {Number(paymentData?.totalAmount || 0).toLocaleString('id-ID')}</div>
+            <div className="qris-remark">
+              {paymentData?.items?.length
+                ? `${paymentData.items.map(i => `${i.productName} × ${i.quantity}`).join(', ')}`
+                : '"Pembayaran"'}
+            </div>
 
-              {/* Status */}
-              <div className="flex items-center justify-center mb-4">
-                {getStatusIcon()}
-                <span className={`ml-2 font-medium ${getStatusColor()}`}>
-                  {statusMessage}
-                </span>
-              </div>
-
-              {/* Refund Button - visible after success */}
-              {paymentStatus === 'success' && (
-                <div className="mt-2">
-                  <button
-                    onClick={handleCancelPayment}
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-                    disabled={loading}
-                  >
-                    Batalkan / Refund Transaksi
-                  </button>
-                </div>
-              )}
-
-              {/* Abort Button - visible while pending */}
+            <div className="qris-footer-note">
+              <div>QR ini hanya untuk 1 kali transaksi</div>
               {paymentStatus === 'pending' && (
-                <div className="mt-2">
-                  <button
-                    onClick={handleAbortBeforePayment}
-                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
-                    disabled={loading}
-                  >
-                    Batalkan (Belum Dibayar)
-                  </button>
-                </div>
-              )}
-
-              {/* Timer */}
-              {paymentStatus === 'pending' && (
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  <Clock className="w-4 h-4 inline mr-1" />
-                  Sisa waktu: {formatTime(timeLeft)}
-                </div>
-              )}
-
-              {/* Manual Confirmation Button for Testing */}
-              {showManualConfirm && paymentStatus === 'pending' && (
-                <div className="mt-4">
-                  <button
-                    onClick={handleManualConfirm}
-                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 mr-2"
-                  >
-                    ✓ Simulasi Pembayaran (Popup)
-                  </button>
-                  <div className="text-xs text-gray-500 mt-2">
-                    Callback URL: {qrData.callbackUrl}
-                  </div>
-                  <div className="text-xs text-gray-400 mt-1">
-                    Tombol ini akan membuka popup untuk simulasi callback
-                  </div>
-                </div>
-              )}
-
-              {/* Refresh Button */}
-              {paymentStatus === 'pending' && (
-                <div className="mt-4">
-                  <button
-                    onClick={generateQRCode}
-                    className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover"
-                  >
-                    Refresh QR
-                  </button>
-                </div>
+                <div className="qris-expire">Berakhir dalam {formatTime(timeLeft)}</div>
               )}
             </div>
-          ) : null}
+          </div>
+        </div>
+        </div>
+      ) : null}
         </div>
       </div>
       </div>,

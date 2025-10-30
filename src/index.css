@@ -1,3 +1,36 @@
+/* Global loading inside overlay (not in modal card) */
+.qris-global-loading{position:fixed;inset:auto;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;z-index:2147483647;color:var(--primary-color)}
+/* QRIS Card Styles */
+/* Responsive container for QRIS card */
+.qris-wrap{width:clamp(280px,92vw,360px);margin:0 auto}
+.qris-card{background:transparent;overflow:hidden;max-width:360px;margin:0 auto}
+.qris-card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;color:#fff;font-weight:700;background:linear-gradient(135deg,#1e63ff 0%,#0f49cc 60%,#0a3aa8 100%)}
+.qris-overlay-header{position:relative;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;color:#fff;font-weight:700;background:#e52535;border-top-left-radius:12px;border-top-right-radius:12px}
+.qris-header-left{letter-spacing:1px}
+.qris-header-logo{height:18px;display:block}
+.qris-header-right{opacity:.9}
+.qris-card-body{padding:18px}
+.qris-user{margin-bottom:12px}
+.qris-user-name{font-weight:700;color:#0f172a}
+.qris-user-bank{color:#475569;font-size:12px}
+.qris-qr-wrapper{background:#fff;border-radius:14px;border:1px solid #e5e7eb;padding:14px 14px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:10px auto 8px;max-width:300px}
+.qris-qr-img{width:clamp(220px,70vw,260px);height:auto;display:block}
+.qris-qr-loading{color:#64748b;font-size:12px;padding:40px 0}
+.qris-qr-loading-only{background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 0}
+.qris-qr-loading-text{margin-top:8px;color:#64748b;font-size:12px}
+.qris-qr-code{margin-top:6px;color:#64748b;letter-spacing:6px;font-weight:600}
+.qris-amount{margin-top:10px;font-size:22px;font-weight:800;color:#0f172a;text-align:center}
+.qris-remark{margin-top:2px;color:#64748b;text-align:center;font-size:12px}
+.qris-footer-note{margin-top:12px;text-align:center;color:#334155;font-size:12px}
+.qris-expire{margin-top:2px;color:#e52535;font-weight:600}
+
+/* Mobile tweaks */
+@media (max-width: 480px){
+  .qris-card-body{padding:14px}
+  .qris-user-name{font-size:14px}
+  .qris-amount{font-size:20px}
+  .qris-remark,.qris-user-bank,.qris-footer-note{font-size:11px}
+}
 /* CSS Variables */
 :root {
   /* --primary-color: #3b82f6; */
