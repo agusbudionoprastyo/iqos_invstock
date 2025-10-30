@@ -4,11 +4,9 @@ import CryptoJS from 'crypto-js';
 
 class QRISService {
   constructor() {
-    // API Configuration - Production credentials from Yokke
-    // Use Vite dev proxy in dev to avoid browser CORS (same-origin)
+    // API Configuration - Use same-origin proxy in browser (dev and prod)
     const isBrowser = typeof window !== 'undefined';
-    const isDevHost = isBrowser && /(:3000)$/.test(window.location.host);
-    this.baseURL = isDevHost ? '/yokke/qrissnapmpm/1.0.11' : 'https://tst.yokke.co.id:8280/qrissnapmpm/1.0.11';
+    this.baseURL = isBrowser ? '/yokke/qrissnapmpm/1.0.11' : 'https://tst.yokke.co.id:8280/qrissnapmpm/1.0.11';
     this.proxyURL = null; // No proxy
     this.useProxy = false; // Call directly (note: browser may hit CORS)
     this.clientKey = 'p_qSZvutLH1xXym6CY6xWYif55oa'; // Client key from Yokke
