@@ -1,63 +1,86 @@
 import { toast } from 'react-toastify';
 import { AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-react';
 
-// Custom toast styles with different colors for each type
-const toastStyles = {
-  success: {
-    background: 'rgba(34, 197, 94, 0.2)',
-    backdropFilter: 'blur(15px)',
-    WebkitBackdropFilter: 'blur(15px)',
-    border: '1px solid rgba(34, 197, 94, 0.3)',
-    boxShadow: '0 8px 32px rgba(34, 197, 94, 0.2)',
-    color: '#22c55e',
-    fontWeight: '500',
-    fontSize: '14px',
-    padding: '12px 16px',
-  },
-  error: {
-    background: 'rgba(239, 68, 68, 0.2)',
-    backdropFilter: 'blur(15px)',
-    WebkitBackdropFilter: 'blur(15px)',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-    boxShadow: '0 8px 32px rgba(239, 68, 68, 0.2)',
-    color: '#ef4444',
-    fontWeight: '500',
-    fontSize: '14px',
-    padding: '12px 16px',
-  },
-  warning: {
-    background: 'rgba(234, 179, 8, 0.2)',
-    backdropFilter: 'blur(15px)',
-    WebkitBackdropFilter: 'blur(15px)',
-    border: '1px solid rgba(234, 179, 8, 0.3)',
-    boxShadow: '0 8px 32px rgba(234, 179, 8, 0.2)',
-    color: '#ca8a04',
-    fontWeight: '500',
-    fontSize: '14px',
-    padding: '12px 16px',
-  },
-  info: {
-    background: 'rgba(59, 130, 246, 0.2)',
-    backdropFilter: 'blur(15px)',
-    WebkitBackdropFilter: 'blur(15px)',
-    border: '1px solid rgba(59, 130, 246, 0.3)',
-    boxShadow: '0 8px 32px rgba(59, 130, 246, 0.2)',
-    color: '#3b82f6',
-    fontWeight: '500',
-    fontSize: '14px',
-    padding: '12px 16px',
-  },
-  default: {
-    background: 'rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(15px)',
-    WebkitBackdropFilter: 'blur(15px)',
-    border: '1px solid var(--border-color)',
-    boxShadow: '0 8px 32px rgba(31, 38, 135, 0.2)',
-    color: 'var(--text-color)',
-    fontWeight: '500',
-    fontSize: '14px',
-    padding: '12px 16px',
-  },
+// Helper function to get toast background based on dark mode
+const getToastBackground = () => {
+  // Check if dark mode is active
+  const isDarkMode = document.documentElement.classList.contains('dark-mode');
+  
+  if (isDarkMode) {
+    // Dark mode: use card background with more transparency
+    return 'rgba(52, 53, 59, 0.6)'; // card-background #34353b dengan opacity 0.6
+  } else {
+    // Light mode: use white with more transparency
+    return 'rgba(255, 255, 255, 0.6)'; // White dengan opacity 0.6 (lebih transparan)
+  }
+};
+
+// Custom toast styles - transparent blur without border, adaptive to dark/light mode
+const getToastStyles = () => {
+  const baseBackground = getToastBackground();
+  
+  return {
+    success: {
+      background: baseBackground,
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: 'none',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+      color: 'var(--text-color)',
+      fontWeight: '500',
+      fontSize: '14px',
+      padding: '12px 16px',
+      // borderRadius: '12px',
+    },
+    error: {
+      background: baseBackground,
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: 'none',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+      color: 'var(--text-color)',
+      fontWeight: '500',
+      fontSize: '14px',
+      padding: '12px 16px',
+      // borderRadius: '12px',
+    },
+    warning: {
+      background: baseBackground,
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: 'none',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+      color: 'var(--text-color)',
+      fontWeight: '500',
+      fontSize: '14px',
+      padding: '12px 16px',
+      // borderRadius: '12px',
+    },
+    info: {
+      background: baseBackground,
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: 'none',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+      color: 'var(--text-color)',
+      fontWeight: '500',
+      fontSize: '14px',
+      padding: '12px 16px',
+      // borderRadius: '12px',
+    },
+    default: {
+      background: baseBackground,
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: 'none',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+      color: 'var(--text-color)',
+      fontWeight: '500',
+      fontSize: '14px',
+      padding: '12px 16px',
+      // borderRadius: '12px',
+    },
+  };
 };
 
 // Toast configuration
@@ -75,6 +98,7 @@ const toastConfig = {
 export const showToast = {
   success: (message, title = '') => {
     const content = title ? `${title}\n${message}` : message;
+    const toastStyles = getToastStyles();
     toast.success(content, {
       ...toastConfig,
       style: toastStyles.success,
@@ -84,6 +108,7 @@ export const showToast = {
 
   error: (message, title = '') => {
     const content = title ? `${title}\n${message}` : message;
+    const toastStyles = getToastStyles();
     toast.error(content, {
       ...toastConfig,
       style: toastStyles.error,
@@ -93,6 +118,7 @@ export const showToast = {
 
   warning: (message, title = '') => {
     const content = title ? `${title}\n${message}` : message;
+    const toastStyles = getToastStyles();
     toast.warning(content, {
       ...toastConfig,
       style: toastStyles.warning,
@@ -102,6 +128,7 @@ export const showToast = {
 
   info: (message, title = '') => {
     const content = title ? `${title}\n${message}` : message;
+    const toastStyles = getToastStyles();
     toast.info(content, {
       ...toastConfig,
       style: toastStyles.info,
@@ -157,7 +184,7 @@ export const showToast = {
         </div>,
         {
           ...toastConfig,
-          style: toastStyles.default,
+          style: getToastStyles().default,
           autoClose: false,
           closeOnClick: false,
           draggable: false,
@@ -231,7 +258,7 @@ export const showToast = {
         </div>,
         {
           ...toastConfig,
-          style: toastStyles.default,
+          style: getToastStyles().default,
           autoClose: false,
           closeOnClick: false,
           draggable: false,

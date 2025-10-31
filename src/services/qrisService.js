@@ -11,13 +11,13 @@ class QRISService {
     this.useProxy = false; // Call directly (note: browser may hit CORS)
     this.clientKey = 'p_qSZvutLH1xXym6CY6xWYif55oa'; // Client key from Yokke
     this.clientSecret = 'CRWFqBa9tyWbLJIPcmiCsXWvU7ga'; // Secret key from Yokke
-    this.merchantId = '463763743'; // Merchant ID (from provided MID)
-    this.terminalId = '12387341'; // Terminal ID (8 digits as per spec)
+    this.merchantId = '00007100010926'; // Merchant ID (from provided MID)
+    this.terminalId = '72001126'; // Terminal ID (8 digits as per spec)
     this.partnerId = 'DafamHotelSMG'; // X-PARTNER-ID (Token Requestor ID)
     this.channelId = '02'; // Channel ID from documentation
     // Sandbox behavior toggles (align with Postman sandbox expectations)
     this.sandboxMode = true; // set false for real flows
-    this.sandboxPartnerId = 'PTKG1';
+    this.sandboxPartnerId = 'DafamHotelSMG';
     this.testPartnerReferenceNo = '230218123798000';
     this.includeFeeAmountInSandbox = true;
     this.accessToken = null;

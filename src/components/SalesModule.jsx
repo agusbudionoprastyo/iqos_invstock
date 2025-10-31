@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Plus, Minus, Trash2, ScanBarcodeIcon, Search, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { productService, salesService } from '../services/database';
 import BarcodeScanner from './BarcodeScanner';
@@ -29,6 +29,29 @@ const SalesModule = () => {
   const [showQRISPayment, setShowQRISPayment] = useState(false);
   const [qrisPaymentData, setQrisPaymentData] = useState(null);
   const [scannedItems, setScannedItems] = useState(new Set()); // Track scanned items
+  
+  // Ref to prevent duplicate toast calls
+  const toastDebounceRef = useRef({});
+  
+  // Helper function to show toast with debounce
+  const showToastDebounced = (type, message, title = '', debounceMs = 1000) => {
+    const toastKey = `${type}-${message}-${title}`;
+    const now = Date.now();
+    const lastCall = toastDebounceRef.current[toastKey] || 0;
+    
+    // Prevent duplicate toast within debounce time
+    if (now - lastCall < debounceMs) {
+      return;
+    }
+    
+    toastDebounceRef.current[toastKey] = now;
+    showToast[type](message, title);
+    
+    // Clear the debounce after delay
+    setTimeout(() => {
+      delete toastDebounceRef.current[toastKey];
+    }, debounceMs);
+  };
 
   useEffect(() => {
     loadProducts();
@@ -77,11 +100,11 @@ const SalesModule = () => {
           addToCart(product);
         }
       } else {
-        showToast.warning('Barcode tidak terdaftar dalam sistem.', 'Produk Tidak Ditemukan');
+        showToastDebounced('warning', 'Barcode tidak terdaftar dalam sistem.', 'Produk Tidak Ditemukan');
       }
     } catch (error) {
       console.error('Error scanning barcode:', error);
-      showToast.error('Gagal memindai barcode.', 'Error!');
+      showToastDebounced('error', 'Gagal memindai barcode.', 'Error!');
     }
     setShowScanner(false);
     setScanningMode(null);
@@ -114,8 +137,6 @@ const SalesModule = () => {
   };
 
   const addToCart = (product, buttonElement = null) => {
-    const existingItem = cart.find(item => item.productId === product.id);
-    
     // Trigger flying animation first if button element is provided
     if (buttonElement) {
       const cartButton = document.querySelector('[data-cart-button]');
@@ -123,40 +144,59 @@ const SalesModule = () => {
         createFlyingAnimation(buttonElement, cartButton);
         
         // Delay cart update until animation completes
+        // Use functional update to check latest cart state inside setTimeout
         setTimeout(() => {
-          if (existingItem) {
-            // If product already in cart, increase quantity
-            increaseQuantity(product.id);
-          } else {
-            const readyStock = readyStockData[product.id] || 0;
-            if (readyStock <= 0) {
-              showToast.warning('Stok siap jual untuk produk ini habis.', 'Stok Habis');
-              return;
+          setCart(prevCart => {
+            const existingItem = prevCart.find(item => item.productId === product.id);
+            
+            if (existingItem) {
+              // If product already in cart, increase quantity
+              const readyStock = readyStockData[product.id] || 0;
+              if (existingItem.quantity >= readyStock) {
+                showToastDebounced('warning', `Maksimal quantity: ${readyStock}`, 'Stok Tidak Cukup');
+                return prevCart; // Return unchanged cart
+              }
+              
+              const newQuantity = existingItem.quantity + 1;
+              return prevCart.map(item =>
+                item.productId === product.id
+                  ? { ...item, quantity: newQuantity, total: newQuantity * item.price }
+                  : item
+              );
+            } else {
+              // Add new item to cart
+              const readyStock = readyStockData[product.id] || 0;
+              if (readyStock <= 0) {
+                showToastDebounced('warning', 'Stok siap jual untuk produk ini habis.', 'Stok Habis');
+                return prevCart; // Return unchanged cart
+              }
+              
+              return [...prevCart, {
+                productId: product.id,
+                productName: product.name,
+                quantity: 1,
+                price: product.price,
+                total: product.price
+              }];
             }
-            setCart(prevCart => [...prevCart, {
-              productId: product.id,
-              productName: product.name,
-              quantity: 1,
-              price: product.price,
-              total: product.price
-            }]);
-          }
+          });
         }, 400); // Half of animation duration for smoother effect
         return;
       }
     }
     
     // If no animation, update cart immediately
+    const existingItem = cart.find(item => item.productId === product.id);
     if (existingItem) {
       // If product already in cart, increase quantity
       increaseQuantity(product.id);
     } else {
       const readyStock = readyStockData[product.id] || 0;
       if (readyStock <= 0) {
-        showToast.warning('Stok siap jual untuk produk ini habis.', 'Stok Habis');
+        showToastDebounced('warning', 'Stok siap jual untuk produk ini habis.', 'Stok Habis');
         return;
       }
-      setCart([...cart, {
+      setCart(prevCart => [...prevCart, {
         productId: product.id,
         productName: product.name,
         quantity: 1,
@@ -189,7 +229,7 @@ const SalesModule = () => {
     
     if (existingItem) {
       if (existingItem.quantity >= readyStock) {
-        showToast.warning(`Maksimal quantity: ${readyStock}`, 'Stok Tidak Cukup');
+        showToastDebounced('warning', `Maksimal quantity: ${readyStock}`, 'Stok Tidak Cukup');
         return;
       }
       
@@ -210,7 +250,7 @@ const SalesModule = () => {
     
     const readyStock = readyStockData[productId] || 0;
     if (newQuantity > readyStock) {
-      showToast.warning(`Maksimal quantity: ${readyStock}`, 'Stok Tidak Cukup');
+      showToastDebounced('warning', `Maksimal quantity: ${readyStock}`, 'Stok Tidak Cukup');
       return;
     }
     
@@ -266,12 +306,12 @@ const SalesModule = () => {
       // If we haven't scanned enough barcodes for the quantity, add this scan
       if (scannedCount < cartItem.quantity) {
         setScannedItems(prev => new Set([...prev, `${product.id}-${barcode}-${Date.now()}`]));
-        showToast.success(`Barcode ${product.name} berhasil divalidasi! (${scannedCount + 1}/${cartItem.quantity})`, 'Validasi Berhasil');
+        showToastDebounced('success', `Barcode ${product.name} berhasil divalidasi! (${scannedCount + 1}/${cartItem.quantity})`, 'Validasi Berhasil');
       } else {
-        showToast.warning(`Semua barcode untuk ${product.name} sudah divalidasi!`, 'Sudah Valid');
+        showToastDebounced('warning', `Semua barcode untuk ${product.name} sudah divalidasi!`, 'Sudah Valid');
       }
     } else {
-      showToast.warning('Produk tidak ditemukan di keranjang.', 'Error Validasi');
+      showToastDebounced('warning', 'Produk tidak ditemukan di keranjang.', 'Error Validasi');
     }
   };
 
@@ -293,7 +333,7 @@ const SalesModule = () => {
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
-      showToast.warning('Tambahkan produk ke keranjang terlebih dahulu.', 'Keranjang Kosong');
+      showToastDebounced('warning', 'Tambahkan produk ke keranjang terlebih dahulu.', 'Keranjang Kosong');
       return;
     }
 
@@ -301,7 +341,7 @@ const SalesModule = () => {
     const unscannedItems = getUnscannedBarcodeItems();
     if (unscannedItems.length > 0) {
       const unscannedNames = unscannedItems.map(item => item.productName).join(', ');
-      showToast.warning(
+      showToastDebounced('warning',
         `Silakan scan barcode untuk produk: ${unscannedNames}`, 
         'Validasi Barcode Diperlukan'
       );
@@ -349,7 +389,7 @@ const SalesModule = () => {
       loadProducts();
     } catch (error) {
       console.error('Error creating sale:', error);
-      showToast.error('Gagal melakukan penjualan.', 'Error!');
+      showToastDebounced('error', 'Gagal melakukan penjualan.', 'Error!');
     }
   };
 
@@ -387,10 +427,10 @@ const SalesModule = () => {
       // Reload products to update stock
       loadProducts();
       
-      showToast.success('Pembayaran QRIS berhasil!', 'Berhasil');
+      showToastDebounced('success', 'Pembayaran QRIS berhasil!', 'Berhasil');
     } catch (error) {
       console.error('Error creating sale after QRIS payment:', error);
-      showToast.error('Gagal menyimpan data penjualan.', 'Error!');
+      showToastDebounced('error', 'Gagal menyimpan data penjualan.', 'Error!');
     }
   };
 

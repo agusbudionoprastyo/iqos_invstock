@@ -10,6 +10,8 @@ const BarcodeScanner = ({ onScan, onClose, isOpen, title = 'Scan Barcode' }) => 
   const [manualCode, setManualCode] = useState('');
   const scannerRef = useRef(null);
   const scannerContainerIdRef = useRef(`html5qr-${Math.random().toString(36).slice(2)}`);
+  const lastScannedRef = useRef('');
+  const scanProcessedRef = useRef(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -31,6 +33,8 @@ const BarcodeScanner = ({ onScan, onClose, isOpen, title = 'Scan Barcode' }) => 
     setManualCode('');
     setIsScanning(false);
     setHasPermission(false);
+    lastScannedRef.current = '';
+    scanProcessedRef.current = false;
   };
 
   const initializeScanner = async () => {
@@ -75,8 +79,19 @@ const BarcodeScanner = ({ onScan, onClose, isOpen, title = 'Scan Barcode' }) => 
         config,
         (decodedText /*, result*/ ) => {
           if (!decodedText) return;
+          
+          // Prevent duplicate scans of the same barcode
+          if (lastScannedRef.current === decodedText && scanProcessedRef.current) {
+            return;
+          }
+          
+          // Mark as processed and store last scanned
+          lastScannedRef.current = decodedText;
+          scanProcessedRef.current = true;
+          
           setScannedCode(decodedText);
           onScan(decodedText);
+          
           // Auto close after successful scan
           setTimeout(() => {
             handleClose();
@@ -260,7 +275,11 @@ const BarcodeScanner = ({ onScan, onClose, isOpen, title = 'Scan Barcode' }) => 
           {manualCode && (
             <button
               onClick={() => {
-                onScan(manualCode);
+                if (manualCode && manualCode !== lastScannedRef.current) {
+                  lastScannedRef.current = manualCode;
+                  scanProcessedRef.current = true;
+                  onScan(manualCode);
+                }
                 setManualCode('');
                 handleClose();
               }}
@@ -303,29 +322,10 @@ const BarcodeScanner = ({ onScan, onClose, isOpen, title = 'Scan Barcode' }) => 
           {scannedCode && (
             <button
               onClick={() => {
-                onScan(scannedCode);
-                setScannedCode('');
-                handleClose();
-              }}
-              style={{
-                flex: 1,
-                backgroundColor: 'var(--primary-color)',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                borderRadius: '0.5rem',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}
-            >
-              Gunakan
-            </button>
-          )}
-          {scannedCode && (
-            <button
-              onClick={() => {
-                onScan(scannedCode);
+                if (!scanProcessedRef.current) {
+                  onScan(scannedCode);
+                  scanProcessedRef.current = true;
+                }
                 setScannedCode('');
                 handleClose();
               }}

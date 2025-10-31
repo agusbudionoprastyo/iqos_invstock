@@ -353,7 +353,7 @@ const QRISPaymentModal = ({ isOpen, onClose, paymentData, onPaymentSuccess }) =>
           <div className="qris-card-body">
             <div className="qris-user">
               <div className="qris-user-name">{paymentData?.customerName || 'Pelanggan'}</div>
-              <div className="qris-user-bank">628{((paymentData?.customerPhone || '').slice(-4) || '0000').replace(/(\d{4})$/, '**********')} {(paymentData?.customerPhone || '').slice(-4) || '  '}</div>
+              <div className="qris-user-bank">628{((paymentData?.customerPhone || '').slice(-4) || '0000').replace(/(\d{4})$/, '******')} {(paymentData?.customerPhone || '').slice(-4) || '  '}</div>
             </div>
 
             {qrImageUrl ? (
