@@ -29,7 +29,7 @@ const getToastStyles = () => {
       color: 'var(--text-color)',
       fontWeight: '500',
       fontSize: '14px',
-      padding: '12px 16px',
+      padding: '24px 16px',
       // borderRadius: '12px',
     },
     error: {
@@ -41,7 +41,7 @@ const getToastStyles = () => {
       color: 'var(--text-color)',
       fontWeight: '500',
       fontSize: '14px',
-      padding: '12px 16px',
+      padding: '24px 16px',
       // borderRadius: '12px',
     },
     warning: {
@@ -53,7 +53,7 @@ const getToastStyles = () => {
       color: 'var(--text-color)',
       fontWeight: '500',
       fontSize: '14px',
-      padding: '12px 16px',
+      padding: '24px 16px',
       // borderRadius: '12px',
     },
     info: {
@@ -65,7 +65,7 @@ const getToastStyles = () => {
       color: 'var(--text-color)',
       fontWeight: '500',
       fontSize: '14px',
-      padding: '12px 16px',
+      padding: '24px 16px',
       // borderRadius: '12px',
     },
     default: {
@@ -77,7 +77,7 @@ const getToastStyles = () => {
       color: 'var(--text-color)',
       fontWeight: '500',
       fontSize: '14px',
-      padding: '12px 16px',
+      padding: '24px 16px',
       // borderRadius: '12px',
     },
   };
@@ -87,7 +87,7 @@ const getToastStyles = () => {
 const toastConfig = {
   position: 'top-right',
   autoClose: 15000,
-  hideProgressBar: false,
+  hideProgressBar: true,
   closeOnClick: true,
   pauseOnHover: true,
   draggable: true,

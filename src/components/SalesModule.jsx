@@ -153,7 +153,7 @@ const SalesModule = () => {
               // If product already in cart, increase quantity
               const readyStock = readyStockData[product.id] || 0;
               if (existingItem.quantity >= readyStock) {
-                showToastDebounced('warning', `Maksimal quantity: ${readyStock}`, 'Stok Tidak Cukup');
+                showToastDebounced('warning', `Ready Stock ${readyStock}`, 'Stok Tidak Cukup,');
                 return prevCart; // Return unchanged cart
               }
               
@@ -229,7 +229,7 @@ const SalesModule = () => {
     
     if (existingItem) {
       if (existingItem.quantity >= readyStock) {
-        showToastDebounced('warning', `Maksimal quantity: ${readyStock}`, 'Stok Tidak Cukup');
+        showToastDebounced('warning', `Ready Stock ${readyStock}`, 'Stok Tidak Cukup,');
         return;
       }
       
@@ -250,7 +250,7 @@ const SalesModule = () => {
     
     const readyStock = readyStockData[productId] || 0;
     if (newQuantity > readyStock) {
-      showToastDebounced('warning', `Maksimal quantity: ${readyStock}`, 'Stok Tidak Cukup');
+      showToastDebounced('warning', `Ready Stock ${readyStock}`, 'Stok Tidak Cukup,');
       return;
     }
     
@@ -945,7 +945,7 @@ const SalesModule = () => {
                           cursor: item.quantity >= (readyStockData[item.productId] || 0) ? 'not-allowed' : 'pointer',
                           fontSize: '0.75rem'
                         }}
-                        title={item.quantity >= (readyStockData[item.productId] || 0) ? 'Stok tidak cukup' : 'Tambah quantity'}
+                        title={item.quantity >= (readyStockData[item.productId] || 0) ? 'Stok Tidak Cukup,' : 'Tambah quantity'}
                       >
                         <Plus size={12} />
                       </button>
@@ -1251,7 +1251,7 @@ const SalesModule = () => {
                       WebkitBackdropFilter: 'blur(10px)',
                       transition: 'all 0.2s ease'
                     }}
-                    title={item.quantity >= (readyStockData[item.productId] || 0) ? 'Stok tidak cukup' : 'Tambah quantity'}
+                    title={item.quantity >= (readyStockData[item.productId] || 0) ? 'Stok Tidak Cukup,' : 'Tambah quantity'}
                   >
                     <Plus size={12} />
                   </button>
